@@ -160,23 +160,20 @@ def _place_objects(new_map, room, player):
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
-    new_map.region = [[-1 for y in range(config.OUTDOOR_MAP_HEIGHT)] for x in range(config.OUTDOOR_MAP_WIDTH)]
-
     print('Seeding regions')
-    region_seeds = []
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
         for v in range(config.OUTDOOR_MAP_HEIGHT / 10):
             x = libtcod.random_get_int(new_map.rng, 0, 9) + u * 10
             y = libtcod.random_get_int(new_map.rng, 0, 9) + v * 10
-            region_seeds.append([x, y])
+            new_map.region_seeds.append([x, y])
 
     print('Growing the world-tree')
-    region_tree = scipy.spatial.KDTree(region_seeds)
+    new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
 
     print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
-            (d, i) = region_tree.query([[x, y]])
+            (d, i) = new_map.region_tree.query([[x, y]])
             new_map.region[x][y] = i[0]
             # DEBUG
             new_map._explored[x][y] = True
@@ -186,14 +183,14 @@ def _build_map(new_map):
             libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .25), int(config.OUTDOOR_MAP_WIDTH * .75))]
     print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
 
-    new_map.region_elevations = [-1 for r in range(len(region_seeds))]
+    new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
     for r in range(20):
         new_map.region_elevations[r] = 0
         new_map.region_elevations[380+r] = 0
         new_map.region_elevations[r*20] = 0
         new_map.region_elevations[r*20+19] = 0
 
-    (d, peak_regions) = region_tree.query([peak], 3)
+    (d, peak_regions) = new_map.region_tree.query([peak], 3)
     for p in peak_regions[0]:
         new_map.region_elevations[p] = 9
 
@@ -204,16 +201,41 @@ def _build_map(new_map):
     for p in range(len(new_map.region_elevations)):
         if new_map.region_elevations[p] > -1:
             continue
-        dx = region_seeds[p][0] - peak[0]
-        dy = region_seeds[p][1] - peak[1]
+        dx = new_map.region_seeds[p][0] - peak[0]
+        dy = new_map.region_seeds[p][1] - peak[1]
         p_distance = math.sqrt(dx*dx+dy*dy)
 
         # Hack - conical mountain, but not horrible.
-        e_distance = min(peak[0], 200 - peak[0],
-                            peak[1], 200 - peak[1])
+        if dx < 0:
+            cand_x = peak[0]
+        elif dx == 0:
+            cand_x = new_map.width
+        else:
+            cand_x = new_map.width - peak[0]
+        if dy < 0:
+            cand_y = peak[1]
+        elif dy == 0:
+            cand_y = new_map.height
+        else:
+            cand_y = new_map.height - peak[0]
+        edge_distance = min(cand_x, cand_y)
 
-        elevation = int(9 * ((e_distance - p_distance) / e_distance))
+        elevation = int(9 * ((edge_distance - p_distance) / edge_distance))
         new_map.region_elevations[p] = max(elevation, 0)
+
+    print('Finding the slopes')
+    for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
+        for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
+            e = new_map.region_elevations[new_map.region[x][y]]
+            if (new_map.region_elevations[new_map.region[x-1][y-1]] == e+1 or
+                    new_map.region_elevations[new_map.region[x][y-1]] == e+1 or
+                    new_map.region_elevations[new_map.region[x+1][y-1]] == e+1 or
+                    new_map.region_elevations[new_map.region[x-1][y]] == e+1 or
+                    new_map.region_elevations[new_map.region[x+1][y]] == e+1 or
+                    new_map.region_elevations[new_map.region[x-1][y+1]] == e+1 or
+                    new_map.region_elevations[new_map.region[x][y+1]] == e+1 or
+                    new_map.region_elevations[new_map.region[x+1][y+1]] == e+1):
+                new_map.terrain[x][y] = 2
 
 
 def make_map(player, dungeon_level):
@@ -222,7 +244,7 @@ def make_map(player, dungeon_level):
     Sets player.current_map to the new map, and adds the player as the first
     object.
     """
-    new_map = map.Map(config.OUTDOOR_MAP_WIDTH, config.OUTDOOR_MAP_HEIGHT, dungeon_level)
+    new_map = map.OutdoorMap(config.OUTDOOR_MAP_WIDTH, config.OUTDOOR_MAP_HEIGHT, dungeon_level)
     new_map.objects.append(player)
     player.current_map = new_map
     player.camera_position = algebra.Location(0, 0)

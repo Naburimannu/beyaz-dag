@@ -282,6 +282,8 @@ def save_game(player):
     overwrites any existing data.
     """
     file = shelve.open('savegame', 'n')
+    # Can't shelve kdtree
+    player.current_map.region_tree = None
     file['current_map'] = player.current_map
     file['player_index'] = player.current_map.objects.index(player)
     file['game_msgs'] = log.game_msgs
