@@ -10,39 +10,72 @@ class Room(algebra.Rect):
 
 class Terrain(object):
     def __init__(self, name, display_name, icon,
-                 seen_color, unseen_color, blocks, blocks_sight):
+                 icon_color, seen_color, unseen_color, blocks, blocks_sight):
         self.name = name
         self.display_name = display_name  # text displayed on mouseover
         self.icon = icon  # character drawn on screen
+        self.icon_color = icon_color
         self.seen_color = seen_color
         self.unseen_color = unseen_color
         self.blocks = blocks
         self.blocks_sight = blocks_sight
 
+
 terrain_types = [
-        Terrain('wall', None, None, libtcod.Color(130, 110, 50),
-                libtcod.Color(0, 0, 100), True, True),
-        Terrain('ground', None, None, libtcod.Color(200, 180, 50),
-                libtcod.Color(50, 50, 150), False, False),
-        Terrain('slope', 'slope', '^', libtcod.light_gray,
-                libtcod.darker_gray, False, False),
+        Terrain('wall', None, None, None,
+                libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
+        Terrain('ground', None, None, None,
+                libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False),
+        Terrain('slope', 'slope', '^', None,
+                libtcod.light_gray, libtcod.black, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
-                libtcod.darker_azure, True, False),
-        Terrain('boulder', None, '*', libtcod.sepia,
-                libtcod.darker_sepia, True, True),
+                libtcod.azure, libtcod.black, True, False),
+        Terrain('boulder', None, '*', libtcod.darker_sepia,
+                libtcod.sepia, libtcod.black, True, True),
         # 5
-        Terrain('reeds', None, '|', libtcod.light_green,
-                libtcod.darker_green, False, True),
+        Terrain('reeds', None, '|', libtcod.green,
+                None, libtcod.black, False, True),
         Terrain('saxaul', None, '%', libtcod.dark_green,
-                libtcod.darker_green, True, True),
+                None, libtcod.black, True, True),
         Terrain('nitraria', None, '%', libtcod.dark_green,
-                libtcod.darker_green, True, True),
+                None, libtcod.black, True, True),
         Terrain('ephedra', None, '"', libtcod.dark_amber,
-                libtcod.darker_amber, False, False),
-        Terrain('poplar', None, 'T', libtcod.dark_green,
-                libtcod.darker_green, True, True)
+                None, libtcod.black, False, False),
+        Terrain('poplar', None, 'T', libtcod.darker_green,
+                None, libtcod.black, True, True)
             ]
 
+terrain_colors =  { 'lake' : libtcod.dark_azure,
+                    'marsh' : libtcod.darker_chartreuse,
+                    'desert' : libtcod.lighter_sepia,
+                    'scrub' : libtcod.dark_sepia,
+                    'forest' : libtcod.dark_sepia,
+                    'rock' : libtcod.darker_sepia,
+                    'ice' : libtcod.lightest_gray }
+
+# terrain_types = [
+#        Terrain('wall', None, None, None,
+#                libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
+#        Terrain('ground', None, None, None,
+#                libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False),
+#        Terrain('slope', 'slope', '^', None,
+#                libtcod.light_gray, libtcod.darker_gray, False, False),
+#        Terrain('water', 'water', '~', None,
+#                libtcod.azure, libtcod.darker_azure, True, False),
+#        Terrain('boulder', None, '*', None,
+#                libtcod.sepia, libtcod.darker_sepia, True, True),
+#        # 5
+#        Terrain('reeds', None, '|', None,
+#                libtcod.light_green, libtcod.darker_green, False, True),
+#        Terrain('saxaul', None, '%', None,
+#                libtcod.dark_green, libtcod.darker_green, True, True),
+#        Terrain('nitraria', None, '%', None,
+#                libtcod.dark_green, libtcod.darker_green, True, True),
+#        Terrain('ephedra', None, '"', None,
+#                libtcod.dark_amber, libtcod.darker_amber, False, False),
+#        Terrain('poplar', None, 'T', None,
+#                libtcod.dark_green, libtcod.darker_green, True, True)
+#            ]
 
 class Map(object):
     """

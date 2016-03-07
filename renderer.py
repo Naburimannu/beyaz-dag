@@ -235,7 +235,15 @@ def _get_names_under_mouse(player, (sx, sy)):
         names.append(player.current_map.terrain_at(pos).display_name)
 
     names = ', '.join(names)
-    return names.capitalize()
+    things = names.capitalize()
+    player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
+    viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
+    if viewed_elevation < player_elevation:
+        things += ' below you'
+    elif viewed_elevation > player_elevation:
+        things += ' above you'
+
+    return things
 
 
 def _draw_object(player, o):
@@ -299,6 +307,30 @@ def menu(header, options, width):
     return (key.c, None)
 
 
+def _debug_region(current_map, screen_x, screen_y, pos):
+    global _con
+    libtcod.console_set_char(_con, screen_x, screen_y, chr(65 + (current_map.region[pos.x][pos.y] % 26)))
+
+
+def _debug_elevation(current_map, screen_x, screen_y, pos):
+    global _con
+    libtcod.console_set_char(_con, screen_x, screen_y,
+                             chr(48 + current_map.region_elevations[current_map.region[pos.x][pos.y]]))
+
+
+def _draw_unseen(player, screen_x, screen_y, pos, terrain):
+    global _con
+    current_map = player.current_map
+    libtcod.console_set_char_background(_con, screen_x, screen_y,
+                                        libtcod.black, libtcod.BKGND_SET)
+    # _debug_region(current_map, screen_x, screen_y, pos)
+    if terrain.icon:
+        libtcod.console_set_char_foreground(_con, screen_x, screen_y, terrain.icon_color)
+        libtcod.console_set_char(_con, screen_x, screen_y, terrain.icon)
+    # else:
+    #     _debug_elevation(current_map, screen_x, screen_y, pos)
+
+
 def _draw_fov_using_terrain(player):
     """
     Overly optimized: this code inlines Map.terrain_at(), Map.is_explored(),
@@ -308,6 +340,7 @@ def _draw_fov_using_terrain(player):
     libtcod.console_clear(_con)
     current_map = player.current_map
     pos = algebra.Location(0, 0)
+    player_elevation = current_map.region_elevations[current_map.region[player.pos.x][player.pos.y]]
     for screen_y in range(min(current_map.height, config.MAP_PANEL_HEIGHT)):
         pos.set(player.camera_position.x, player.camera_position.y + screen_y)
         for screen_x in range(min(current_map.width, config.MAP_PANEL_WIDTH)):
@@ -315,21 +348,24 @@ def _draw_fov_using_terrain(player):
             visible = libtcod.map_is_in_fov(current_map.fov_map, pos.x, pos.y)
             # terrain = current_map.terrain_at(pos)
             terrain = map.terrain_types[current_map.terrain[pos.x][pos.y]]
-            if not visible:
-                # if current_map.is_explored(pos):
-                if current_map._explored[pos.x][pos.y]:
-                    libtcod.console_set_char_background(_con, screen_x, screen_y,
-                                                        terrain.unseen_color, libtcod.BKGND_SET)
-                    # libtcod.console_set_char(_con, screen_x, screen_y, chr(65 + (current_map.region[pos.x][pos.y] % 26)))
-                    if terrain.icon:
-                        libtcod.console_set_char(_con, screen_x, screen_y, terrain.icon)
-                    # else:
-                    #     libtcod.console_set_char(_con, screen_x, screen_y,
-                    #                              chr(48 + current_map.region_elevations[current_map.region[pos.x][pos.y]]))
+            explored = current_map._explored[pos.x][pos.y]
+            # draw (player_elevation - 1) so that we can see up-slopes
+            if (current_map.region_elevations[current_map.region[pos.x][pos.y]] + 1 < player_elevation):
+                if visible or explored:
+                    libtcod.console_put_char_ex(_con, screen_x, screen_y, chr(77),
+                        map.terrain_colors[current_map.region_terrain[current_map.region[pos.x][pos.y]]],
+                        libtcod.black)
+                if visible:
+                    current_map.explore(pos)
+            elif not visible:
+                if explored:
+                    _draw_unseen(player, screen_x, screen_y, pos, terrain)
             else:
+                sc = map.terrain_colors[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
                 libtcod.console_set_char_background(_con, screen_x, screen_y,
-                                                    terrain.seen_color, libtcod.BKGND_SET)
+                                                    sc, libtcod.BKGND_SET)
                 if terrain.icon:
+                    libtcod.console_set_char_foreground(_con, screen_x, screen_y, terrain.icon_color)
                     libtcod.console_set_char(_con, screen_x, screen_y, terrain.icon)
                 current_map.explore(pos)
             pos.x += 1
@@ -438,9 +474,12 @@ def draw_panel(player, pointer_location):
     _render_bar(1, 1, config.BAR_WIDTH, 'HP', player.fighter.hp,
                 player.fighter.max_hp,
                 libtcod.light_red, libtcod.darker_red)
+    #libtcod.console_print_ex(
+    #    _panel, 1, 3, libtcod.BKGND_NONE,
+    #    libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
     libtcod.console_print_ex(
         _panel, 1, 3, libtcod.BKGND_NONE,
-        libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
+        libtcod.LEFT, 'Elevation ' + str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]))
     _debug_positions(player, pointer_location)
     # _debug_room(player)
     # _debug_danger(player)
