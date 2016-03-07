@@ -83,6 +83,10 @@ def renderer_init():
     """
     global _con, _panel, _overlay, _last_frame_time
     libtcod.console_set_custom_font('arial12x12.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+    # Map the dead space in the TCOD layout to [128...164]
+    # libtcod.console_map_ascii_codes_to_font(256, 21, 11, 1)
+    # libtcod.console_map_ascii_codes_to_font(277, 25, 0, 2)
+    libtcod.console_map_ascii_code_to_font(129, 12, 1)
     libtcod.console_init_root(config.SCREEN_WIDTH, config.SCREEN_HEIGHT, 'Beyaz Dag', False)
     libtcod.sys_set_fps(LIMIT_FPS)
     _con = libtcod.console_new(config.MAP_PANEL_WIDTH, config.MAP_PANEL_HEIGHT)
@@ -318,15 +322,15 @@ def _debug_elevation(current_map, screen_x, screen_y, pos):
                              chr(48 + current_map.region_elevations[current_map.region[pos.x][pos.y]]))
 
 
-def _draw_unseen(player, screen_x, screen_y, pos, terrain):
+def _draw_unseen(player, screen_x, screen_y, pos, terrain, icon):
     global _con
     current_map = player.current_map
     libtcod.console_set_char_background(_con, screen_x, screen_y,
         map.terrain_colors_unseen[current_map.region_terrain[current_map.region[pos.x][pos.y]]], libtcod.BKGND_SET)
     # _debug_region(current_map, screen_x, screen_y, pos)
-    if terrain.icon:
+    if icon:
         libtcod.console_set_char_foreground(_con, screen_x, screen_y, terrain.icon_color)
-        libtcod.console_set_char(_con, screen_x, screen_y, terrain.icon)
+        libtcod.console_set_char(_con, screen_x, screen_y, icon)
     # else:
     #     _debug_elevation(current_map, screen_x, screen_y, pos)
 
@@ -350,23 +354,28 @@ def _draw_fov_using_terrain(player):
             terrain = map.terrain_types[current_map.terrain[pos.x][pos.y]]
             explored = current_map._explored[pos.x][pos.y]
             # draw (player_elevation - 1) so that we can see up-slopes
-            if (current_map.region_elevations[current_map.region[pos.x][pos.y]] + 1 < player_elevation):
+            current_elevation = current_map.region_elevations[current_map.region[pos.x][pos.y]]
+            icon = terrain.icon
+            if icon:
+                if terrain.name == 'slope' and current_elevation < player_elevation:
+                    icon = 'v'
+            if (current_elevation + 1 < player_elevation):
                 if visible or explored:
-                    libtcod.console_put_char_ex(_con, screen_x, screen_y, chr(77),
+                    libtcod.console_put_char_ex(_con, screen_x, screen_y, '#',
                         map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]],
                         libtcod.black)
                 if visible:
                     current_map.explore(pos)
             elif not visible:
                 if explored:
-                    _draw_unseen(player, screen_x, screen_y, pos, terrain)
+                    _draw_unseen(player, screen_x, screen_y, pos, terrain, icon)
             else:
                 sc = map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
                 libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                     sc, libtcod.BKGND_SET)
-                if terrain.icon:
+                if icon:
                     libtcod.console_set_char_foreground(_con, screen_x, screen_y, terrain.icon_color)
-                    libtcod.console_set_char(_con, screen_x, screen_y, terrain.icon)
+                    libtcod.console_set_char(_con, screen_x, screen_y, icon)
                 current_map.explore(pos)
             pos.x += 1
 
