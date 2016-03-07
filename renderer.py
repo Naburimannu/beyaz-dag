@@ -401,6 +401,10 @@ def draw_console(player):
 
     current_map = player.current_map
 
+    if current_map.fov_elevation_changed:
+        current_map.set_fov_elevation(current_map.region_elevations[current_map.region[player.pos.x][player.pos.y]])
+        current_map.fov_elevation_changed = False
+
     if current_map.fov_needs_recompute:
         # Recompute FOV if needed (the player moved or something in
         # the dungeon changed).

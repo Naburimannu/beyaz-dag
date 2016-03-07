@@ -160,6 +160,8 @@ def _place_objects(new_map, room, player):
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
+    terrain_lookup = { map.terrain_types[i].name : i for i in range(len(map.terrain_types)) }
+
     print('Seeding regions')
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
         for v in range(config.OUTDOOR_MAP_HEIGHT / 10):
@@ -195,7 +197,7 @@ def _build_map(new_map):
         new_map.region_elevations[p] = 9
 
     for u in range(20):
-        print(str(u) + ': ', new_map.region_elevations[u*20:u*20+19])
+        print(new_map.region_elevations[u*20:u*20+19])
 
     print('Climbing the shoulders of the mountain')
     for p in range(len(new_map.region_elevations)):
@@ -217,25 +219,80 @@ def _build_map(new_map):
         elif dy == 0:
             cand_y = new_map.height
         else:
-            cand_y = new_map.height - peak[0]
+            cand_y = new_map.height - peak[1]
         edge_distance = min(cand_x, cand_y)
 
         elevation = int(9 * ((edge_distance - p_distance) / edge_distance))
         new_map.region_elevations[p] = max(elevation, 0)
 
+    for u in range(20):
+        print(new_map.region_elevations[u*20:u*20+19])
+
     print('Finding the slopes')
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
         for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
-            e = new_map.region_elevations[new_map.region[x][y]]
-            if (new_map.region_elevations[new_map.region[x-1][y-1]] == e+1 or
-                    new_map.region_elevations[new_map.region[x][y-1]] == e+1 or
-                    new_map.region_elevations[new_map.region[x+1][y-1]] == e+1 or
-                    new_map.region_elevations[new_map.region[x-1][y]] == e+1 or
-                    new_map.region_elevations[new_map.region[x+1][y]] == e+1 or
-                    new_map.region_elevations[new_map.region[x-1][y+1]] == e+1 or
-                    new_map.region_elevations[new_map.region[x][y+1]] == e+1 or
-                    new_map.region_elevations[new_map.region[x+1][y+1]] == e+1):
+            el = new_map.region_elevations[new_map.region[x][y]]
+            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
                 new_map.terrain[x][y] = 2
+
+    marsh_chances = { 'water' : 10, 'ground' : 40, 'reeds' : 10, 'saxaul' : 10 }
+    desert_chances = { 'ground' : 80, 'nitraria' : 5, 'ephedra' : 5 }
+    scrub_chances = { 'ground' : 40, 'nitraria' : 10, 'ephedra' : 10 }
+    forest_chances = { 'ground' : 45, 'poplar' : 15 }
+
+    print('Determining terrain clumps')
+    for r in range(len(new_map.region_seeds)):
+        el = new_map.region_elevations[r]
+        if el == 0:
+            if new_map.region_seeds[r][0] < 20:
+                new_map.region_terrain[r] = 'lake'
+            elif new_map.region_seeds[r][1] < 20:
+                new_map.region_terrain[r] = 'marsh'
+            else:
+                new_map.region_terrain[r] = 'desert'
+        elif el < 3:
+            new_map.region_terrain[r] = 'scrub'
+        elif el < 6:
+            new_map.region_terrain[r] = 'forest'
+        elif el < 7:
+            new_map.region_terrain[r] = 'rock'
+        else:
+            new_map.region_terrain[r] = 'ice'
+
+    # DEBUG
+    rt = []
+    for r in range(len(new_map.region_seeds)):
+        if new_map.region_terrain[r] != None:
+            rt.append(new_map.region_terrain[r][0])
+        else:
+            rt.append(str(new_map.region_elevations[r]))
+    for u in range(20):
+        print(rt[u*20:u*20+19])
+
+
+    print('Assigning narrow terrain')
+    for x in range(config.OUTDOOR_MAP_WIDTH):
+        for y in range(config.OUTDOOR_MAP_HEIGHT):
+            if new_map.terrain[x][y] != 1:
+                continue
+            t = new_map.region_terrain[new_map.region[x][y]]
+            if t == 'lake':
+                new_map.terrain[x][y] = 3
+            elif t == 'marsh':
+                new_map.terrain[x][y] = terrain_lookup[_random_choice(marsh_chances)]
+            elif t == 'desert':
+                new_map.terrain[x][y] = terrain_lookup[_random_choice(desert_chances)]
+            elif t == 'scrub':
+                new_map.terrain[x][y] = terrain_lookup[_random_choice(scrub_chances)]
+            elif t == 'forest':
+                new_map.terrain[x][y] = terrain_lookup[_random_choice(forest_chances)]
 
 
 def make_map(player, dungeon_level):

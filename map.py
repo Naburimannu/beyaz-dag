@@ -25,7 +25,22 @@ terrain_types = [
         Terrain('ground', None, None, libtcod.Color(200, 180, 50),
                 libtcod.Color(50, 50, 150), False, False),
         Terrain('slope', 'slope', '^', libtcod.light_gray,
-                libtcod.dark_gray, False, False)
+                libtcod.darker_gray, False, False),
+        Terrain('water', 'water', '~', libtcod.azure,
+                libtcod.darker_azure, True, False),
+        Terrain('unused-marsh', None, '"', libtcod.light_green,
+                libtcod.darker_green, False, False),
+        # 5
+        Terrain('reeds', None, '|', libtcod.light_green,
+                libtcod.darker_green, False, True),
+        Terrain('saxaul', None, '%', libtcod.dark_green,
+                libtcod.darker_green, True, True),
+        Terrain('nitraria', None, '%', libtcod.dark_green,
+                libtcod.darker_green, True, True),
+        Terrain('ephedra', None, '"', libtcod.dark_amber,
+                libtcod.darker_amber, False, False),
+        Terrain('poplar', None, 'T', libtcod.dark_green,
+                libtcod.darker_green, True, True)
             ]
 
 
@@ -117,6 +132,8 @@ class OutdoorMap(object):
         self.rng = None
 
         self.fov_map = None
+        self.fov_needs_recompute = True
+        self.fov_elevation_changed = False
 
         # OutdoorMaps default to open (unblocked) & unexplored
         self.terrain = [[1 for y in range(height)] for x in range(width)]
@@ -127,6 +144,7 @@ class OutdoorMap(object):
         self.region_seeds = []
         self.region_elevations = []
         self.region_tree = None
+        self.region_terrain = [None for xy in range(height * width)]
 
     def initialize_fov(self):
         """
@@ -142,6 +160,15 @@ class OutdoorMap(object):
                     self.fov_map, x, y,
                     not terrain_types[self.terrain[x][y]].blocks_sight,
                     not terrain_types[self.terrain[x][y]].blocks)
+
+    def set_fov_elevation(self, e):
+        for y in range(self.height):
+            for x in range(self.width):
+                bs = (terrain_types[self.terrain[x][y]].blocks_sight or
+                      (self.region_elevations[self.region[x][y]] > e + 1))
+                libtcod.map_set_properties(
+                    self.fov_map, x, y,
+                    not bs, not terrain_types[self.terrain[x][y]].blocks)
 
     def terrain_at(self, pos):
         """

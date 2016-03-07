@@ -77,8 +77,12 @@ def player_move_or_attack(player, direction, try_running):
         actions.attack(player.fighter, target)
         return True
     else:
+        old_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
         if actions.move(player, direction):
             player.current_map.fov_needs_recompute = True
+            new_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
+            if new_elevation != old_elevation:
+                player.current_map.fov_elevation_changed = True
             if try_running:
                 player.game_state = 'running'
                 player.run_direction = direction
