@@ -183,10 +183,21 @@ def _clump_terrain(new_map):
 
 
 def _assign_terrain(new_map):
+
+    terrain_lookup = { map.terrain_types[i].name : i for i in range(len(map.terrain_types)) }
+
     marsh_chances = { 'water' : 10, 'ground' : 40, 'reeds' : 10, 'saxaul' : 10 }
-    desert_chances = { 'ground' : 80, 'nitraria' : 5, 'ephedra' : 5 }
-    scrub_chances = { 'ground' : 40, 'nitraria' : 10, 'ephedra' : 10 }
-    forest_chances = { 'ground' : 45, 'poplar' : 15 }
+    desert_chances = { 'ground' : 80, 'nitraria' : 5, 'ephedra' : 5, 'boulder' : 5 }
+    scrub_chances = { 'ground' : 40, 'nitraria' : 10, 'ephedra' : 10, 'boulder' : 5 }
+    forest_chances = { 'ground' : 45, 'poplar' : 15, 'boulder' : 5 }
+
+    terrain_chances = { 'lake' : { 'water' : 10 },
+                        'marsh' : marsh_chances,
+                        'desert' : desert_chances,
+                        'scrub' : scrub_chances,
+                        'forest' : forest_chances,
+                        'rock' : { 'ground' : 45, 'boulder' : 5 },
+                        'ice' : { 'ground' : 45, 'boulder' : 5 } }
 
     print('Assigning narrow terrain')
     for x in range(config.OUTDOOR_MAP_WIDTH):
@@ -195,22 +206,11 @@ def _assign_terrain(new_map):
                 # Don't overwrite slopes, at least for now
                 continue
             t = new_map.region_terrain[new_map.region[x][y]]
-            if t == 'lake':
-                new_map.terrain[x][y] = 3
-            elif t == 'marsh':
-                new_map.terrain[x][y] = terrain_lookup[_random_choice(marsh_chances)]
-            elif t == 'desert':
-                new_map.terrain[x][y] = terrain_lookup[_random_choice(desert_chances)]
-            elif t == 'scrub':
-                new_map.terrain[x][y] = terrain_lookup[_random_choice(scrub_chances)]
-            elif t == 'forest':
-                new_map.terrain[x][y] = terrain_lookup[_random_choice(forest_chances)]
+            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
 
 
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
-
-    terrain_lookup = { map.terrain_types[i].name : i for i in range(len(map.terrain_types)) }
 
     print('Seeding regions')
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
@@ -247,7 +247,7 @@ def _build_map(new_map):
         new_map.region_elevations[p] = 9
 
     for u in range(20):
-        print(new_map.region_elevations[u*20:u*20+19])
+        print(new_map.region_elevations[u:400:20])
 
     print('Climbing the shoulders of the mountain')
     for p in range(len(new_map.region_elevations)):
@@ -276,7 +276,7 @@ def _build_map(new_map):
         new_map.region_elevations[p] = max(elevation, 0)
 
     for u in range(20):
-        print(new_map.region_elevations[u*20:u*20+19])
+        print(new_map.region_elevations[u:400:20])
 
     print('Finding the slopes')
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
@@ -298,11 +298,11 @@ def _build_map(new_map):
     rt = ''
     for r in range(len(new_map.region_seeds)):
         if new_map.region_terrain[r] != None:
-            rt.append(new_map.region_terrain[r][0])
+            rt += new_map.region_terrain[r][0]
         else:
-            rt.append(str(new_map.region_elevations[r]))
+            rt += str(new_map.region_elevations[r])
     for u in range(20):
-        print(rt[u*20:u*20+19])
+        print(rt[u:400:20])
 
     _assign_terrain(new_map)
 

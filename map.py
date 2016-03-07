@@ -28,8 +28,8 @@ terrain_types = [
                 libtcod.darker_gray, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
                 libtcod.darker_azure, True, False),
-        Terrain('unused-marsh', None, '"', libtcod.light_green,
-                libtcod.darker_green, False, False),
+        Terrain('boulder', None, '*', libtcod.sepia,
+                libtcod.darker_sepia, True, True),
         # 5
         Terrain('reeds', None, '|', libtcod.light_green,
                 libtcod.darker_green, False, True),
