@@ -21,7 +21,7 @@ def move(o, direction):
     Returns true if move succeeded.
     """
     goal = o.pos + direction
-    if not o.current_map.is_blocked_at(goal):
+    if not o.current_map.is_blocked_from(o.pos, goal):
         o.pos = goal
         return True
     return False

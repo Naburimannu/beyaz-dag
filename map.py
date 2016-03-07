@@ -86,6 +86,9 @@ class Map(object):
                 return True
         return False
 
+    def is_blocked_from(self, origin, dest):
+        return is_blocked_at(dest)
+
     def is_explored(self, pos):
         return self._explored[pos.x][pos.y]
 
@@ -157,6 +160,23 @@ class OutdoorMap(object):
         for object in self.objects:
             if object.blocks and object.pos == pos:
                 return True
+        return False
+
+    def is_blocked_from(self, origin, dest):
+        """
+        Returns true if impassible map terrain or any blocking objects
+        prevent travel from origin to dest.
+        """
+        if terrain_types[self.terrain[dest.x][dest.y]].blocks:
+            return True
+        for object in self.objects:
+            if object.blocks and object.pos == dest:
+                return True
+        eo = self.region_elevations[self.region[origin.x][origin.y]]
+        do = self.region_elevations[self.region[dest.x][dest.y]]
+        delta = eo - do
+        if (delta > 1 or delta < -1):
+            return True
         return False
 
     def is_explored(self, pos):
