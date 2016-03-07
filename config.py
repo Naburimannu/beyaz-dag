@@ -12,6 +12,8 @@ MAP_PANEL_HEIGHT = 43
 
 # Size of the actual map; if larger than the map panel, the map panel will
 # scroll as the player moves.
+OUTDOOR_MAP_WIDTH = 200
+OUTDOOR_MAP_HEIGHT = 200
 MAP_WIDTH = 60
 MAP_HEIGHT = 33
 

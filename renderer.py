@@ -320,6 +320,7 @@ def _draw_fov_using_terrain(player):
                 if current_map._explored[pos.x][pos.y]:
                     libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                         terrain.unseen_color, libtcod.BKGND_SET)
+                    libtcod.console_set_char(_con, screen_x, screen_y, chr(65 + (current_map.region[pos.x][pos.y] % 26)))
             else:
                 libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                     terrain.seen_color, libtcod.BKGND_SET)
@@ -351,7 +352,7 @@ def _debug_positions(player, mouse):
         libtcod.RIGHT, '  @ ' + player.pos.to_string())
     libtcod.console_print_ex(
         _panel, 15, 5, libtcod.BKGND_NONE,
-        libtcod.RIGHT, '  m ' + str(mouse.cx) + ', ' + str(mouse.cy))
+        libtcod.RIGHT, '  m ' + str(mouse[0]) + ', ' + str(mouse[1]))
     libtcod.console_print_ex(
         _panel, 15, 6, libtcod.BKGND_NONE,
         libtcod.RIGHT, 'cam ' + player.camera_position.to_string())
@@ -429,7 +430,7 @@ def draw_panel(player, pointer_location):
     libtcod.console_print_ex(
         _panel, 1, 3, libtcod.BKGND_NONE,
         libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
-    # _debug_positions(player, mouse)
+    _debug_positions(player, pointer_location)
     # _debug_room(player)
     # _debug_danger(player)
     _debug_fps()

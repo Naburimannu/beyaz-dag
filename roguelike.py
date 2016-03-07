@@ -16,6 +16,7 @@ import interface
 import actions
 import ai
 import cartographer
+import mountain_cartographer
 
 INVENTORY_WIDTH = 50
 CHARACTER_SCREEN_WIDTH = 30
@@ -327,7 +328,8 @@ def new_game():
     actions.equip(player, equipment_component, False)
     obj.always_visible = True
 
-    cartographer.make_map(player, 1)
+    # cartographer.make_map(player, 1)
+    mountain_cartographer.make_map(player, 1)
     renderer.clear_console()
     renderer.update_camera(player)
 

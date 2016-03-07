@@ -35,6 +35,7 @@
     <Compile Include="actions.py" />
     <Compile Include="ai.py" />
     <Compile Include="algebra.py" />
+    <Compile Include="mountain_cartographer.py" />
     <Compile Include="cartographer.py" />
     <Compile Include="components.py" />
     <Compile Include="config.py" />
