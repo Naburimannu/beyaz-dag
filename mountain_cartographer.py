@@ -162,6 +162,7 @@ def _build_map(new_map):
 
     new_map.region = [[-1 for y in range(config.OUTDOOR_MAP_HEIGHT)] for x in range(config.OUTDOOR_MAP_WIDTH)]
 
+    print('Seeding regions')
     region_seeds = []
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
         for v in range(config.OUTDOOR_MAP_HEIGHT / 10):
@@ -169,8 +170,10 @@ def _build_map(new_map):
             y = libtcod.random_get_int(new_map.rng, 0, 9) + v * 10
             region_seeds.append([x, y])
 
+    print('Growing the world-tree')
     region_tree = scipy.spatial.KDTree(region_seeds)
 
+    print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
             (d, i) = region_tree.query([[x, y]])
@@ -178,6 +181,39 @@ def _build_map(new_map):
             # DEBUG
             new_map._explored[x][y] = True
             new_map.terrain[x][y] = 1
+
+    peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .25), int(config.OUTDOOR_MAP_WIDTH * .75)),
+            libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .25), int(config.OUTDOOR_MAP_WIDTH * .75))]
+    print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
+
+    new_map.region_elevations = [-1 for r in range(len(region_seeds))]
+    for r in range(20):
+        new_map.region_elevations[r] = 0
+        new_map.region_elevations[380+r] = 0
+        new_map.region_elevations[r*20] = 0
+        new_map.region_elevations[r*20+19] = 0
+
+    (d, peak_regions) = region_tree.query([peak], 3)
+    for p in peak_regions[0]:
+        new_map.region_elevations[p] = 9
+
+    for u in range(20):
+        print(str(u) + ': ', new_map.region_elevations[u*20:u*20+19])
+
+    print('Climbing the shoulders of the mountain')
+    for p in range(len(new_map.region_elevations)):
+        if new_map.region_elevations[p] > -1:
+            continue
+        dx = region_seeds[p][0] - peak[0]
+        dy = region_seeds[p][1] - peak[1]
+        p_distance = math.sqrt(dx*dx+dy*dy)
+
+        # Hack - conical mountain, but not horrible.
+        e_distance = min(peak[0], 200 - peak[0],
+                            peak[1], 200 - peak[1])
+
+        elevation = int(9 * ((e_distance - p_distance) / e_distance))
+        new_map.region_elevations[p] = max(elevation, 0)
 
 
 def make_map(player, dungeon_level):

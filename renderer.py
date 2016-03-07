@@ -320,7 +320,9 @@ def _draw_fov_using_terrain(player):
                 if current_map._explored[pos.x][pos.y]:
                     libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                         terrain.unseen_color, libtcod.BKGND_SET)
-                    libtcod.console_set_char(_con, screen_x, screen_y, chr(65 + (current_map.region[pos.x][pos.y] % 26)))
+                    # libtcod.console_set_char(_con, screen_x, screen_y, chr(65 + (current_map.region[pos.x][pos.y] % 26)))
+                    libtcod.console_set_char(_con, screen_x, screen_y,
+                                             chr(48 + current_map.region_elevations[current_map.region[pos.x][pos.y]]))
             else:
                 libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                     terrain.seen_color, libtcod.BKGND_SET)
