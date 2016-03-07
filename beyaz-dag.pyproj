@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{d14cb18f-be1d-4333-b281-dc739aa7133f}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>roguelike.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+    <InterpreterVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="arial10x10.png" />
+    <Content Include="arial12x12.png" />
+    <Content Include="consolas_unicode_12x12.png" />
+    <Content Include="CREDITS.txt" />
+    <Content Include="libtcod-VS.dll" />
+    <Content Include="LICENSE.txt" />
+    <Content Include="README.md" />
+    <Content Include="SDL.dll" />
+    <Content Include="zlib1.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="actions.py" />
+    <Compile Include="ai.py" />
+    <Compile Include="algebra.py" />
+    <Compile Include="cartographer.py" />
+    <Compile Include="components.py" />
+    <Compile Include="config.py" />
+    <Compile Include="dist-windows.py" />
+    <Compile Include="interface.py" />
+    <Compile Include="libtcodpy.py" />
+    <Compile Include="log.py" />
+    <Compile Include="map.py" />
+    <Compile Include="renderer.py" />
+    <Compile Include="roguelike.py" />
+    <Compile Include="spells.py" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
