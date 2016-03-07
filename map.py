@@ -60,8 +60,8 @@ terrain_colors_unseen = {
     'marsh' : libtcod.darkest_chartreuse,
     'desert' : libtcod.light_sepia,
     'scrub' : libtcod.sepia,
-    'forest' : libtcod.darker_sepia,
-    'rock' : libtcod.darkest_sepia,
+    'forest' : libtcod.dark_sepia,
+    'rock' : libtcod.darker_sepia,
     'ice' : libtcod.dark_gray
 }
 
