@@ -202,11 +202,11 @@ def _assign_terrain(new_map):
     print('Assigning narrow terrain')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
-            if new_map.terrain[x][y] != 1:
-                # Don't overwrite slopes, at least for now
+           t = new_map.region_terrain[new_map.region[x][y]]
+           if new_map.terrain[x][y] != 1 and t != 'lake':
+                # For now don't overwrite slopes, except underwater
                 continue
-            t = new_map.region_terrain[new_map.region[x][y]]
-            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
+           new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
 
 
 def _build_map(new_map):

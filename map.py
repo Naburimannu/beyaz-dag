@@ -27,11 +27,11 @@ terrain_types = [
         Terrain('ground', None, None, None,
                 libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False),
         Terrain('slope', 'slope', '^', None,
-                libtcod.light_gray, libtcod.black, False, False),
+                None, libtcod.black, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
-                libtcod.azure, libtcod.black, True, False),
+                None, libtcod.black, True, False),
         Terrain('boulder', None, '*', libtcod.darker_sepia,
-                libtcod.sepia, libtcod.black, True, True),
+                None, libtcod.black, True, True),
         # 5
         Terrain('reeds', None, '|', libtcod.green,
                 None, libtcod.black, False, True),
@@ -45,13 +45,25 @@ terrain_types = [
                 None, libtcod.black, True, True)
             ]
 
-terrain_colors =  { 'lake' : libtcod.dark_azure,
-                    'marsh' : libtcod.darker_chartreuse,
-                    'desert' : libtcod.lighter_sepia,
-                    'scrub' : libtcod.dark_sepia,
-                    'forest' : libtcod.dark_sepia,
-                    'rock' : libtcod.darker_sepia,
-                    'ice' : libtcod.lightest_gray }
+terrain_colors_seen =  {
+    'lake' : libtcod.dark_azure,
+    'marsh' : libtcod.darker_chartreuse,
+    'desert' : libtcod.lightest_sepia,
+    'scrub' : libtcod.lighter_sepia,
+    'forest' : libtcod.sepia,
+    'rock' : libtcod.darker_sepia,
+    'ice' : libtcod.gray
+}
+
+terrain_colors_unseen = {
+    'lake' : libtcod.darkest_azure,
+    'marsh' : libtcod.darkest_chartreuse,
+    'desert' : libtcod.light_sepia,
+    'scrub' : libtcod.sepia,
+    'forest' : libtcod.darker_sepia,
+    'rock' : libtcod.darkest_sepia,
+    'ice' : libtcod.dark_gray
+}
 
 # terrain_types = [
 #        Terrain('wall', None, None, None,
