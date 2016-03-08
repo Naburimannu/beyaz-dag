@@ -63,7 +63,7 @@ def _check_exploration_xp(player, new_region, new_elevation):
         delta += ELEVATION_EXPLORATION_SP
         player.current_map.elevation_visited[new_elevation] = True
     if delta > 0:
-        player.fighter.xp += delta
+        player.skill_points += delta
         point = 'point'
         if delta > 1:
             point += 's'
@@ -142,7 +142,7 @@ def inventory_menu(player, header):
 
 
 def display_character_info(player):
-    data = ['Skill points: ' + str(player.fighter.xp),
+    data = ['Skill points: ' + str(player.skill_points),
         'Maximum wounds: ' + str(player.fighter.max_hp),
         'Skills:']
     for key, value in player.fighter.skills.items():
@@ -310,6 +310,7 @@ def new_game():
     player.inventory = []
     player.level = 1
     player.game_state = 'playing'
+    player.skill_points = 0
     # True if there's a (hostile) fighter in FOV
     player.endangered = False
 

@@ -92,7 +92,6 @@ class Fighter(Component):
     def __init__(self, hp, death_function=None):
         self.base_max_hp = hp
         self.hp = hp
-        self.xp = 0
         self.death_function = death_function
         self.skills = { }
         self.wounds = 0
