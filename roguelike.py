@@ -33,6 +33,23 @@ CLIMB_EXHAUSTION = 10
 MOVE_EXHAUSTION = 1
 
 
+class Skill(object):
+    def __init__(self, name, cost, description):
+        self.name = name
+        self.cost = cost
+        self.description = description
+
+
+skill_list = [
+    Skill('bow', 5, 'Shoot with a bow.'),
+    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
+    Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages.'),
+    Skill('grappling', 3, 'Fight with bare hands or a knife.'),
+    Skill('spear', 4, 'Attack and defend with a spear.'),
+    Skill('sword', 4, 'Attack and defend with a sword.')
+]
+
+
 def try_pick_up(player):
     for object in player.current_map.objects:
         if object.x == player.x and object.y == player.y and object.item:
@@ -163,26 +180,11 @@ def display_character_info(player):
     renderer.msgbox(info_string, CHARACTER_SCREEN_WIDTH)
 
 
-class Skill(object):
-    def __init__(self, name, cost, description):
-        self.name = name
-        self.cost = cost
-        self.description = description
-
-
-skill_list = [
-    Skill('bow', 5, 'Shoot with a bow.'),
-    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
-    Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages. **UNIMPLEMENTED**'),
-    Skill('grappling', 3, 'Fight with bare hands or a knife.'),
-    Skill('spear', 4, 'Attack and defend with a spear.'),
-    Skill('sword', 4, 'Attack and defend with a sword.')
-]
-
-
 def increase_player_skills(player):
-    options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) + ', costs ' + str(s.cost) + ' sp'
-                for s in skill_list]
+    options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) +
+               ', costs ' + str(s.cost) + ' sp'
+        for s in skill_list]
+
     while True:
         (key, target) = renderer.menu('Choose skill to increase, or x to explain:',
                                       options, INVENTORY_WIDTH)
@@ -193,27 +195,36 @@ def increase_player_skills(player):
             
         if not target:
             return
-        if skill_list[target].cost < player.skill_points:
-            break
 
-    player.skill_points -= skill_list[target].cost
-    value = player.fighter.skills.get(skill_list[target].name, 0)
-    if value < 100:
-        value += libtcod.random_get_int(0, 1, 8)
-    elif value < 150:
-        value += libtcod.random_get_int(0, 1, 4)
-    elif value < 200:
-        value += libtcod.random_get_int(0, 1, 2)
-    else:
-        value += 1
-    player.fighter.skills[skill_list[target].name] = value
-    log.message('Increased ' + skill_list[target].name + ' to ' + str(value))
+        value = player.fighter.skills.get(skill_list[target].name, 0)
+        if value >= 250:
+            log.message(skill_list[target].name.capitalize() + ' is already at its maximum.')
+            continue
+        if skill_list[target].cost > player.skill_points:
+            continue
+
+        player.skill_points -= skill_list[target].cost
+        if value < 100:
+            value += libtcod.random_get_int(0, 1, 8)
+        elif value < 150:
+            value += libtcod.random_get_int(0, 1, 4)
+        elif value < 200:
+            value += libtcod.random_get_int(0, 1, 2)
+        elif value < 250:
+            value += 1
+        player.fighter.skills[skill_list[target].name] = value
+        log.message('Increased ' + skill_list[target].name + ' to ' + str(value))
 
 
 def display_help():
-    renderer.msgbox('numpad keys to move, or:\n' +
-                    '  h (west) j (south) k (north) l (east)\n' +
-                    '  y (nw) u (ne) b (sw) n (se) . (wait)\n' +
+    renderer.msgbox('move using numpad keys, or:\n' +
+                    '  y k u\n' +
+                    '   \|/ \n' +
+                    '  h-.-l\n' +
+                    '   /|\ \n' +
+                    '  b j m\n' +
+                    '\n' +
+                    '  numpad 5 or . (period) to wait,\n' +
                     '  shift-move to run\n' +
                     '\n' +
                     'g/get, d/drop, c/character information\n' +
