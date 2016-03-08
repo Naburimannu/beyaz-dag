@@ -30,18 +30,18 @@ terrain_types = [
                 None, libtcod.black, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
                 None, libtcod.black, True, False),
-        Terrain('boulder', None, '*', libtcod.black,
+        Terrain('boulder', 'boulder', '*', libtcod.black,
                 None, libtcod.black, True, True),
         # 5
-        Terrain('reeds', None, '|', libtcod.green,
+        Terrain('reeds', 'reeds', '|', libtcod.green,
                 None, libtcod.black, False, True),
-        Terrain('saxaul', None, '%', libtcod.dark_green,
+        Terrain('saxaul', 'bush', '%', libtcod.dark_green,
                 None, libtcod.black, True, True),
-        Terrain('nitraria', None, '%', libtcod.dark_green,
+        Terrain('nitraria', 'bush', '%', libtcod.dark_green,
                 None, libtcod.black, True, True),
-        Terrain('ephedra', None, '"', libtcod.dark_amber,
+        Terrain('ephedra', 'shrub', '"', libtcod.dark_amber,
                 None, libtcod.black, False, False),
-        Terrain('poplar', None, 'T', libtcod.darker_green,
+        Terrain('poplar', 'tree', 'T', libtcod.darker_green,
                 None, libtcod.black, True, True)
             ]
 

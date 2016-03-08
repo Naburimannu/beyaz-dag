@@ -199,6 +199,24 @@ def _ensure_penultimate_height(new_map, peak):
             return
 
 
+def _extend_hills(new_map, peak):
+    print('Raising the southern hills')
+    dy = new_map.height - peak[1]
+    x_intercept = peak[0] + dy / 2
+    for r in range(len(new_map.region_seeds)):
+        seed = new_map.region_seeds[r]
+        if new_map.region_elevations[r] > 4:
+            continue
+        if seed[1] < peak[1]:
+            continue
+        local_dy = seed[1] - peak[1]
+        midline = peak[0] + local_dy / 2
+        dx = abs(midline - seed[0])
+        if (dx > 40):
+            continue
+        e = int(4 - dx / 10)
+        if new_map.region_elevations[r] < e:
+            new_map.region_elevations[r] = e
 def _mark_slopes(new_map):
     print('Finding the slopes')
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
@@ -308,8 +326,8 @@ def _build_map(new_map):
             # new_map._explored[x][y] = True
             new_map.terrain[x][y] = 1
 
-    peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .25), int(config.OUTDOOR_MAP_WIDTH * .75)),
-            libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .25), int(config.OUTDOOR_MAP_WIDTH * .75))]
+    peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
+            libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
     print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
 
     new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
@@ -325,6 +343,7 @@ def _build_map(new_map):
 
     _interpolate_heights(new_map, peak)
     _ensure_penultimate_height(new_map, peak)
+    _extend_hills(new_map, peak)
 
     for u in range(20):
         print(new_map.region_elevations[u:400:20])

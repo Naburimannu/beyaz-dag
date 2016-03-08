@@ -235,11 +235,13 @@ def _get_names_under_mouse(player, (sx, sy)):
     names = [_describe_obj(obj) for obj in objects
              if obj.pos == pos and
              libtcod.map_is_in_fov(fov_map, obj.x, obj.y)]
-    if player.current_map.terrain_at(pos).display_name:
-        names.append(player.current_map.terrain_at(pos).display_name)
 
     names = ', '.join(names)
     things = names.capitalize()
+
+    if player.current_map.terrain_at(pos).display_name:
+        things = ', '.join([things, player.current_map.terrain_at(pos).display_name])
+
     player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
     viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
     if viewed_elevation < player_elevation:
