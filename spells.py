@@ -53,6 +53,28 @@ def _closest_monster(actor, max_range):
     return closest_enemy
 
 
+def use_bandage(actor):
+    effective_skill = actor.fighter.skills.get('first aid', 0) - actor.fighter.action_penalty
+    difficulty = actor.fighter.wounds + actor.fighter.bleeding * 4
+
+    attack_roll = libtcod.random_get_int(0, 1, effective_skill)
+    defense_roll = libtcod.random_get_int(0, 1, difficulty)
+
+    if defense_roll > attack_roll:
+        log.message("Your efforts don't help.", libtcod.red)
+        return
+
+    if actor.fighter.bleeding > 0:
+        if actor.fighter.bleeding < attack_roll / 8:
+            attack_roll -= actor.fighter.bleeding * 4
+            actor.fighter.bleeding = 0
+        else:
+            attack_roll /= 2
+            actor.fighter.bleeding /= 2
+
+    actor.fighter.wounds = max(actor.fighter.wounds - attack_roll, 0)
+
+
 def cast_heal(actor):
     """
     Heal the caster.
