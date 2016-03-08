@@ -383,8 +383,13 @@ def make_map(player, dungeon_level):
     _build_map(new_map)
 
     # TODO: place objects and creatures
-    # TODO: make sure we're not starting on top of an object or terrain feature
-    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 8)
+    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
+
+    # make sure we're not starting on top of an object or terrain feature
+    while (new_map.terrain_at(player.pos).name != 'ground'):
+        # subtle bug? doesn't use the map-building random number generator
+        player.pos = player.pos + ai.random_direction()
+        player.pos.bound(algebra.Rect(0, 0, new_map.width - 1, new_map.height - 1))
 
     new_map.initialize_fov()
     return new_map

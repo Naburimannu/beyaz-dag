@@ -312,8 +312,10 @@ def new_game():
 
     item_component = Item(description='A leaf-shaped bronze knife; provides +2 Attack')
     equipment_component = Equipment(slot='right hand', power_bonus=2)
+    melee_weapon_component = MeleeWeapon(skill='grappling', damage=4)
     obj = Object(algebra.Location(0, 0), '-', 'dagger', libtcod.sky,
-                 item=item_component, equipment=equipment_component)
+                 item=item_component, equipment=equipment_component,
+                 melee=melee_weapon_component)
     player.inventory.append(obj)
     actions.equip(player, equipment_component, False)
     obj.always_visible = True

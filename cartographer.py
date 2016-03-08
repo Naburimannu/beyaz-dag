@@ -142,6 +142,7 @@ def _place_objects(new_map, room, player):
             elif choice == 'sword':
                 equipment_component = Equipment(slot='right hand', power_bonus=3)
                 item_component = Item(description='A heavy-tipped bronze chopping sword; provides +3 Attack')
+                melee_weapon_component = MeleeWeapon(skill='sword', damage=8)
                 item = Object(pos, '/', 'sword', libtcod.sky,
                               item=item_component, equipment=equipment_component)
 

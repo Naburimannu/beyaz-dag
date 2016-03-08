@@ -39,9 +39,43 @@ def move_towards(o, target_pos):
 
 def attack(fighter, target, report=True):
     """
-    A simple formula for attack damage.
+    Melee offence: attacker's weapon skill.
+    Melee defense: half defender's weapon skill, plus defender's shield skill.
+    Melee impact: attacker's weapon damage.
+    Melee absorption: defender's armor soak.
     """
-    damage = fighter.power - target.fighter.defense
+
+    a_weapon_skill = fighter.skills.get('grappling', 10)
+    a_weapon = _get_equipped_in_slot(fighter.owner, 'right hand')
+    if a_weapon:
+        a_weapon_skill = fighter.skills.get(a_weapon.melee_weapon.skill, 10)
+
+    d_weapon_skill = target.fighter.skills.get('grappling', 10)
+    d_weapon = _get_equipped_in_slot(target, 'right hand')
+    if d_weapon:
+        d_weapon_skill = target.fighter.skills.get(d_weapon.melee_weapon.skill, 10)
+
+    d_shield = _get_equipped_in_slot(target, 'left hand')
+    shield_skill = 0
+    if d_shield:
+        shield_skill = target.fighter.skills.get('shield', 10)
+    net_defense_skill = shield_skill + d_weapon_skill / 2
+
+    attack_roll = libtcod.random_get_int(0, 1, a_weapon_skill)
+    defense_roll = libtcod.random_get_int(0, 1, net_defense_skill)
+
+    if defense_roll > attack_roll:
+        log.message(fighter.owner.name.capitalize() + ' attacks ' + target.name +
+            'but misses.')
+        return
+
+    impact = 2
+    if a_weapon:
+        impact = a_weapon.melee_weapon.damage
+
+    armor = 0  # TODO
+
+    damage = impact - armor
 
     if damage > 0:
         if report:
