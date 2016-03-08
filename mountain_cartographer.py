@@ -396,6 +396,50 @@ def _make_caravanserai(map):
     map.caravanserai = bounds
 
 
+def _mark_quarry_slopes(new_map, region):
+    center = new_map.region_seeds[region]
+    print('Centering quarry at ' + str(center[0]) + ' ' + str(center[1]))
+    
+    for x in range(max(center[0] - 10, 0), min(center[0] + 10, new_map.width - 1)):
+        for y in range(max(center[1] - 10, 0), min(center[1] + 10, new_map.height - 1)):
+            if new_map.region[x][y] != region:
+                continue
+            el = new_map.region_elevations[new_map.region[x][y]]
+            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
+                new_map.terrain[x][y] = 2
+            else:
+                new_map.terrain[x][y] = 1
+
+
+def _dig_quarry(new_map, peak):
+    peak_region = new_map.region[peak[0]][peak[1]]
+    column_start = peak_region + 20 * libtcod.random_get_int(0, 0, 2)
+    column_end = (column_start / 20) * 20 + 19
+    print('Searching for quarry between ' + str(column_start) + ' and ' + str(column_end))
+    new_map.quarry_region = None
+    for r in range(column_start, column_end):
+        if new_map.region_elevations[r] == 3:
+            new_map.quarry_region = r
+            break
+    if not new_map.quarry_region:
+        print("Couldn't find anywhere to dig a quarry; sorry!")
+        return
+
+    # Doing this right would require switching to per-tile elevation
+    # instead of per-region elevation.
+
+    # Stopgap: drop the entire region, reevaluate for slopes,
+    # and rewrite terrain.
+    new_map.region_elevations[new_map.quarry_region] = 2
+    _mark_quarry_slopes(new_map, new_map.quarry_region)
+
 def _debug_region_heights(map):
     for u in range(20):
         print(map.region_elevations[u:400:20])
@@ -464,6 +508,7 @@ def _build_map(map):
 
     _make_rotunda(map, peak)
     _make_caravanserai(map)
+    _dig_quarry(map, peak)
 
 
 def make_map(player, dungeon_level):
