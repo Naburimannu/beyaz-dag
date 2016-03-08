@@ -100,7 +100,7 @@ class Fighter(Component):
 
     @property
     def action_penalty(self):
-        return self.wounds + self.exhaustion
+        return self.wounds + self.exhaustion / 100
 
     @property
     def power(self):

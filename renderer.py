@@ -237,19 +237,22 @@ def _get_names_under_mouse(player, (sx, sy)):
              libtcod.map_is_in_fov(fov_map, obj.x, obj.y)]
 
     names = ', '.join(names)
-    things = names.capitalize()
+    names = names.capitalize()
 
     if player.current_map.terrain_at(pos).display_name:
-        things = ', '.join([things, player.current_map.terrain_at(pos).display_name])
+        if names == '':
+            names = player.current_map.terrain_at(pos).display_name
+        else:
+            names = ', '.join([names, player.current_map.terrain_at(pos).display_name])
 
     player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
     viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
     if viewed_elevation < player_elevation:
-        things += ' below you'
+        names += ' below you'
     elif viewed_elevation > player_elevation:
-        things += ' above you'
+        names += ' above you'
 
-    return things
+    return names
 
 
 def _draw_object(player, o):
@@ -470,6 +473,11 @@ def draw_console(player):
                          config.MAP_PANEL_HEIGHT, 0, 0, 0)
 
 
+def _write(line, string):
+    global _panel
+    libtcod.console_print_ex(_panel, 1, line, libtcod.BKGND_NONE, libtcod.LEFT, string)
+
+
 def draw_panel(player, pointer_location):
     """
     Refreshes the UI display and blits it to the window.
@@ -486,13 +494,23 @@ def draw_panel(player, pointer_location):
     #libtcod.console_print_ex(
     #    _panel, 1, 3, libtcod.BKGND_NONE,
     #    libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
-    libtcod.console_print_ex(
-        _panel, 1, 3, libtcod.BKGND_NONE,
-        libtcod.LEFT, 'Elevation ' + str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]))
-    _debug_positions(player, pointer_location)
+    _write(3,
+           'Elevation ' + str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]))
+    line = 4
+    if player.fighter.bleeding > 0:
+        _write(line, 'Bleeding: ' + str(player.fighter.bleeding))
+        line = line + 1
+    if player.fighter.wounds > 0:
+        _write(line, 'Wounds: ' + str(player.fighter.wounds))
+        line = line + 1
+    if player.fighter.exhaustion / 100 > 0:
+        _write(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
+        line = line + 1
+    
+    # _debug_positions(player, pointer_location)
     # _debug_room(player)
     # _debug_danger(player)
-    _debug_fps()
+    # _debug_fps()
 
     libtcod.console_set_default_foreground(_panel, libtcod.light_gray)
     libtcod.console_print_ex(

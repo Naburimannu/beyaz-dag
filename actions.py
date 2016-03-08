@@ -46,9 +46,12 @@ def attack(fighter, target, report=True):
     """
 
     a_weapon_skill = fighter.skills.get('grappling', 10)
+    # print('Attacker grappling is ' + str(a_weapon_skill))
     a_weapon = _get_equipped_in_slot(fighter.owner, 'right hand')
     if a_weapon:
+        # print('Attacker is wielding ' + a_weapon.owner.name)
         a_weapon_skill = fighter.skills.get(a_weapon.owner.melee_weapon.skill, 10)
+        # print('Attacker ' + a_weapon.owner.melee_weapon.skill + ' is ' + str(a_weapon_skill))
 
     d_weapon_skill = target.fighter.skills.get('grappling', 10)
     d_weapon = _get_equipped_in_slot(target, 'right hand')
@@ -60,16 +63,21 @@ def attack(fighter, target, report=True):
     shield_skill = 0
     if d_shield:
         shield_skill = target.fighter.skills.get('shield', 10)
-    net_defense_skill = shield_skill + d_weapon_skill / 2
+    total_defense_skill = shield_skill + d_weapon_skill / 2
 
-    attack_roll = libtcod.random_get_int(0, 1,
-            max(a_weapon_skill - fighter.action_penalty, 10))
-    defense_roll = libtcod.random_get_int(0, 1,
-            max(net_defense_skill - target.fighter.action_penalty, 10))
+    # print('Attacker action penalty is ' + str(fighter.action_penalty))
+    effective_attack_skill = max(a_weapon_skill - fighter.action_penalty, 10)
+    effective_defense_skill = max(total_defense_skill - target.fighter.action_penalty, 10)
+    attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
+    defense_roll = libtcod.random_get_int(0, 1, effective_defense_skill)
 
     if defense_roll > attack_roll:
-        log.message(fighter.owner.name.capitalize() + ' attacks ' + target.name +
-            ' but misses.')
+        if report:
+            log.message(fighter.owner.name.capitalize() +
+                ' (' + str(effective_attack_skill) + ')' +
+                ' attacks ' + target.name +
+                ' (' + str(effective_defense_skill) + ')' +
+                ' but misses.')
         return
 
     impact = 2
@@ -83,12 +91,18 @@ def attack(fighter, target, report=True):
     if damage > 0:
         if report:
             log.message(
-                fighter.owner.name.capitalize() + ' attacks ' + target.name +
+                fighter.owner.name.capitalize() +
+                ' (' + str(effective_attack_skill) + ')' +
+                ' attacks ' + target.name +
+                ' (' + str(effective_defense_skill) + ')' +
                 ' for ' + str(damage) + ' hit points.')
         inflict_damage(fighter.owner, target.fighter, damage)
     elif report:
         log.message(
-            fighter.owner.name.capitalize() + ' attacks ' + target.name +
+            fighter.owner.name.capitalize() +
+            ' (' + str(effective_attack_skill) + ')' +
+            ' attacks ' + target.name +
+            ' (' + str(effective_defense_skill) + ')' +
             ' but it has no effect!')
 
 
