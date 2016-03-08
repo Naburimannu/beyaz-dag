@@ -168,9 +168,7 @@ class OutdoorMap(object):
     def __init__(self, height, width, dungeon_level):
         self.height = height
         self.width = width
-        self.dungeon_level = dungeon_level  # cut?
         self.objects = []
-        self.rooms = []  # cut?
         self.portals = []
 
         self.random_seed = None
@@ -189,7 +187,10 @@ class OutdoorMap(object):
         self.region_seeds = []
         self.region_elevations = []
         self.region_tree = None
-        self.region_terrain = [None for xy in range(height * width)]
+        self.region_terrain = []
+
+        self.region_entered = []
+        self.elevation_visited = []
 
     def initialize_fov(self):
         """
