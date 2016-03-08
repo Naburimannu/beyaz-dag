@@ -317,6 +317,8 @@ def _build_map(new_map):
     print('Growing the world-tree')
     new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
     new_map.region_terrain = [None for i in range(len(new_map.region_seeds))]
+    new_map.region_entered = [False for i in range(len(new_map.region_seeds))]
+    new_map.elevation_visited = [False for i in range(0,10)]
 
     print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):

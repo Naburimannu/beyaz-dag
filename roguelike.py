@@ -23,8 +23,8 @@ CHARACTER_SCREEN_WIDTH = 30
 LEVEL_SCREEN_WIDTH = 40
 
 # Experience and level-ups
-LEVEL_UP_BASE = 200
-LEVEL_UP_FACTOR = 150
+REGION_EXPLORATION_SP = 1
+ELEVATION_EXPLORATION_SP = 5
 
 
 def try_pick_up(player):
@@ -54,6 +54,19 @@ def try_use(player):
     return False
 
 
+def _check_exploration_xp(player, new_region, new_elevation):
+    delta = 0
+    if not player.current_map.region_entered[new_region]:
+        delta += REGION_EXPLORATION_SP
+        player.current_map.region_entered[new_region] = True
+    if not player.current_map.elevation_visited[new_elevation]:
+        delta += ELEVATION_EXPLORATION_SP
+        player.current_map.elevation_visited[new_elevation] = True
+    if delta > 0:
+        player.fighter.xp += delta
+        log.message('You gained ' + str(delta) + ' skill points for exploration.')
+
+
 def player_move_or_attack(player, direction, try_running):
     """
     Returns true if the player makes an attack or moves successfully;
@@ -80,7 +93,9 @@ def player_move_or_attack(player, direction, try_running):
         old_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
         if actions.move(player, direction):
             player.current_map.fov_needs_recompute = True
-            new_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
+            new_region = player.current_map.region[player.pos.x][player.pos.y]
+            new_elevation = player.current_map.region_elevations[new_region]
+            _check_exploration_xp(player, new_region, new_elevation)
             if new_elevation != old_elevation:
                 player.current_map.fov_elevation_changed = True
             if try_running:
@@ -232,34 +247,6 @@ def handle_keys(player, key):
                 display_help()
 
             return 'didnt-take-turn'
-
-
-def check_level_up(player):
-    """
-    If the player has enough experience, level up immediately.
-    """
-    level_up_xp = LEVEL_UP_BASE + player.level * LEVEL_UP_FACTOR
-    if player.fighter.xp >= level_up_xp:
-        player.level += 1
-        player.fighter.xp -= level_up_xp
-        log.message('Your battle skills grow stronger! You reached level ' + str(player.level) + '!', libtcod.yellow)
-
-        choice = None
-        while choice is None:
-            (char, choice) = renderer.menu(
-                'Level up! Choose a stat to raise:\n',
-                ['Constitution (+20 HP, from ' + str(player.fighter.max_hp) + ')',
-                 'Strength (+1 attack, from ' + str(player.fighter.power) + ')',
-                 'Agility (+1 defense, from ' + str(player.fighter.defense) + ')'],
-                LEVEL_SCREEN_WIDTH)
-
-        if choice == 0:
-            player.fighter.base_max_hp += 20
-            player.fighter.hp += 20
-        elif choice == 1:
-            player.fighter.base_power += 1
-        elif choice == 2:
-            player.fighter.base_defense += 1
 
 
 def player_death(player):
@@ -415,8 +402,6 @@ def play_game(player):
         player.current_map.fov_needs_recompute = False
 
         libtcod.console_flush()
-
-        check_level_up(player)
 
         # Erase all objects at their old locations, before they move.
         for object in player.current_map.objects:
