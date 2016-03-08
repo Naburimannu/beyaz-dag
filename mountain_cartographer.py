@@ -74,6 +74,21 @@ def _from_dungeon_level(new_map, table):
     return 0
 
 
+def _place_test_creatures(new_map, player):
+    start_region = new_map.region[player.pos.x][player.pos.y]
+    for r in range(len(new_map.region_seeds)):
+        if r == start_region:
+            continue
+        if new_map.region_terrain[r] == 'marsh':
+            fighter_component = Fighter(hp=12, defense=0, power=0, xp=0, death_function=ai.monster_death)
+            ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
+            monster = Object(algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
+                             'g', 'swamp goblin', libtcod.red, blocks=True,
+                             fighter=fighter_component, ai=ai_component)
+            new_map.objects.append(monster)
+            monster.current_map = new_map
+
+
 def _place_objects(new_map, room, player):
     max_monsters = _from_dungeon_level(new_map, [[2, 1], [3, 4], [5, 6]])
 
@@ -186,17 +201,29 @@ def _interpolate_heights(new_map, peak):
 
 
 def _ensure_penultimate_height(new_map, peak):
+    """
+    Worldgen will frequently generate a map with a peak at elevation 9,
+    and nothing else above elevation 7, which prevents easy access to
+    the summit.
+    """
     for r in new_map.region_elevations:
         if r == 8:
+            print('Found height 8 at index ' + str(r))
             return
 
-    (d, i) = new_map.region_tree.query(peak, 6)
+    (d, i) = new_map.region_tree.query(peak, 8)
     for r in i:
         if new_map.region_elevations[r] == 9:
             continue
+        if new_map.region_elevations[r] == 8:
+            print('Error? There was no 8, and now there is.')
+            return
         if new_map.region_elevations[r] == 7:
             new_map.region_elevations[r] == 8
+            print('Changed height 7 to 8 at index ' + str(r))
             return
+
+    print("Couldn't find elevation 8 near the peak.")
 
 
 def _extend_hills(new_map, peak):
@@ -217,6 +244,8 @@ def _extend_hills(new_map, peak):
         e = int(4 - dx / 10)
         if new_map.region_elevations[r] < e:
             new_map.region_elevations[r] = e
+
+
 def _mark_slopes(new_map):
     print('Finding the slopes')
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
@@ -304,6 +333,22 @@ def _make_rotunda(new_map, peak):
                     new_map.terrain[x][y] = 0
 
 
+def _debug_region_heights(map):
+    for u in range(20):
+        print(map.region_elevations[u:400:20])
+
+
+def _debug_region_terrain(map):
+    rt = ''
+    for r in range(len(map.region_seeds)):
+        if map.region_terrain[r] != None:
+            rt += map.region_terrain[r][0]
+        else:
+            rt += str(map.region_elevations[r])
+    for u in range(20):
+        print(rt[u:400:20])
+
+
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
@@ -316,7 +361,9 @@ def _build_map(new_map):
 
     print('Growing the world-tree')
     new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
+
     new_map.region_terrain = [None for i in range(len(new_map.region_seeds))]
+    new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
     new_map.region_entered = [False for i in range(len(new_map.region_seeds))]
     new_map.elevation_visited = [False for i in range(0,10)]
 
@@ -325,15 +372,12 @@ def _build_map(new_map):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
             (d, i) = new_map.region_tree.query([[x, y]])
             new_map.region[x][y] = i[0]
-            # DEBUG
-            # new_map._explored[x][y] = True
             new_map.terrain[x][y] = 1
 
     peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
             libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
     print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
 
-    new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
     for r in range(20):
         new_map.region_elevations[r] = 0
         new_map.region_elevations[380+r] = 0
@@ -347,22 +391,11 @@ def _build_map(new_map):
     _interpolate_heights(new_map, peak)
     _ensure_penultimate_height(new_map, peak)
     _extend_hills(new_map, peak)
-
-    for u in range(20):
-        print(new_map.region_elevations[u:400:20])
+    _debug_region_heights(new_map)
 
     _mark_slopes(new_map)
     _clump_terrain(new_map)
-
-    # DEBUG
-    rt = ''
-    for r in range(len(new_map.region_seeds)):
-        if new_map.region_terrain[r] != None:
-            rt += new_map.region_terrain[r][0]
-        else:
-            rt += str(new_map.region_elevations[r])
-    for u in range(20):
-        print(rt[u:400:20])
+    _debug_region_terrain(new_map)
 
     _assign_terrain(new_map)
 
@@ -384,6 +417,7 @@ def make_map(player, dungeon_level):
 
     # TODO: place objects and creatures
     player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
+    _place_test_creatures(new_map, player)
 
     # make sure we're not starting on top of an object or terrain feature
     while (new_map.terrain_at(player.pos).name != 'ground'):

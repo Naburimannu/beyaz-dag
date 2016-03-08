@@ -48,12 +48,12 @@ def attack(fighter, target, report=True):
     a_weapon_skill = fighter.skills.get('grappling', 10)
     a_weapon = _get_equipped_in_slot(fighter.owner, 'right hand')
     if a_weapon:
-        a_weapon_skill = fighter.skills.get(a_weapon.melee_weapon.skill, 10)
+        a_weapon_skill = fighter.skills.get(a_weapon.owner.melee_weapon.skill, 10)
 
     d_weapon_skill = target.fighter.skills.get('grappling', 10)
     d_weapon = _get_equipped_in_slot(target, 'right hand')
     if d_weapon:
-        d_weapon_skill = target.fighter.skills.get(d_weapon.melee_weapon.skill, 10)
+        d_weapon_skill = target.fighter.skills.get(d_weapon.owner.melee_weapon.skill, 10)
 
     d_shield = _get_equipped_in_slot(target, 'left hand')
     shield_skill = 0
@@ -66,12 +66,12 @@ def attack(fighter, target, report=True):
 
     if defense_roll > attack_roll:
         log.message(fighter.owner.name.capitalize() + ' attacks ' + target.name +
-            'but misses.')
+            ' but misses.')
         return
 
     impact = 2
     if a_weapon:
-        impact = a_weapon.melee_weapon.damage
+        impact = a_weapon.owner.melee_weapon.damage
 
     armor = 0  # TODO
 
