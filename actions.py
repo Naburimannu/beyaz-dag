@@ -95,7 +95,7 @@ def attack(fighter, target, report=True):
                 ' (' + str(effective_attack_skill) + ')' +
                 ' attacks ' + target.name +
                 ' (' + str(effective_defense_skill) + ')' +
-                ' for ' + str(damage) + ' hit points.')
+                ' for ' + str(damage) + ' wounds.')
         inflict_damage(fighter.owner, target.fighter, damage)
     elif report:
         log.message(
@@ -111,13 +111,38 @@ def inflict_damage(actor, fighter, damage):
     Apply damage.
     """
     if damage > 0:
-        fighter.hp -= damage
+        fighter.wounds += damage
+        # for now flat 50% chance of inflicting bleeding
+        # TODO: base on weapon type?
+        if libtcod.random_get_int(0, 0, 1):
+            inflict_bleeding(actor, fighter, damage / 2)
 
-        if fighter.hp <= 0:
+        if fighter.wounds >= fighter.base_max_hp:
+            # combat model says we just fall unconscious
+            # but in a single-player game is that really
+            # worth simulating?
             function = fighter.death_function
             if function is not None:
                 function(fighter.owner)
 
+
+def inflict_bleeding(actor, fighter, bloodloss):
+    """
+    Apply bleeding.
+    """
+    # TODO: resistance to bleeding
+    fighter.bleeding += bloodloss
+
+
+def bleed(actor):
+    # go into floats here so that we can model bleeding continuously
+    # instead of assessing it every 10 turns
+    actor.fighter.hp -= actor.fighter.bleeding / 10.
+    if actor.fighter.hp <= 0:
+        function = actor.fighter.death_function
+        if function is not None:
+            function(actor)
+        
 
 def heal(fighter, amount):
     """

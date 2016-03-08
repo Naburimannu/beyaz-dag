@@ -220,7 +220,7 @@ def _ensure_penultimate_height(new_map, peak):
             print('Error? There was no 8, and now there is.')
             return
         if new_map.region_elevations[r] == 7:
-            new_map.region_elevations[r] == 8
+            new_map.region_elevations[r] = 8
             print('Changed height 7 to 8 at index ' + str(r))
             return
 

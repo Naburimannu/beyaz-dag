@@ -153,6 +153,7 @@ def inventory_menu(player, header):
 
 def display_character_info(player):
     data = ['Skill points: ' + str(player.skill_points),
+        'Current health: ' + str(int(player.fighter.hp)),
         'Maximum wounds: ' + str(player.fighter.max_hp),
         'Skills:']
     for key, value in player.fighter.skills.items():
@@ -312,7 +313,7 @@ def new_game():
     # Must initialize the log before we do anything that might emit a message.
     log.init()
 
-    fighter_component = Fighter(hp=100, death_function=player_death)
+    fighter_component = Fighter(hp=25, death_function=player_death)
     fighter_component.skills['bow'] = 50
     fighter_component.skills['climb'] = 10
     fighter_component.skills['grappling'] = 30
@@ -321,6 +322,7 @@ def new_game():
     player.level = 1
     player.game_state = 'playing'
     player.skill_points = 0
+    player.turn_count = 0
     # True if there's a (hostile) fighter in FOV
     player.endangered = False
 
@@ -434,6 +436,11 @@ def play_game(player):
             for object in player.current_map.objects:
                 if object.ai:
                     object.ai.take_turn(player)
+                if object.fighter and object.fighter.bleeding > 0:
+                    # this will also include the player
+                    actions.bleed(object)
+            player.turn_count += 1
+
 
 if __name__ == '__main__':
     renderer.renderer_init()

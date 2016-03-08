@@ -473,8 +473,9 @@ def draw_console(player):
                          config.MAP_PANEL_HEIGHT, 0, 0, 0)
 
 
-def _write(line, string):
+def _write(line, string, color=libtcod.white):
     global _panel
+    libtcod.console_set_default_foreground(_panel, color)
     libtcod.console_print_ex(_panel, 1, line, libtcod.BKGND_NONE, libtcod.LEFT, string)
 
 
@@ -488,17 +489,15 @@ def draw_panel(player, pointer_location):
     # Only display the (log.MSG_HEIGHT) most recent
     write_log(log.game_msgs[-log.MSG_HEIGHT:], _panel, MSG_X, 1)
 
-    _render_bar(1, 1, config.BAR_WIDTH, 'HP', player.fighter.hp,
+    _render_bar(1, 1, config.BAR_WIDTH, 'HP', int(player.fighter.hp),
                 player.fighter.max_hp,
                 libtcod.light_red, libtcod.darker_red)
     #libtcod.console_print_ex(
     #    _panel, 1, 3, libtcod.BKGND_NONE,
     #    libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
-    _write(3,
-           'Elevation ' + str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]))
-    line = 4
+    line = 2
     if player.fighter.bleeding > 0:
-        _write(line, 'Bleeding: ' + str(player.fighter.bleeding))
+        _write(line, 'Bleeding: ' + str(player.fighter.bleeding), libtcod.red)
         line = line + 1
     if player.fighter.wounds > 0:
         _write(line, 'Wounds: ' + str(player.fighter.wounds))
@@ -506,7 +505,14 @@ def draw_panel(player, pointer_location):
     if player.fighter.exhaustion / 100 > 0:
         _write(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
         line = line + 1
-    
+    _write(line,
+           'Elevation: ' +
+           str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]] * 500) +
+           ' feet')
+    line = line + 1
+    _write(line, 'Turn ' + str(player.turn_count))
+    line = line + 1
+
     # _debug_positions(player, pointer_location)
     # _debug_room(player)
     # _debug_danger(player)
