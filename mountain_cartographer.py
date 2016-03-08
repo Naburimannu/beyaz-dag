@@ -157,6 +157,64 @@ def _place_objects(new_map, room, player):
             item.always_visible = True  # Items are visible even out-of-FOV, if in an explored area
 
 
+def _interpolate_heights(new_map, peak):
+    print('Climbing the shoulders of the mountain')
+    for p in range(len(new_map.region_elevations)):
+        if new_map.region_elevations[p] > -1:
+            continue
+        dx = new_map.region_seeds[p][0] - peak[0]
+        dy = new_map.region_seeds[p][1] - peak[1]
+        p_distance = math.sqrt(dx*dx+dy*dy)
+
+        # Hack - conical mountain, but not horrible.
+        if dx < 0:
+            cand_x = peak[0]
+        elif dx == 0:
+            cand_x = new_map.width
+        else:
+            cand_x = new_map.width - peak[0]
+        if dy < 0:
+            cand_y = peak[1]
+        elif dy == 0:
+            cand_y = new_map.height
+        else:
+            cand_y = new_map.height - peak[1]
+        edge_distance = min(cand_x, cand_y)
+
+        elevation = int(9 * ((edge_distance - p_distance) / edge_distance))
+        new_map.region_elevations[p] = max(elevation, 0)
+
+
+def _ensure_penultimate_height(new_map, peak):
+    for r in new_map.region_elevations:
+        if r == 8:
+            return
+
+    (d, i) = new_map.region_tree.query(peak, 6)
+    for r in i:
+        if new_map.region_elevations[i] == 9:
+            continue
+        if new_map.region_elevations[i] == 7:
+            new_map.region_elevations[i] == 8
+            return
+
+
+def _mark_slopes(new_map):
+    print('Finding the slopes')
+    for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
+        for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
+            el = new_map.region_elevations[new_map.region[x][y]]
+            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
+                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
+                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
+                new_map.terrain[x][y] = 2
+
+
 def _clump_terrain(new_map):
     print('Determining terrain clumps')
     for r in range(len(new_map.region_seeds)):
@@ -183,21 +241,23 @@ def _clump_terrain(new_map):
 
 
 def _assign_terrain(new_map):
-
-    terrain_lookup = { map.terrain_types[i].name : i for i in range(len(map.terrain_types)) }
+    terrain_lookup = { map.terrain_types[i].name : i
+                       for i in range(len(map.terrain_types)) }
 
     marsh_chances = { 'water' : 10, 'ground' : 40, 'reeds' : 10, 'saxaul' : 10 }
     desert_chances = { 'ground' : 80, 'nitraria' : 5, 'ephedra' : 5, 'boulder' : 5 }
     scrub_chances = { 'ground' : 40, 'nitraria' : 10, 'ephedra' : 10, 'boulder' : 5 }
     forest_chances = { 'ground' : 45, 'poplar' : 15, 'boulder' : 5 }
 
-    terrain_chances = { 'lake' : { 'water' : 10 },
-                        'marsh' : marsh_chances,
-                        'desert' : desert_chances,
-                        'scrub' : scrub_chances,
-                        'forest' : forest_chances,
-                        'rock' : { 'ground' : 45, 'boulder' : 5 },
-                        'ice' : { 'ground' : 45, 'boulder' : 5 } }
+    terrain_chances = {
+        'lake' : { 'water' : 10 },
+        'marsh' : marsh_chances,
+        'desert' : desert_chances,
+        'scrub' : scrub_chances,
+        'forest' : forest_chances,
+        'rock' : { 'ground' : 45, 'boulder' : 5 },
+        'ice' : { 'ground' : 75, 'boulder' : 5 }
+    }
 
     print('Assigning narrow terrain')
     for x in range(config.OUTDOOR_MAP_WIDTH):
@@ -207,6 +267,23 @@ def _assign_terrain(new_map):
                 # For now don't overwrite slopes, except underwater
                 continue
            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
+
+
+def _make_rotunda(new_map, peak):
+    for x in range(peak[0]-3, peak[0]+4):
+        for y in range(peak[1]-3, peak[1]+4):
+            if new_map.elevation(x, y) != 9:
+                # in theory would be better to glom onto a closer region
+                # if one exists
+                new_map.region[x][y] = new_map.region[peak[0]][peak[1]]
+            if (x == peak[0]-3 or x == peak[0]+3 or
+                    y == peak[1]-3 or y == peak[1]+3):
+                # borders have alternating pillars; clear interior
+                if ((x - peak[0]) % 2 == 1 and
+                        (y - peak[1]) % 2 == 1):
+                    new_map.terrain[x][y] = 0
+                else:
+                    new_map.terrain[x][y] = 1
 
 
 def _build_map(new_map):
@@ -246,52 +323,13 @@ def _build_map(new_map):
     for p in peak_regions[0]:
         new_map.region_elevations[p] = 9
 
-    for u in range(20):
-        print(new_map.region_elevations[u:400:20])
-
-    print('Climbing the shoulders of the mountain')
-    for p in range(len(new_map.region_elevations)):
-        if new_map.region_elevations[p] > -1:
-            continue
-        dx = new_map.region_seeds[p][0] - peak[0]
-        dy = new_map.region_seeds[p][1] - peak[1]
-        p_distance = math.sqrt(dx*dx+dy*dy)
-
-        # Hack - conical mountain, but not horrible.
-        if dx < 0:
-            cand_x = peak[0]
-        elif dx == 0:
-            cand_x = new_map.width
-        else:
-            cand_x = new_map.width - peak[0]
-        if dy < 0:
-            cand_y = peak[1]
-        elif dy == 0:
-            cand_y = new_map.height
-        else:
-            cand_y = new_map.height - peak[1]
-        edge_distance = min(cand_x, cand_y)
-
-        elevation = int(9 * ((edge_distance - p_distance) / edge_distance))
-        new_map.region_elevations[p] = max(elevation, 0)
+    _interpolate_heights(new_map, peak)
+    _ensure_penultimate_height(new_map, peak)
 
     for u in range(20):
         print(new_map.region_elevations[u:400:20])
 
-    print('Finding the slopes')
-    for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
-        for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
-            el = new_map.region_elevations[new_map.region[x][y]]
-            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
-                new_map.terrain[x][y] = 2
-
+    _mark_slopes(new_map)
     _clump_terrain(new_map)
 
     # DEBUG
@@ -305,6 +343,8 @@ def _build_map(new_map):
         print(rt[u:400:20])
 
     _assign_terrain(new_map)
+
+    _make_rotunda(new_map, peak)
 
 
 def make_map(player, dungeon_level):

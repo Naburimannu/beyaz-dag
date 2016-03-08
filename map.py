@@ -25,7 +25,7 @@ terrain_types = [
         Terrain('wall', None, None, None,
                 libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
         Terrain('ground', None, None, None,
-                libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False),
+                None, libtcod.black, False, False),
         Terrain('slope', 'slope', '^', None,
                 None, libtcod.black, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
@@ -259,3 +259,6 @@ class OutdoorMap(object):
 
     def out_of_bounds(self, pos):
         return "You can't go that way!"
+
+    def elevation(self, x, y):
+        return self.region_elevations[self.region[x][y]]

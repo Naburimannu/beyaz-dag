@@ -348,17 +348,16 @@ def _draw_fov_using_terrain(player):
     for screen_y in range(min(current_map.height, config.MAP_PANEL_HEIGHT)):
         pos.set(player.camera_position.x, player.camera_position.y + screen_y)
         for screen_x in range(min(current_map.width, config.MAP_PANEL_WIDTH)):
-            # pos = ScreenCoords.toWorldCoords(player.camera_position, (screen_x, screen_y))
             visible = libtcod.map_is_in_fov(current_map.fov_map, pos.x, pos.y)
-            # terrain = current_map.terrain_at(pos)
             terrain = map.terrain_types[current_map.terrain[pos.x][pos.y]]
             explored = current_map._explored[pos.x][pos.y]
-            # draw (player_elevation - 1) so that we can see up-slopes
             current_elevation = current_map.region_elevations[current_map.region[pos.x][pos.y]]
             icon = terrain.icon
             if icon:
                 if terrain.name == 'slope' and current_elevation < player_elevation:
                     icon = 'v'
+            # draw (player_elevation - 1) so that we can see up-slopes; lower than that just
+            # gets a colored fill
             if (current_elevation + 1 < player_elevation):
                 if visible or explored:
                     libtcod.console_put_char_ex(_con, screen_x, screen_y, '#',
@@ -370,8 +369,11 @@ def _draw_fov_using_terrain(player):
                 if explored:
                     _draw_unseen(player, screen_x, screen_y, pos, terrain, icon)
             else:
-                libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color,
-                        map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]])
+                if terrain.seen_color:
+                    libtcod.console_set_char_background(_con, screen_x, screen_y, terrain.seen_color)
+                else:
+                    libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color,
+                            map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]])
                 current_map.explore(pos)
             pos.x += 1
 
