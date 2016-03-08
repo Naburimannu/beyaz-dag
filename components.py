@@ -90,7 +90,7 @@ class Fighter(Component):
     Combat-related properties and methods (monster, player, NPC).
     """
     def __init__(self, hp, death_function=None):
-        self.base_max_hp = hp
+        self.max_hp = hp
         self.hp = hp
         self.death_function = death_function
         self.skills = { }
@@ -103,22 +103,16 @@ class Fighter(Component):
         return self.wounds + self.exhaustion / 100
 
     @property
-    def power(self):
-        bonus = sum(equipment.power_bonus for equipment
-                    in _get_all_equipped(self.owner))
-        return self.base_power + bonus
-
-    @property
     def defense(self):
         bonus = sum(equipment.defense_bonus for equipment
                     in _get_all_equipped(self.owner))
-        return self.base_defense + bonus
+        return bonus
 
     @property
-    def max_hp(self):
-        bonus = sum(equipment.max_hp_bonus for equipment
+    def bleeding_defense(self):
+        bonus = sum(equipment.bleeding_defense for equipment
                     in _get_all_equipped(self.owner))
-        return self.base_max_hp + bonus
+        return bonus
 
 
 class Item(Component):
@@ -143,10 +137,9 @@ class Equipment(Component):
     An object that can be equipped, yielding bonuses.
     Requires an Item component.
     """
-    def __init__(self, slot, power_bonus=0, defense_bonus=0, max_hp_bonus=0):
-        self.power_bonus = power_bonus
+    def __init__(self, slot, defense_bonus=0, bleeding_defense=0):
         self.defense_bonus = defense_bonus
-        self.max_hp_bonus = max_hp_bonus
+        self.bleeding_defense = bleeding_defense
 
         self.slot = slot
         self.is_equipped = False

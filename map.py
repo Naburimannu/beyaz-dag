@@ -31,7 +31,7 @@ terrain_types = [
         Terrain('water', 'water', '~', libtcod.azure,
                 None, libtcod.black, True, False),
         Terrain('boulder', 'boulder', '*', libtcod.black,
-                None, libtcod.black, True, True),
+                None, libtcod.black, True, False),
         # 5
         Terrain('reeds', 'reeds', '|', libtcod.green,
                 None, libtcod.black, False, True),
@@ -61,7 +61,7 @@ terrain_colors_unseen = {
     'desert' : libtcod.light_sepia,
     'scrub' : libtcod.sepia,
     'forest' : libtcod.dark_sepia,
-    'rock' : libtcod.darker_sepia,
+    'rock' : libtcod.darkest_sepia,
     'ice' : libtcod.dark_gray
 }
 

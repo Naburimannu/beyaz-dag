@@ -158,14 +158,14 @@ def _place_objects(new_map, room, player):
                 item = Object(pos, '#', 'scroll of confusion', libtcod.light_yellow, item=item_component)
 
             elif choice == 'sword':
-                equipment_component = Equipment(slot='right hand', power_bonus=3)
+                equipment_component = Equipment(slot='right hand')
                 item_component = Item(description='A heavy-tipped bronze chopping sword; inflicts 8 damage')
                 melee_weapon_component = MeleeWeapon(skill='sword', damage=8)
                 item = Object(pos, '/', 'sword', libtcod.dark_sky,
                               item=item_component, equipment=equipment_component)
 
             elif choice == 'shield':
-                equipment_component = Equipment(slot='left hand', defense_bonus=1)
+                equipment_component = Equipment(slot='left hand')
                 item_component = Item(description='A bronze-edged oval shield; provides +1 Defense')
                 item = Object(pos, '[', 'shield', libtcod.darker_orange, equipment=equipment_component)
 

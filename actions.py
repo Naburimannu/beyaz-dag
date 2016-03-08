@@ -84,9 +84,7 @@ def attack(fighter, target, report=True):
     if a_weapon:
         impact = a_weapon.owner.melee_weapon.damage
 
-    armor = 0  # TODO
-
-    damage = impact - armor
+    damage = impact - fighter.defense
 
     if damage > 0:
         if report:
@@ -117,7 +115,7 @@ def inflict_damage(actor, fighter, damage):
         if libtcod.random_get_int(0, 0, 1):
             inflict_bleeding(actor, fighter, damage / 2)
 
-        if fighter.wounds >= fighter.base_max_hp:
+        if fighter.wounds >= fighter.max_hp:
             # combat model says we just fall unconscious
             # but in a single-player game is that really
             # worth simulating?
@@ -130,8 +128,10 @@ def inflict_bleeding(actor, fighter, bloodloss):
     """
     Apply bleeding.
     """
-    # TODO: resistance to bleeding
-    fighter.bleeding += bloodloss
+    bloodloss -= fighter.bleeding_defense
+    if bloodloss > 0:
+        fighter.bleeding += bloodloss
+        log.message(fighter.owner.name.capitalize() + 'bleeds!', libtcod.red)
 
 
 def bleed(actor):

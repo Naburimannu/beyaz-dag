@@ -327,11 +327,19 @@ def new_game():
     player.endangered = False
 
     item_component = Item(description='A leaf-shaped iron knife; inflicts 4 damage')
-    equipment_component = Equipment(slot='right hand', power_bonus=2)
+    equipment_component = Equipment(slot='right hand')
     melee_weapon_component = MeleeWeapon(skill='grappling', damage=4)
-    obj = Object(algebra.Location(0, 0), '/', 'dagger', libtcod.dark_sky,
+    obj = Object(None, '/', 'dagger', libtcod.dark_sky,
                  item=item_component, equipment=equipment_component,
                  melee=melee_weapon_component)
+    player.inventory.append(obj)
+    actions.equip(player, equipment_component, False)
+    obj.always_visible = True
+
+    item_component = Item(description='A thick under-tunic of raw silk; prevents 2 bleeding.')
+    equipment_component = Equipment(slot='underclothes', bleeding_defense=2)
+    obj = Object(None, '[', 'silk undertunic', libtcod.dark_sky,
+                 item=item_component, equipment=equipment_component)
     player.inventory.append(obj)
     actions.equip(player, equipment_component, False)
     obj.always_visible = True
