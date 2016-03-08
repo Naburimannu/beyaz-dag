@@ -84,7 +84,7 @@ def attack(fighter, target, report=True):
     if a_weapon:
         impact = a_weapon.owner.melee_weapon.damage
 
-    damage = impact - fighter.defense
+    damage = impact - target.fighter.defense
 
     if damage > 0:
         if report:
@@ -131,7 +131,7 @@ def inflict_bleeding(actor, fighter, bloodloss):
     bloodloss -= fighter.bleeding_defense
     if bloodloss > 0:
         fighter.bleeding += bloodloss
-        log.message(fighter.owner.name.capitalize() + 'bleeds!', libtcod.red)
+        log.message(fighter.owner.name.capitalize() + ' bleeds!', libtcod.red)
 
 
 def bleed(actor):

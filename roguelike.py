@@ -134,7 +134,7 @@ def inventory_menu(player, header):
         if obj.item.count > 1:
             text = text + ' (x' + str(obj.item.count) + ')'
         if obj.equipment and obj.equipment.is_equipped:
-            text = text + ' (on ' + obj.equipment.slot + ')'
+            text = text + ' (' + obj.equipment.slot + ')'
         options.append(text)
 
     (char, index) = renderer.menu(header, options, INVENTORY_WIDTH)
@@ -305,6 +305,12 @@ def load_game():
     return player
 
 
+def _new_equipment(player, obj):
+    player.inventory.append(obj)
+    obj.always_visible = True
+    actions.equip(player, obj.equipment, False)
+    
+
 def new_game():
     """
     Starts a new game, with a default player on level 1 of the dungeon.
@@ -326,23 +332,36 @@ def new_game():
     # True if there's a (hostile) fighter in FOV
     player.endangered = False
 
-    item_component = Item(description='A leaf-shaped iron knife; inflicts 4 damage')
-    equipment_component = Equipment(slot='right hand')
-    melee_weapon_component = MeleeWeapon(skill='grappling', damage=4)
-    obj = Object(None, '/', 'dagger', libtcod.dark_sky,
-                 item=item_component, equipment=equipment_component,
-                 melee=melee_weapon_component)
-    player.inventory.append(obj)
-    actions.equip(player, equipment_component, False)
-    obj.always_visible = True
+    _new_equipment(player,
+        Object(None, '/', 'dagger', libtcod.dark_sky,
+            item=Item(description='A leaf-shaped iron knife; inflicts 4 damage'),
+            equipment=Equipment(slot='right hand'),
+            melee=MeleeWeapon(skill='grappling', damage=4)))
 
-    item_component = Item(description='A thick under-tunic of raw silk; prevents 2 bleeding.')
-    equipment_component = Equipment(slot='underclothes', bleeding_defense=2)
-    obj = Object(None, '[', 'silk undertunic', libtcod.dark_sky,
-                 item=item_component, equipment=equipment_component)
-    player.inventory.append(obj)
-    actions.equip(player, equipment_component, False)
-    obj.always_visible = True
+    _new_equipment(player,
+        Object(None, '[', 'silk undertunic', libtcod.dark_sky,
+            item=Item(description='A thick under-tunic of raw silk; prevents 2 bleeding.'),
+            equipment=Equipment(slot='underclothes', bleeding_defense=2)))
+
+    _new_equipment(player,
+        Object(None, '[', 'quilt kaftan', libtcod.dark_sky,
+            item=Item(description='A heavy quilted kaftan; keeps you warm and prevents 1 wound.'),
+            equipment=Equipment(slot='robes', defense_bonus=1)))
+
+    _new_equipment(player,
+        Object(None, '[', 'felt cap', libtcod.dark_sky,
+            item=Item(description='A Phrygian felt cap with a loose veil to keep the sun off.'),
+            equipment=Equipment(slot='head')))
+
+    _new_equipment(player,
+        Object(None, '/', 'horn bow', libtcod.dark_sky,
+            item=Item(description='A short, sharply-curved, horn-backed bow.'),
+            equipment=Equipment(slot='missile weapon')))
+
+    _new_equipment(player,
+        Object(None, '/', 'arrow', libtcod.dark_sky,
+            item=Item(description='A gold-feathered beech arrow.', count=12),
+            equipment=Equipment(slot='quiver')))
 
     # cartographer.make_map(player, 1)
     mountain_cartographer.make_map(player, 1)

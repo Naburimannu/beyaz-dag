@@ -326,11 +326,11 @@ def _make_rotunda(new_map, peak):
                 new_map.region[x][y] = new_map.region[peak[0]][peak[1]]
             # interior of rotunda is clear
             new_map.terrain[x][y] = 1
-            if (x == peak[0]-3 or x == peak[0]+3 or
-                    y == peak[1]-3 or y == peak[1]+3):
+            if (x == peak[0]-2 or x == peak[0]+2 or
+                    y == peak[1]-2 or y == peak[1]+2):
                 # borders have alternating pillars
-                if ((x - peak[0]) % 2 == 1 and
-                        (y - peak[1]) % 2 == 1):
+                if ((x - peak[0]) % 2 == 0 and
+                        (y - peak[1]) % 2 == 0):
                     new_map.terrain[x][y] = 0
 
 
