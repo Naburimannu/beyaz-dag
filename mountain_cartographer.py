@@ -16,6 +16,9 @@ MAX_ROOMS = 30
 
 
 def _random_position_in_room(room):
+    """
+    Given a rect, return an algebra.Location *inside* the rect (not along the borders)
+    """
     return algebra.Location(libtcod.random_get_int(0, room.x1+1, room.x2-1),
                             libtcod.random_get_int(0, room.y1+1, room.y2-1))
 
@@ -87,6 +90,17 @@ def _place_test_creatures(new_map, player):
                              fighter=fighter_component, ai=ai_component)
             new_map.objects.append(monster)
             monster.current_map = new_map
+
+
+def _inhabit_caravanserai(map, player):
+    for i in range(3):
+        pos = _random_position_in_room(map.caravanserai)
+
+        bandit = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
+            fighter = Fighter(hp=20, death_function=ai.monster_death),
+            ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
+        map.objects.append(bandit)
+        bandit.current_map = map
 
 
 def _place_objects(new_map, room, player):
@@ -317,21 +331,69 @@ def _assign_terrain(new_map):
            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
 
 
-def _make_rotunda(new_map, peak):
+def _make_rotunda(map, peak):
+    """
+    Create a rotunda on top of the mountain.
+    This is always at the peak.
+    """
     for x in range(peak[0]-3, peak[0]+4):
         for y in range(peak[1]-3, peak[1]+4):
-            if new_map.elevation(x, y) != 9:
+            if map.elevation(x, y) != 9:
                 # in theory would be better to glom onto a closer region
                 # if one exists
-                new_map.region[x][y] = new_map.region[peak[0]][peak[1]]
+                map.region[x][y] = map.region[peak[0]][peak[1]]
             # interior of rotunda is clear
-            new_map.terrain[x][y] = 1
+            map.terrain[x][y] = 1
             if (x == peak[0]-2 or x == peak[0]+2 or
                     y == peak[1]-2 or y == peak[1]+2):
                 # borders have alternating pillars
                 if ((x - peak[0]) % 2 == 0 and
                         (y - peak[1]) % 2 == 0):
-                    new_map.terrain[x][y] = 0
+                    map.terrain[x][y] = 0
+
+
+def _make_caravanserai(map):
+    # find a space to fit it along the right-hand side,
+    # starting from the top own
+    found_y = -1
+    rows = 0
+    for y in range(4, 17):
+        cols = 0
+        for x in range(16, 18):
+            if map.region_terrain[x*20+y] != 'desert':
+                break
+            cols += 1
+        if cols < 2:
+            rows = 0
+            continue
+        rows += 1
+        if rows == 3:
+            found_y = y - 2
+            break
+    if found_y < 2:
+        print("Couldn't fit caravanserai anywhere; sorry!")
+        map.caravanserai = None
+        return
+
+    tl = map.region_seeds[340 + found_y]
+    br = map.region_seeds[380 + found_y + 2]
+    print('Caravanserai stretches from ', tl, ' to ', br)
+    bounds = algebra.Rect(tl[0], tl[1],
+                          br[0] - tl[0] + 1, br[1] - tl[1] + 1)
+    for x in range(bounds.x1, bounds.x2):
+        for y in range(bounds.y1, bounds.y2):
+            if (x == bounds.x1 or x == bounds.x2-1 or
+                y == bounds.y1 or y == bounds.y2-1):
+                map.terrain[x][y] = 0
+            else:
+                map.terrain[x][y] = 1
+
+    # Cut gates in it facing east and south
+    center = bounds.center()
+    map.terrain[center.x][bounds.y2-1] = 1
+    map.terrain[bounds.x2-1][center.y] = 1
+
+    map.caravanserai = bounds
 
 
 def _debug_region_heights(map):
@@ -350,57 +412,58 @@ def _debug_region_terrain(map):
         print(rt[u:400:20])
 
 
-def _build_map(new_map):
-    new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
+def _build_map(map):
+    map.rng = libtcod.random_new_from_seed(map.random_seed)
 
     print('Seeding regions')
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
         for v in range(config.OUTDOOR_MAP_HEIGHT / 10):
-            x = libtcod.random_get_int(new_map.rng, 0, 9) + u * 10
-            y = libtcod.random_get_int(new_map.rng, 0, 9) + v * 10
-            new_map.region_seeds.append([x, y])
+            x = libtcod.random_get_int(map.rng, 0, 9) + u * 10
+            y = libtcod.random_get_int(map.rng, 0, 9) + v * 10
+            map.region_seeds.append([x, y])
 
     print('Growing the world-tree')
-    new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
+    map.region_tree = scipy.spatial.KDTree(map.region_seeds)
 
-    new_map.region_terrain = [None for i in range(len(new_map.region_seeds))]
-    new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
-    new_map.region_entered = [False for i in range(len(new_map.region_seeds))]
-    new_map.elevation_visited = [False for i in range(0,10)]
+    map.region_terrain = [None for i in range(len(map.region_seeds))]
+    map.region_elevations = [-1 for r in range(len(map.region_seeds))]
+    map.region_entered = [False for i in range(len(map.region_seeds))]
+    map.elevation_visited = [False for i in range(0,10)]
 
     print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
-            (d, i) = new_map.region_tree.query([[x, y]])
-            new_map.region[x][y] = i[0]
-            new_map.terrain[x][y] = 1
+            (d, i) = map.region_tree.query([[x, y]])
+            map.region[x][y] = i[0]
+            map.terrain[x][y] = 1
 
-    peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
-            libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
+    peak = [libtcod.random_get_int(map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
+            libtcod.random_get_int(map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
     print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
 
     for r in range(20):
-        new_map.region_elevations[r] = 0
-        new_map.region_elevations[380+r] = 0
-        new_map.region_elevations[r*20] = 0
-        new_map.region_elevations[r*20+19] = 0
+        map.region_elevations[r] = 0
+        map.region_elevations[380+r] = 0
+        map.region_elevations[r*20] = 0
+        map.region_elevations[r*20+19] = 0
 
-    (d, peak_regions) = new_map.region_tree.query([peak], 3)
+    (d, peak_regions) = map.region_tree.query([peak], 3)
     for p in peak_regions[0]:
-        new_map.region_elevations[p] = 9
+        map.region_elevations[p] = 9
 
-    _interpolate_heights(new_map, peak)
-    _ensure_penultimate_height(new_map, peak)
-    _extend_hills(new_map, peak)
-    _debug_region_heights(new_map)
+    _interpolate_heights(map, peak)
+    _ensure_penultimate_height(map, peak)
+    _extend_hills(map, peak)
+    _debug_region_heights(map)
 
-    _mark_slopes(new_map)
-    _clump_terrain(new_map)
-    _debug_region_terrain(new_map)
+    _mark_slopes(map)
+    _clump_terrain(map)
+    _debug_region_terrain(map)
 
-    _assign_terrain(new_map)
+    _assign_terrain(map)
 
-    _make_rotunda(new_map, peak)
+    _make_rotunda(map, peak)
+    _make_caravanserai(map)
 
 
 def make_map(player, dungeon_level):
@@ -417,8 +480,11 @@ def make_map(player, dungeon_level):
     _build_map(new_map)
 
     # TODO: place objects and creatures
-    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
     _place_test_creatures(new_map, player)
+    if new_map.caravanserai:
+        _inhabit_caravanserai(new_map, player)
+
+    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
 
     # make sure we're not starting on top of an object or terrain feature
     while (new_map.terrain_at(player.pos).name != 'ground'):

@@ -252,6 +252,9 @@ def _get_names_under_mouse(player, (sx, sy)):
     elif viewed_elevation > player_elevation:
         names += ' above you'
 
+    # DEBUG
+    names += '  [' + str(pos.x) + ' ' + str(pos.y) + ']'
+
     return names
 
 
@@ -330,8 +333,10 @@ def _debug_elevation(current_map, screen_x, screen_y, pos):
 def _draw_unseen(player, screen_x, screen_y, pos, terrain, icon):
     global _con
     current_map = player.current_map
-    libtcod.console_set_char_background(_con, screen_x, screen_y,
-        map.terrain_colors_unseen[current_map.region_terrain[current_map.region[pos.x][pos.y]]], libtcod.BKGND_SET)
+    sc = terrain.unseen_color
+    if not sc:
+        sc = map.terrain_colors_unseen[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
+    libtcod.console_set_char_background(_con, screen_x, screen_y, sc, libtcod.BKGND_SET)
     # _debug_region(current_map, screen_x, screen_y, pos)
     if icon:
         libtcod.console_set_char_foreground(_con, screen_x, screen_y, terrain.icon_color)

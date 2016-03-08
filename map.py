@@ -25,24 +25,24 @@ terrain_types = [
         Terrain('wall', None, None, None,
                 libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
         Terrain('ground', None, None, None,
-                None, libtcod.black, False, False),
+                None, None, False, False),
         Terrain('slope', 'slope', '^', None,
-                None, libtcod.black, False, False),
+                None, None, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
-                None, libtcod.black, True, False),
+                None, None, True, False),
         Terrain('boulder', 'boulder', '*', libtcod.black,
-                None, libtcod.black, True, False),
+                None, None, True, False),
         # 5
         Terrain('reeds', 'reeds', '|', libtcod.green,
-                None, libtcod.black, False, True),
+                None, None, False, True),
         Terrain('saxaul', 'bush', '%', libtcod.dark_green,
-                None, libtcod.black, True, True),
+                None, None, True, True),
         Terrain('nitraria', 'bush', '%', libtcod.dark_green,
-                None, libtcod.black, True, True),
+                None, None, True, True),
         Terrain('ephedra', 'shrub', '"', libtcod.dark_amber,
-                None, libtcod.black, False, False),
+                None, None, False, False),
         Terrain('poplar', 'tree', 'T', libtcod.darker_green,
-                None, libtcod.black, True, True)
+                None, None, True, True)
             ]
 
 terrain_colors_seen =  {
