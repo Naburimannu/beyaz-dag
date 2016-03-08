@@ -55,14 +55,17 @@ def attack(fighter, target, report=True):
     if d_weapon:
         d_weapon_skill = target.fighter.skills.get(d_weapon.owner.melee_weapon.skill, 10)
 
+    # TODO - no allowance for left-hand items other than shield
     d_shield = _get_equipped_in_slot(target, 'left hand')
     shield_skill = 0
     if d_shield:
         shield_skill = target.fighter.skills.get('shield', 10)
     net_defense_skill = shield_skill + d_weapon_skill / 2
 
-    attack_roll = libtcod.random_get_int(0, 1, a_weapon_skill)
-    defense_roll = libtcod.random_get_int(0, 1, net_defense_skill)
+    attack_roll = libtcod.random_get_int(0, 1,
+            max(a_weapon_skill - fighter.action_penalty, 10))
+    defense_roll = libtcod.random_get_int(0, 1,
+            max(net_defense_skill - target.fighter.action_penalty, 10))
 
     if defense_roll > attack_roll:
         log.message(fighter.owner.name.capitalize() + ' attacks ' + target.name +
@@ -100,8 +103,6 @@ def inflict_damage(actor, fighter, damage):
             function = fighter.death_function
             if function is not None:
                 function(fighter.owner)
-
-            actor.fighter.xp += fighter.xp
 
 
 def heal(fighter, amount):
@@ -270,8 +271,8 @@ def _test_move_towards():
 
 
 def _test_attack():
-    af = Fighter(100, 0, 10, 0)
-    df = Fighter(100, 0, 0, 0)
+    af = Fighter(100)
+    df = Fighter(100)
     a = Object(algebra.Location(0, 0), 'a', 'test attacker', libtcod.white, fighter=af)
     d = Object(algebra.Location(1, 1), 'd', 'test defender', libtcod.white, fighter=df)
 

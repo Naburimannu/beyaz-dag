@@ -57,8 +57,7 @@ def monster_death(monster):
     # Transform it into a nasty corpse! it doesn't block, can't be
     # attacked, and doesn't move.
     log.message(
-        'The ' + monster.name + ' is dead! You gain ' +
-        str(monster.fighter.xp) + ' experience points.', libtcod.orange)
+        'The ' + monster.name + ' is dead!', libtcod.orange)
     monster.char = '%'
     monster.color = libtcod.dark_red
     monster.blocks = False

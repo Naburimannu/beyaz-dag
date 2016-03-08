@@ -80,7 +80,7 @@ def _place_test_creatures(new_map, player):
         if r == start_region:
             continue
         if new_map.region_terrain[r] == 'marsh':
-            fighter_component = Fighter(hp=12, defense=0, power=0, xp=0, death_function=ai.monster_death)
+            fighter_component = Fighter(hp=12, death_function=ai.monster_death)
             ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
             monster = Object(algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
                              'g', 'swamp goblin', libtcod.red, blocks=True,
@@ -115,13 +115,13 @@ def _place_objects(new_map, room, player):
         if not new_map.is_blocked_at(pos):
             choice = _random_choice(monster_chances)
             if choice == 'orc':
-                fighter_component = Fighter(hp=20, defense=0, power=4, xp=35, death_function=ai.monster_death)
+                fighter_component = Fighter(hp=20, death_function=ai.monster_death)
                 ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
                 monster = Object(pos, 'o', 'orc', libtcod.desaturated_green,
                                  blocks=True, fighter=fighter_component, ai=ai_component)
 
             elif choice == 'troll':
-                fighter_component = Fighter(hp=30, defense=2, power=8, xp=100, death_function=ai.monster_death)
+                fighter_component = Fighter(hp=30, death_function=ai.monster_death)
                 ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
                 monster = Object(pos, 'T', 'troll', libtcod.darker_green,
                                  blocks=True, fighter=fighter_component, ai=ai_component)
@@ -159,8 +159,9 @@ def _place_objects(new_map, room, player):
 
             elif choice == 'sword':
                 equipment_component = Equipment(slot='right hand', power_bonus=3)
-                item_component = Item(description='A heavy-tipped bronze chopping sword; provides +3 Attack')
-                item = Object(pos, '/', 'sword', libtcod.sky,
+                item_component = Item(description='A heavy-tipped bronze chopping sword; inflicts 8 damage')
+                melee_weapon_component = MeleeWeapon(skill='sword', damage=8)
+                item = Object(pos, '/', 'sword', libtcod.dark_sky,
                               item=item_component, equipment=equipment_component)
 
             elif choice == 'shield':

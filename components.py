@@ -78,6 +78,7 @@ class Component:
 skill_list = [
     'bow',
     'climb',
+    'first aid',
     'grappling',
     'spear',
     'sword'
@@ -88,14 +89,19 @@ class Fighter(Component):
     """
     Combat-related properties and methods (monster, player, NPC).
     """
-    def __init__(self, hp, defense, power, xp, death_function=None):
+    def __init__(self, hp, death_function=None):
         self.base_max_hp = hp
         self.hp = hp
-        self.base_defense = defense
-        self.base_power = power
-        self.xp = xp
+        self.xp = 0
         self.death_function = death_function
-        self.skills = { skill_list[i] : 0 for i in range(len(skill_list)) }
+        self.skills = { }
+        self.wounds = 0
+        self.bleeding = 0
+        self.exhaustion = 0
+
+    @property
+    def action_penalty(self):
+        return self.wounds + self.exhaustion
 
     @property
     def power(self):

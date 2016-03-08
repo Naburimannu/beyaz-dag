@@ -64,7 +64,10 @@ def _check_exploration_xp(player, new_region, new_elevation):
         player.current_map.elevation_visited[new_elevation] = True
     if delta > 0:
         player.fighter.xp += delta
-        log.message('You gained ' + str(delta) + ' skill points for exploration.')
+        point = 'point'
+        if delta > 1:
+            point += 's'
+        log.message('You gained ' + str(delta) + ' skill ' + point + ' for exploration.')
 
 
 def player_move_or_attack(player, direction, try_running):
@@ -299,7 +302,7 @@ def new_game():
     # Must initialize the log before we do anything that might emit a message.
     log.init()
 
-    fighter_component = Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
+    fighter_component = Fighter(hp=100, death_function=player_death)
     fighter_component.skills['close combat'] = 30
     fighter_component.skills['bow'] = 50
     fighter_component.skills['climb'] = 10
@@ -310,10 +313,10 @@ def new_game():
     # True if there's a (hostile) fighter in FOV
     player.endangered = False
 
-    item_component = Item(description='A leaf-shaped bronze knife; provides +2 Attack')
+    item_component = Item(description='A leaf-shaped iron knife; inflicts 4 damage')
     equipment_component = Equipment(slot='right hand', power_bonus=2)
     melee_weapon_component = MeleeWeapon(skill='grappling', damage=4)
-    obj = Object(algebra.Location(0, 0), '-', 'dagger', libtcod.sky,
+    obj = Object(algebra.Location(0, 0), '/', 'dagger', libtcod.dark_sky,
                  item=item_component, equipment=equipment_component,
                  melee=melee_weapon_component)
     player.inventory.append(obj)
