@@ -20,7 +20,6 @@ import mountain_cartographer
 
 INVENTORY_WIDTH = 50
 CHARACTER_SCREEN_WIDTH = 30
-LEVEL_SCREEN_WIDTH = 40
 
 # Experience and level-ups
 REGION_EXPLORATION_SP = 1
@@ -163,14 +162,64 @@ def display_character_info(player):
     renderer.msgbox(info_string, CHARACTER_SCREEN_WIDTH)
 
 
+class Skill(object):
+    def __init__(self, name, cost, description):
+        self.name = name
+        self.cost = cost
+        self.description = description
+
+
+skill_list = [
+    Skill('bow', 5, 'Shoot with a bow.'),
+    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
+    Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages. **UNIMPLEMENTED**'),
+    Skill('grappling', 3, 'Fight with bare hands or a knife.'),
+    Skill('spear', 4, 'Attack and defend with a spear.'),
+    Skill('sword', 4, 'Attack and defend with a sword.')
+]
+
+
+def increase_player_skills(player):
+    options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) + ', costs ' + str(s.cost) + ' sp'
+                for s in skill_list]
+    while True:
+        (key, target) = renderer.menu('Choose skill to increase, or x to explain:',
+                                      options, INVENTORY_WIDTH)
+        if key == ord('x'):
+            (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n', options, INVENTORY_WIDTH)
+            if i2 is not None:
+                log.message(skill_list[i2].name + ': ' + skill_list[i2].description)
+            
+        if not target:
+            return
+        if skill_list[target].cost < player.skill_points:
+            break
+
+    player.skill_points -= skill_list[target].cost
+    value = player.fighter.skills.get(skill_list[target].name, 0)
+    if value < 100:
+        value += libtcod.random_get_int(0, 1, 8)
+    elif value < 150:
+        value += libtcod.random_get_int(0, 1, 4)
+    elif value < 200:
+        value += libtcod.random_get_int(0, 1, 2)
+    else:
+        value += 1
+    player.fighter.skills[skill_list[target].name] = value
+    log.message('Increased ' + skill_list[target].name + ' to ' + str(value))
+
+
 def display_help():
     renderer.msgbox('numpad keys to move, or:\n' +
                     '  h (west) j (south) k (north) l (east)\n' +
                     '  y (nw) u (ne) b (sw) n (se) . (wait)\n' +
                     '  shift-move to run\n' +
+                    '\n' +
                     'g/get, d/drop, c/character information\n' +
+                    's/increase skills\n' +
                     'i/inventory, equip, or use item\n' +
                     '</traverse stairs\n' +
+                    '\n' +
                     'control-p/scroll through old log messages\n',
                     INVENTORY_WIDTH)
 
@@ -255,6 +304,8 @@ def handle_keys(player, key):
                 try_drop(player)
             if key_char == 'c':
                 display_character_info(player)
+            if key_char == 's':
+                increase_player_skills(player)
             if key_char == '<':
                 try_stairs(player)
             if (key_char == '?' or key.vk == libtcod.KEY_F1):

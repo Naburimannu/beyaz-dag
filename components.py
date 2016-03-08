@@ -75,16 +75,6 @@ class Component:
         self.owner = entity
 
 
-skill_list = [
-    'bow',
-    'climb',
-    'first aid',
-    'grappling',
-    'spear',
-    'sword'
-]
-
-
 class Fighter(Component):
     """
     Combat-related properties and methods (monster, player, NPC).
