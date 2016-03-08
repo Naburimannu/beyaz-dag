@@ -15,6 +15,7 @@ import renderer
 import interface
 import actions
 import ai
+import spells
 import cartographer
 import mountain_cartographer
 
@@ -356,9 +357,12 @@ def load_game():
     return player
 
 
-def _new_equipment(player, obj):
+def _new_item(player, obj):
     player.inventory.append(obj)
     obj.always_visible = True
+
+def _new_equipment(player, obj):
+    _new_item(player, obj)
     actions.equip(player, obj.equipment, False)
     
 
@@ -413,6 +417,11 @@ def new_game():
         Object(None, '/', 'arrow', libtcod.dark_sky,
             item=Item(description='A gold-feathered beech arrow.', count=12),
             equipment=Equipment(slot='quiver')))
+
+    _new_item(player,
+        Object(None, '!', 'kumiss', libtcod.dark_sky,
+            item=Item(description='An invigorating draught of kumiss in a wineskin.',
+                      use_function=spells.drink_kumiss, count=4)))
 
     # cartographer.make_map(player, 1)
     mountain_cartographer.make_map(player, 1)

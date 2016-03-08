@@ -54,6 +54,10 @@ def _closest_monster(actor, max_range):
 
 
 def use_bandage(actor):
+    """
+    First aid skill needs to be at least 2x wounds + 5x bleeding to have a 50-50 chance of making
+    things better, but if so it does quite a lot.
+    """
     effective_skill = actor.fighter.skills.get('first aid', 0) - actor.fighter.action_penalty
     difficulty = actor.fighter.wounds + actor.fighter.bleeding * 4
 
@@ -73,6 +77,21 @@ def use_bandage(actor):
             actor.fighter.bleeding /= 2
 
     actor.fighter.wounds = max(actor.fighter.wounds - attack_roll, 0)
+    log.message("You bandage your wounds.")
+
+
+def drink_kumiss(actor):
+    """
+    Drunkenness accumulates quickly if you drink more kumiss before
+    you've recovered from the first.
+    """
+    actor.fighter.inebriation += actor.fighter.inebriation + 100
+    actor.fighter.exhaustion /= 2
+    log.message("The kumiss is revitalizing.")
+    if actor.fighter.inebriation > 300:
+        log.message("You're feeling rather drunk!", libtcod.red)
+    elif actor.fighter.inebriation > 100:
+        log.message("You're getting a bit tipsy.")
 
 
 def cast_heal(actor):

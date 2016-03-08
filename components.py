@@ -87,10 +87,12 @@ class Fighter(Component):
         self.wounds = 0
         self.bleeding = 0
         self.exhaustion = 0
+        self.inebriation = 0
 
     @property
     def action_penalty(self):
-        return self.wounds + self.bleeding + self.exhaustion / 100
+        return (self.wounds + self.bleeding +
+                self.exhaustion / 100 + self.inebriation / 100)
 
     @property
     def defense(self):
