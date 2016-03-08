@@ -124,20 +124,14 @@ def inventory_menu(player, header):
 
 
 def display_character_info(player):
-    level_up_xp = LEVEL_UP_BASE + player.level * LEVEL_UP_FACTOR
-    base_attack_power = player.fighter.base_power
-    attack_power = player.fighter.power
-    base_defense = player.fighter.base_defense
-    defense = player.fighter.defense
-    renderer.msgbox('Character Information\n\nLevel: ' + str(player.level) +
-                    '\nExperience: ' + str(player.fighter.xp) +
-                    '\nExperience to level up: ' + str(level_up_xp) +
-                    '\n\nMaximum HP: ' + str(player.fighter.max_hp) +
-                    '\nAttack: ' + str(attack_power) + 
-                    ' (' + str(base_attack_power) + ' + ' + str(attack_power - base_attack_power) + ')'
-                    '\nDefense: ' + str(defense) + 
-                    ' (' + str(base_defense) + ' + ' + str(defense - base_defense) + ')',
-                    CHARACTER_SCREEN_WIDTH)
+    data = ['Skill points: ' + str(player.fighter.xp),
+        'Maximum wounds: ' + str(player.fighter.max_hp),
+        'Skills:']
+    for key, value in player.fighter.skills.items():
+        data.append('  ' + key + ': ' + str(value))
+
+    info_string = '\n'.join(data)
+    renderer.msgbox(info_string, CHARACTER_SCREEN_WIDTH)
 
 
 def display_help():
@@ -319,6 +313,9 @@ def new_game():
     log.init()
 
     fighter_component = Fighter(hp=100, defense=1, power=2, xp=0, death_function=player_death)
+    fighter_component.skills['close combat'] = 30
+    fighter_component.skills['bow'] = 50
+    fighter_component.skills['climb'] = 10
     player = Object(algebra.Location(0, 0), '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
     player.inventory = []
     player.level = 1

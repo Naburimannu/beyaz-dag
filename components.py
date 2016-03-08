@@ -71,6 +71,13 @@ class Component:
         self.owner = entity
 
 
+skill_list = [
+    'close combat',
+    'bow',
+    'climb'
+]
+
+
 class Fighter(Component):
     """
     Combat-related properties and methods (monster, player, NPC).
@@ -82,6 +89,7 @@ class Fighter(Component):
         self.base_power = power
         self.xp = xp
         self.death_function = death_function
+        self.skills = { skill_list[i] : 0 for i in range(len(skill_list)) }
 
     @property
     def power(self):

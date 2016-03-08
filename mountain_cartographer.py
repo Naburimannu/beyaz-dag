@@ -192,10 +192,10 @@ def _ensure_penultimate_height(new_map, peak):
 
     (d, i) = new_map.region_tree.query(peak, 6)
     for r in i:
-        if new_map.region_elevations[i] == 9:
+        if new_map.region_elevations[r] == 9:
             continue
-        if new_map.region_elevations[i] == 7:
-            new_map.region_elevations[i] == 8
+        if new_map.region_elevations[r] == 7:
+            new_map.region_elevations[r] == 8
             return
 
 
