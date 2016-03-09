@@ -271,7 +271,11 @@ def clear_object(player, o):
     """
     global _con
     (x, y) = ScreenCoords.fromWorldCoords(player.camera_position, o.pos)
-    libtcod.console_put_char(_con, x, y, ' ', libtcod.BKGND_NONE)
+    char = ' '
+    # qv _draw_fov_using_terrain(); doing this right may be ugly.
+    if player.current_map.elevation(o.pos.x, o.pos.y) < player.current_map.elevation(player.pos.x, player.pos.y) - 1:
+        char = '#'
+    libtcod.console_put_char(_con, x, y, char, libtcod.BKGND_NONE)
 
 
 def menu(header, options, width):

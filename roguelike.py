@@ -114,7 +114,7 @@ def player_move_or_attack(player, direction, try_running):
 
     if target is not None:
         # Make sure we're not going up or down a cliff
-        if not player.current_map.is_blocked_from(player.pos, target.pos):
+        if not player.current_map.is_blocked_from(player.pos, target.pos, ignore=target):
             actions.attack(player.fighter, target)
             player.fighter.exhaustion += ATTACK_EXHAUSTION
             return True
@@ -444,6 +444,19 @@ def new_game():
 
     log.message('At last you have reached the foot of the mountain. She waits above.', libtcod.red)
     log.message('Press ? or F1 for help.')
+
+    # TEST
+    quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
+    player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
+
+    # TEST
+    obj = Object(None, '/', 'sword', libtcod.dark_sky,
+                    item=Item(description='A broad iron sword; inflicts 8 damage'),
+                    equipment=Equipment(slot='right hand'),
+                    melee=MeleeWeapon(skill='sword', damage=8))
+    obj.pos = player.pos
+    obj.current_map = player.current_map
+    player.current_map.objects.append(obj)
 
     return player
 
