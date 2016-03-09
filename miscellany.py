@@ -25,9 +25,9 @@ def spear():
 def horn_bow():
     return Object(None, '/', 'horn bow', libtcod.dark_sky,
             item=Item(description='A short, sharply-curved, horn-backed bow.'),
-            equipment=Equipment(slot='missile weapon')))
+            equipment=Equipment(slot='missile weapon'))
 
 def arrow(count):
     return Object(None, '/', 'arrow', libtcod.dark_sky,
             item=Item(description='A gold-feathered beech arrow.', count=count),
-            equipment=Equipment(slot='quiver')))
+            equipment=Equipment(slot='quiver'))
