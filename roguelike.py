@@ -113,11 +113,13 @@ def player_move_or_attack(player, direction, try_running):
             break
 
     if target is not None:
-        actions.attack(player.fighter, target)
-        player.fighter.exhaustion += ATTACK_EXHAUSTION
-        return True
+        # Make sure we're not going up or down a cliff
+        if not player.current_map.is_blocked_from(player.pos, target.pos):
+            actions.attack(player.fighter, target)
+            player.fighter.exhaustion += ATTACK_EXHAUSTION
+            return True
     else:
-        old_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
+        old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
         if actions.move(player, direction):
             player.current_map.fov_needs_recompute = True
             new_region = player.current_map.region[player.pos.x][player.pos.y]
