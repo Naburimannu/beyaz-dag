@@ -79,12 +79,12 @@ class Fighter(Component):
     """
     Combat-related properties and methods (monster, player, NPC).
     """
-    def __init__(self, hp, unarmed_damage=2, death_function=None):
+    def __init__(self, hp, unarmed_damage=2, death_function=None, skills={}):
         self.max_hp = hp
         self.hp = hp
         self.unarmed_damage = unarmed_damage
         self.death_function = death_function
-        self.skills = { }
+        self.skills = skills
         self.wounds = 0
         self.bleeding = 0
         self.exhaustion = 0

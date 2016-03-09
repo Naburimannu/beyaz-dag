@@ -37,6 +37,16 @@ def move_towards(o, target_pos):
     return move(o, dir)
 
 
+def move_away_from(o, target_pos):
+    """
+    Moves object one step away from target location.
+    Returns true if move succeeded.
+    """
+    dir = algebra.Direction(o.x - target_pos.x , o.y - target_pos.y)
+    dir.normalize()
+    return move(o, dir)
+
+
 def attack(fighter, target, report=True):
     """
     Melee offence: attacker's weapon skill.
