@@ -426,6 +426,17 @@ def _make_caravanserai(new_map):
     # TODO: create an upstairs and a cellar
 
 
+def _place_quarry(new_map, region_span):
+    """
+    Look for a site of a given elevation in a particular consecutive range of regions.
+    """
+    for r in range(region_span[0], region_span[1]):
+        if new_map.region_elevations[r] == QUARRY_ELEVATION:
+            return r
+
+    return None
+
+
 def _mark_quarry_slopes(new_map, region):
     # BUG still not quite right
     center = new_map.region_seeds[region]
@@ -452,11 +463,10 @@ def _dig_quarry(new_map, peak):
     column_start = peak_region + 20 * libtcod.random_get_int(0, 0, 2)
     column_end = (column_start / 20) * 20 + 19
     print('Searching for quarry between ' + str(column_start) + ' and ' + str(column_end))
-    new_map.quarry_region = None
-    for r in range(column_start, column_end):
-        if new_map.region_elevations[r] == QUARRY_ELEVATION:
-            new_map.quarry_region = r
-            break
+    new_map.quarry_region = _place_quarry(new_map, (column_start, column_end))
+    if not new_map.quarry_region:
+     new_map.quarry_region = _place_quarry(new_map, (column_start, column_end))
+       
     if not new_map.quarry_region:
         print("Couldn't find anywhere to dig a quarry; sorry!")
         return
@@ -470,9 +480,14 @@ def _dig_quarry(new_map, peak):
     new_map.region_terrain[new_map.quarry_region] = 'rock'
     _mark_quarry_slopes(new_map, new_map.quarry_region)
 
-    new_map.region_elevations[new_map.quarry_region+20] = 2
-    new_map.region_terrain[new_map.quarry_region+20] = 'rock'
-    _mark_quarry_slopes(new_map, new_map.quarry_region+20)
+    if new_map.region[new_map.quarry_region+20] > 2:
+        new_map.region_elevations[new_map.quarry_region+20] = 2
+        new_map.region_terrain[new_map.quarry_region+20] = 'rock'
+        _mark_quarry_slopes(new_map, new_map.quarry_region+20)
+    elif new_map.region[new_map.quarry_region-20] > 2:
+        new_map.region_elevations[new_map.quarry_region-20] = 2
+        new_map.region_terrain[new_map.quarry_region-20] = 'rock'
+        _mark_quarry_slopes(new_map, new_map.quarry_region-20)
 
     # TODO: dig a dungeon underneath
 
