@@ -28,7 +28,9 @@ def basic_monster(monster, player, metadata):
         if monster.distance_to(metadata.target) >= 2:
             actions.move_towards(monster, metadata.target.pos)
         elif metadata.target.fighter.hp > 0:
-            actions.attack(monster.fighter, metadata.target)
+            if not monster.current_map.is_blocked_from(monster.pos, metadata.target.pos,
+                                                       ignore=metadata.target):
+                actions.attack(monster.fighter, metadata.target)
 
 
 class confused_monster_metadata:
@@ -66,3 +68,10 @@ def monster_death(monster):
     monster.name = 'remains of ' + monster.name
     monster.current_map.objects.remove(monster)
     monster.current_map.objects.insert(0, monster)
+
+    if hasattr(monster, 'inventory'):
+        for obj in monster.inventory:
+            monster.inventory.remove(obj)
+            monster.current_map.objects.insert(0, obj)
+            obj.pos = monster.pos
+

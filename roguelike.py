@@ -232,7 +232,8 @@ def display_help():
                     'i/inventory, equip, or use item\n' +
                     '</traverse stairs\n' +
                     '\n' +
-                    'control-p/scroll through old log messages\n',
+                    'control-p/scroll through old log messages\n' +
+                    'mouse over objects to look at them\n',
                     INVENTORY_WIDTH)
 
 

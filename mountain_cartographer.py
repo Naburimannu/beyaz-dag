@@ -8,6 +8,7 @@ import algebra
 import map
 from components import *
 import ai
+import actions
 import spells
 
 ROOM_MAX_SIZE = 10
@@ -106,13 +107,13 @@ def _place_test_creatures(new_map, player):
             monster.current_map = new_map
 
 
-def _new_item(player, obj):
-    player.inventory.append(obj)
+def _new_item(actor, obj):
+    actor.inventory.append(obj)
     obj.always_visible = True
 
-def _new_equipment(player, obj):
-    _new_item(player, obj)
-    actions.equip(player, obj.equipment, False)
+def _new_equipment(actor, obj):
+    _new_item(actor, obj)
+    actions.equip(actor, obj.equipment, False)
 
 
 def _inhabit_caravanserai(map, player):
@@ -124,6 +125,7 @@ def _inhabit_caravanserai(map, player):
             ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
         map.objects.append(bandit)
         bandit.current_map = map
+        bandit.inventory = []
 
         choice = libtcod.random_get_int(0, 1, 3)
         weapon = None
