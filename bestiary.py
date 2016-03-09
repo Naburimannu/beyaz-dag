@@ -11,7 +11,7 @@ def _insert(creature, new_map):
 
 
 def bandit(new_map, pos, player):
-    creature = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
+    creature = Object(pos, 'p', 'bandit', libtcod.blue, blocks=True,
         fighter = Fighter(hp=16, death_function=ai.monster_death),
         ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
     creature.inventory = []
@@ -20,7 +20,7 @@ def bandit(new_map, pos, player):
 
 
 def ghul(new_map, pos, player):
-    creature = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
+    creature = Object(pos, 'z', 'ghul', libtcod.dark_orange, blocks=True,
         fighter = Fighter(hp=20, unarmed_damage=4, death_function=ai.monster_death),
         ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
     _insert(creature, new_map)
@@ -28,7 +28,7 @@ def ghul(new_map, pos, player):
 
 
 def swamp_goblin(new_map, pos, player):
-    creature = Object(pos, 'g', 'swamp goblin', libtcod.red, blocks=True,
+    creature = Object(pos, 'g', 'swamp goblin', libtcod.light_blue, blocks=True,
         fighter=Fighter(hp=12, death_function=ai.monster_death),
         ai=AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
     _insert(creature, new_map)

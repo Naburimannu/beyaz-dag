@@ -45,7 +45,8 @@ terrain_types = [
                 None, None, True, True)
             ]
 
-terrain_colors_seen =  {
+
+region_colors_seen =  {
     'lake' : libtcod.dark_azure,
     'marsh' : libtcod.darker_chartreuse,
     'desert' : libtcod.lightest_sepia,
@@ -55,7 +56,8 @@ terrain_colors_seen =  {
     'ice' : libtcod.gray
 }
 
-terrain_colors_unseen = {
+
+region_colors_unseen = {
     'lake' : libtcod.darkest_azure,
     'marsh' : libtcod.darkest_chartreuse,
     'desert' : libtcod.light_sepia,
@@ -65,29 +67,6 @@ terrain_colors_unseen = {
     'ice' : libtcod.dark_gray
 }
 
-# terrain_types = [
-#        Terrain('wall', None, None, None,
-#                libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
-#        Terrain('ground', None, None, None,
-#                libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False),
-#        Terrain('slope', 'slope', '^', None,
-#                libtcod.light_gray, libtcod.darker_gray, False, False),
-#        Terrain('water', 'water', '~', None,
-#                libtcod.azure, libtcod.darker_azure, True, False),
-#        Terrain('boulder', None, '*', None,
-#                libtcod.sepia, libtcod.darker_sepia, True, True),
-#        # 5
-#        Terrain('reeds', None, '|', None,
-#                libtcod.light_green, libtcod.darker_green, False, True),
-#        Terrain('saxaul', None, '%', None,
-#                libtcod.dark_green, libtcod.darker_green, True, True),
-#        Terrain('nitraria', None, '%', None,
-#                libtcod.dark_green, libtcod.darker_green, True, True),
-#        Terrain('ephedra', None, '"', None,
-#                libtcod.dark_amber, libtcod.darker_amber, False, False),
-#        Terrain('poplar', None, 'T', None,
-#                libtcod.dark_green, libtcod.darker_green, True, True)
-#            ]
 
 class Map(object):
     """
@@ -98,6 +77,7 @@ class Map(object):
     def __init__(self, height, width, dungeon_level):
         self.height = height
         self.width = width
+        self.is_outdoors = False
         self.dungeon_level = dungeon_level
         self.objects = []
         self.rooms = []
@@ -107,6 +87,7 @@ class Map(object):
         self.rng = None
 
         self.fov_map = None
+        self.fov_elevation_changed = False  # HACK
 
         # Maps default to walls (blocked) & unexplored
         self.terrain = [[0 for y in range(height)] for x in range(width)]
@@ -134,7 +115,7 @@ class Map(object):
         """
         return terrain_types[self.terrain[pos.x][pos.y]]
 
-    def is_blocked_at(self, pos):
+    def is_blocked_at(self, pos, ignore=None):
         """
         Returns true if impassible map terrain or any blocking objects
         are at (x, y).
@@ -142,12 +123,12 @@ class Map(object):
         if terrain_types[self.terrain[pos.x][pos.y]].blocks:
             return True
         for object in self.objects:
-            if object.blocks and object.pos == pos:
+            if object.blocks and object.pos == pos and object != ignore:
                 return True
         return False
 
-    def is_blocked_from(self, origin, dest):
-        return is_blocked_at(dest)
+    def is_blocked_from(self, origin, dest, ignore=None):
+        return self.is_blocked_at(dest, ignore)
 
     def is_explored(self, pos):
         return self._explored[pos.x][pos.y]
@@ -168,6 +149,8 @@ class OutdoorMap(object):
     def __init__(self, height, width, dungeon_level):
         self.height = height
         self.width = width
+        self.is_outdoors = True
+        self.dungeon_level = 0  # HACK
         self.objects = []
         self.portals = []
 
@@ -223,7 +206,7 @@ class OutdoorMap(object):
         """
         return terrain_types[self.terrain[pos.x][pos.y]]
 
-    def is_blocked_at(self, pos):
+    def is_blocked_at(self, pos, ignore=None):
         """
         Returns true if impassible map terrain or any blocking objects
         are at (x, y).
@@ -231,7 +214,7 @@ class OutdoorMap(object):
         if terrain_types[self.terrain[pos.x][pos.y]].blocks:
             return True
         for object in self.objects:
-            if object.blocks and object.pos == pos:
+            if object.blocks and object.pos == pos and obj != ignore:
                 return True
         return False
 
@@ -240,13 +223,10 @@ class OutdoorMap(object):
         Returns true if impassible map terrain or any blocking objects
         prevent travel from origin to dest.
         """
-        if terrain_types[self.terrain[dest.x][dest.y]].blocks:
+        if self.is_blocked_at(dest, ignore):
             return True
-        for object in self.objects:
-            if object.blocks and object.pos == dest and object != ignore:
-                return True
-        eo = self.region_elevations[self.region[origin.x][origin.y]]
-        do = self.region_elevations[self.region[dest.x][dest.y]]
+        eo = self.elevation(origin.x, origin.y)
+        do = self.elevation(dest.x, dest.y)
         delta = eo - do
         if (delta > 1 or delta < -1):
             return True

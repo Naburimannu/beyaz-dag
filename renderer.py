@@ -245,12 +245,13 @@ def _get_names_under_mouse(player, (sx, sy)):
         else:
             names = ', '.join([names, player.current_map.terrain_at(pos).display_name])
 
-    player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
-    viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
-    if viewed_elevation < player_elevation:
-        names += ' below you'
-    elif viewed_elevation > player_elevation:
-        names += ' above you'
+    if player.current_map.is_outdoors:
+        player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
+        viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
+        if viewed_elevation < player_elevation:
+            names += ' below you'
+        elif viewed_elevation > player_elevation:
+            names += ' above you'
 
     # DEBUG
     names += '  [' + str(pos.x) + ' ' + str(pos.y) + ']'
@@ -273,8 +274,10 @@ def clear_object(player, o):
     (x, y) = ScreenCoords.fromWorldCoords(player.camera_position, o.pos)
     char = ' '
     # qv _draw_fov_using_terrain(); doing this right may be ugly.
-    if player.current_map.elevation(o.pos.x, o.pos.y) < player.current_map.elevation(player.pos.x, player.pos.y) - 1:
-        char = '#'
+    if player.current_map.is_outdoors:
+        if (player.current_map.elevation(o.pos.x, o.pos.y) <
+                player.current_map.elevation(player.pos.x, player.pos.y) - 1):
+            char = '#'
     libtcod.console_put_char(_con, x, y, char, libtcod.BKGND_NONE)
 
 
@@ -339,7 +342,7 @@ def _draw_unseen(player, screen_x, screen_y, pos, terrain, icon):
     current_map = player.current_map
     sc = terrain.unseen_color
     if not sc:
-        sc = map.terrain_colors_unseen[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
+        sc = map.region_colors_unseen[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
     libtcod.console_set_char_background(_con, screen_x, screen_y, sc, libtcod.BKGND_SET)
     # _debug_region(current_map, screen_x, screen_y, pos)
     if icon:
@@ -349,7 +352,7 @@ def _draw_unseen(player, screen_x, screen_y, pos, terrain, icon):
     #     _debug_elevation(current_map, screen_x, screen_y, pos)
 
 
-def _draw_fov_using_terrain(player):
+def _draw_outdoors(player):
     """
     Overly optimized: this code inlines Map.terrain_at(), Map.is_explored(),
     and ScreenCoords.toWorldCoords() in order to get a 2.5x speedup on
@@ -375,7 +378,7 @@ def _draw_fov_using_terrain(player):
             if (current_elevation + 1 < player_elevation):
                 if visible or explored:
                     libtcod.console_put_char_ex(_con, screen_x, screen_y, '#',
-                        map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]],
+                        map.region_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]],
                         libtcod.black)
                 if visible:
                     current_map.explore(pos)
@@ -387,7 +390,35 @@ def _draw_fov_using_terrain(player):
                     libtcod.console_set_char_background(_con, screen_x, screen_y, terrain.seen_color)
                 else:
                     libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color,
-                            map.terrain_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]])
+                            map.region_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]])
+                current_map.explore(pos)
+            pos.x += 1
+
+
+def _draw_indoors(player):
+    """
+    Overly optimized: this code inlines Map.terrain_at(), Map.is_explored(),
+    and ScreenCoords.toWorldCoords() in order to get a 2.5x speedup on
+    large maps.
+    """
+    libtcod.console_clear(_con)
+    current_map = player.current_map
+    pos = algebra.Location(0, 0)
+    for screen_y in range(min(current_map.height, config.MAP_PANEL_HEIGHT)):
+        pos.set(player.camera_position.x, player.camera_position.y + screen_y)
+        for screen_x in range(min(current_map.width, config.MAP_PANEL_WIDTH)):
+            # pos = ScreenCoords.toWorldCoords(player.camera_position, (screen_x, screen_y))
+            visible = libtcod.map_is_in_fov(current_map.fov_map, pos.x, pos.y)
+            # terrain = current_map.terrain_at(pos)
+            terrain = map.terrain_types[current_map.terrain[pos.x][pos.y]]
+            if not visible:
+                # if current_map.is_explored(pos):
+                if current_map._explored[pos.x][pos.y]:
+                    libtcod.console_set_char_background(_con, screen_x, screen_y,
+                                                        terrain.unseen_color, libtcod.BKGND_SET)
+            else:
+                libtcod.console_set_char_background(_con, screen_x, screen_y,
+                                                    terrain.seen_color, libtcod.BKGND_SET)
                 current_map.explore(pos)
             pos.x += 1
 
@@ -458,7 +489,7 @@ def draw_console(player):
 
     current_map = player.current_map
 
-    if current_map.fov_elevation_changed:
+    if current_map.is_outdoors and current_map.fov_elevation_changed:
         current_map.set_fov_elevation(current_map.region_elevations[current_map.region[player.pos.x][player.pos.y]])
         current_map.fov_elevation_changed = False
 
@@ -468,7 +499,10 @@ def draw_console(player):
         libtcod.map_compute_fov(
             current_map.fov_map, player.x,
             player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
-        _draw_fov_using_terrain(player)
+        if current_map.is_outdoors:
+            _draw_outdoors(player)
+        else:
+            _draw_indoors(player)
 
     # Draw all objects in the list, except the player. We want it to
     # always appear over all other objects, so it's drawn later.
@@ -507,20 +541,24 @@ def draw_panel(player, pointer_location):
     line = 2
     if player.fighter.bleeding > 0:
         _write(line, 'Bleeding: ' + str(player.fighter.bleeding), libtcod.red)
-        line = line + 1
+        line += 1
     if player.fighter.wounds > 0:
         _write(line, 'Wounds: ' + str(player.fighter.wounds))
-        line = line + 1
+        line += 1
     if player.fighter.exhaustion / 100 > 0:
         _write(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
-        line = line + 1
-    _write(line,
-           'Elevation: ' +
-           str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]] * 500) +
-           ' feet')
-    line = line + 1
+        line += 1
+    if player.current_map.is_outdoors:
+        _write(line,
+                'Elevation: ' +
+                str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]] * 500) +
+                ' feet')
+        line += 1
+    elif hasattr(player.current_map, 'dungeon_level'):
+        _write(line, 'Dungeon level ' + str(player.current_map.dungeon_level))
+        line += 1
     _write(line, 'Turn ' + str(player.turn_count))
-    line = line + 1
+    line += 1
 
     # _debug_positions(player, pointer_location)
     # _debug_room(player)

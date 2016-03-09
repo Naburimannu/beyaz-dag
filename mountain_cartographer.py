@@ -214,6 +214,42 @@ def _extend_hills(new_map, peak):
             new_map.region_elevations[r] = e
 
 
+def _place_seaside_height(new_map):
+    """
+    Guarantee that there's at least one elevated spot along the seaside
+    """
+    for r in range(20, 80):
+        if (new_map.region_elevations[r] >= 2 and
+                new_map.region_terrain[r-20] == 'lake'):
+            new_map.grotto_region = r
+            return
+
+    # Rather than looking for a "best" location,
+    # place it as soon as possible.
+    for r in range(20, 80):
+        print(r, new_map.region_terrain[r], new_map.region_elevations[r])
+        if (new_map.region_terrain[r] == 'lake' or
+                new_map.region_terrain[r] == 'marsh'):
+            continue
+        if new_map.region_terrain[r-20] != 'lake':
+            print('Not lakeside...')
+            continue
+        new_map.region_elevations[r] = 1
+        new_map.region_terrain[r] = 'scrub'
+        new_map.grotto_region = r
+        if (r+1)/20 == r/20:
+            new_map.region_elevations[r+1] = 2
+            new_map.region_terrain[r+1] = 'forest'
+            new_map.grotto_region = r
+        if (r+2)/20 == r/20:
+            new_map.region_elevations[r+2] = 1
+            new_map.region_terrain[r+2] = 'scrub'
+        return
+
+    print("Whoops! Can't find anywhere to place a seaside grotto.")
+    new_map.grotto_region = None
+
+
 def _should_slope(new_map, x, y):
     """
     True if any adjacent tile is higher than this one.
@@ -399,8 +435,6 @@ def _make_caravanserai(new_map):
 
     new_map.caravanserai = bounds
 
-
-
     if (bounds.width > bounds.height):
         # Rooms in west half
         wall_offset = libtcod.random_get_int(new_map.rng,
@@ -512,78 +546,102 @@ def _dig_quarry(new_map, peak):
         new_map.region_terrain[new_map.quarry_region-20] = 'rock'
         _mark_quarry_slopes(new_map, new_map.quarry_region-20)
 
-    # TODO: dig a dungeon underneath
+    # TODO: dig multiple mines underneath
 
 
-def _debug_region_heights(map):
+def _make_grotto(new_map):
+    if not new_map.grotto_region:
+        return
+
+    region_center = algebra.Location(new_map.region_seeds[new_map.grotto_region][0],
+                                     new_map.region_seeds[new_map.grotto_region][1])
+    print('Grotto at ' + str(region_center.x) + ' ' + str(region_center.y))
+    stairs = Object(region_center, '<', 'stairs down', libtcod.white, always_visible=True)
+    stairs.destination = None
+    stairs.dest_position = None
+    new_map.objects.insert(0, stairs)
+    new_map.portals.insert(0, stairs)
+
+    # Would be nice to have a structure around it, but for now just keep the top clear.
+    for x in range(region_center.x - 2, region_center.x + 3):
+        for y in range(region_center.y - 2, region_center.y + 3):
+            if new_map.region[x][y] == new_map.grotto_region:
+                new_map.terrain[x][y] = 1
+
+
+def _debug_region_heights(new_map):
     for u in range(20):
-        print(map.region_elevations[u:400:20])
+        print(new_map.region_elevations[u:400:20])
 
 
-def _debug_region_terrain(map):
+def _debug_region_terrain(new_map):
     rt = ''
-    for r in range(len(map.region_seeds)):
-        if map.region_terrain[r] != None:
-            rt += map.region_terrain[r][0]
+    for r in range(len(new_map.region_seeds)):
+        if new_map.region_terrain[r] != None:
+            rt += new_map.region_terrain[r][0]
         else:
-            rt += str(map.region_elevations[r])
+            rt += str(new_map.region_elevations[r])
     for u in range(20):
         print(rt[u:400:20])
 
 
-def _build_map(map):
-    map.rng = libtcod.random_new_from_seed(map.random_seed)
+def _build_map(new_map):
+    new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
     print('Seeding regions')
     for u in range(config.OUTDOOR_MAP_WIDTH / 10):
         for v in range(config.OUTDOOR_MAP_HEIGHT / 10):
-            x = libtcod.random_get_int(map.rng, 0, 9) + u * 10
-            y = libtcod.random_get_int(map.rng, 0, 9) + v * 10
-            map.region_seeds.append([x, y])
+            x = libtcod.random_get_int(new_map.rng, 0, 9) + u * 10
+            y = libtcod.random_get_int(new_map.rng, 0, 9) + v * 10
+            new_map.region_seeds.append([x, y])
 
     print('Growing the world-tree')
-    map.region_tree = scipy.spatial.KDTree(map.region_seeds)
+    new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
 
-    map.region_terrain = [None for i in range(len(map.region_seeds))]
-    map.region_elevations = [-1 for r in range(len(map.region_seeds))]
-    map.region_entered = [False for i in range(len(map.region_seeds))]
-    map.elevation_visited = [False for i in range(0,10)]
+    new_map.region_terrain = [None for i in range(len(new_map.region_seeds))]
+    new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
+    new_map.region_entered = [False for i in range(len(new_map.region_seeds))]
+    new_map.elevation_visited = [False for i in range(0,10)]
 
     print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
-            (d, i) = map.region_tree.query([[x, y]])
-            map.region[x][y] = i[0]
-            map.terrain[x][y] = 1
+            (d, i) = new_map.region_tree.query([[x, y]])
+            new_map.region[x][y] = i[0]
+            new_map.terrain[x][y] = 1
 
-    peak = [libtcod.random_get_int(map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
-            libtcod.random_get_int(map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
+    peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
+            libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
     print('The peak is at ' + str(peak[0]) + ', ' + str(peak[1]))
 
     for r in range(20):
-        map.region_elevations[r] = 0
-        map.region_elevations[380+r] = 0
-        map.region_elevations[r*20] = 0
-        map.region_elevations[r*20+19] = 0
+        new_map.region_elevations[r] = 0
+        new_map.region_elevations[380+r] = 0
+        new_map.region_elevations[r*20] = 0
+        new_map.region_elevations[r*20+19] = 0
 
-    (d, peak_regions) = map.region_tree.query([peak], 3)
+    (d, peak_regions) = new_map.region_tree.query([peak], 3)
     for p in peak_regions[0]:
-        map.region_elevations[p] = 9
+        new_map.region_elevations[p] = 9
 
-    _interpolate_heights(map, peak)
-    _ensure_penultimate_height(map, peak)
-    _extend_hills(map, peak)
-    _debug_region_heights(map)
+    _interpolate_heights(new_map, peak)
+    _ensure_penultimate_height(new_map, peak)
+    _extend_hills(new_map, peak)
+    _debug_region_heights(new_map)
 
-    _mark_slopes(map)
-    _clump_terrain(map)
-    _debug_region_terrain(map)
+    _clump_terrain(new_map)
+    _place_seaside_height(new_map)
+    # TODO: sink_quarry() here before we _mark_slopes
+    # to get rid of messy after-the-fact slope fixup in dig_quarry()
+    _debug_region_terrain(new_map)
 
-    _assign_terrain(map)
+    _mark_slopes(new_map)
+    _assign_terrain(new_map)
 
-    _make_rotunda(map, peak)
-    _make_caravanserai(map)
-    _dig_quarry(map, peak)
+    _make_rotunda(new_map, peak)
+    _make_caravanserai(new_map)
+    _dig_quarry(new_map, peak)
+    _make_grotto(new_map)
 
 
 def make_map(player, dungeon_level):

@@ -120,15 +120,18 @@ def player_move_or_attack(player, direction, try_running):
             player.fighter.exhaustion += ATTACK_EXHAUSTION
             return True
     else:
-        old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
         if actions.move(player, direction):
             player.current_map.fov_needs_recompute = True
-            new_region = player.current_map.region[player.pos.x][player.pos.y]
-            new_elevation = player.current_map.region_elevations[new_region]
-            _check_exploration_xp(player, new_region, new_elevation)
-            if new_elevation != old_elevation:
-                player.current_map.fov_elevation_changed = True
-                player.fighter.exhaustion += CLIMB_EXHAUSTION
+            if player.current_map.is_outdoors:
+                new_region = player.current_map.region[player.pos.x][player.pos.y]
+                old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
+                new_elevation = player.current_map.region_elevations[new_region]
+                _check_exploration_xp(player, new_region, new_elevation)
+                if new_elevation != old_elevation:
+                    player.current_map.fov_elevation_changed = True
+                    player.fighter.exhaustion += CLIMB_EXHAUSTION
+                else:
+                    player.fighter.exhaustion += MOVE_EXHAUSTION
             else:
                 player.fighter.exhaustion += MOVE_EXHAUSTION
             if try_running:
@@ -355,6 +358,7 @@ def save_game(player):
     """
     file = shelve.open('savegame', 'n')
     # Can't shelve kdtree
+    # TODO: zero out the trees in ALL maps
     player.current_map.region_tree = None
     file['current_map'] = player.current_map
     file['player_index'] = player.current_map.objects.index(player)
@@ -444,6 +448,9 @@ def new_game():
     # if player.current_map.quarry_region:
     #     quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
     #     player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
+    if player.current_map.grotto_region:
+        grotto_center = player.current_map.region_seeds[player.current_map.grotto_region]
+        player.pos = algebra.Location(grotto_center[0]+20, grotto_center[1])
 
     # TEST
     obj = Object(None, '/', 'sword', libtcod.dark_sky,
