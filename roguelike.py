@@ -188,7 +188,10 @@ def increase_player_skills(player):
         for s in skill_list]
 
     while True:
-        (key, target) = renderer.menu('Choose skill to increase, or x to explain:',
+        # Make sure log.message() displays as we loop
+        renderer.render_all(player, None)
+        (key, target) = renderer.menu('Choose skill to increase, or x to explain:\n' +
+                                      '(' + str(player.skill_points) + ' skill points available)\n',
                                       options, INVENTORY_WIDTH)
         if key == ord('x'):
             (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n', options, INVENTORY_WIDTH)
@@ -198,11 +201,14 @@ def increase_player_skills(player):
         if not target:
             return
 
+        if skill_list[target].cost > player.skill_points:
+            log.message(skill_list[target].name.capitalize() + ' costs ' + str(skill_list[target].cost) +
+                        ' skill points, you only have ' + str(player.skill_points))
+            continue
+
         value = player.fighter.skills.get(skill_list[target].name, 0)
         if value >= 250:
             log.message(skill_list[target].name.capitalize() + ' is already at its maximum.')
-            continue
-        if skill_list[target].cost > player.skill_points:
             continue
 
         player.skill_points -= skill_list[target].cost
@@ -222,7 +228,7 @@ def display_help():
     renderer.msgbox('move using numpad keys, or:\n' +
                     '  y k u\n' +
                     '   \|/ \n' +
-                    '  h-.-l\n' +
+                    '  h-+-l\n' +
                     '   /|\ \n' +
                     '  b j m\n' +
                     '\n' +

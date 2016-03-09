@@ -546,6 +546,12 @@ def blit_overlay():
 
 def render_all(player, pointer_location):
     global _frame_index, _twenty_frame_estimate, _last_frame_time
+
+    global _last_pointer
+    if not pointer_location:
+        pointer_location = _last_pointer
+    _last_pointer = pointer_location
+
     update_camera(player)
     _frame_index = (_frame_index + 1) % 20
     if _frame_index == 0:
