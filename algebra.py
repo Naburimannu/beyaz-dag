@@ -32,6 +32,12 @@ class Rect(object):
         return (location.x > self.x1 and location.x <= self.x2 and
                 location.y > self.y1 and location.y <= self.y2)
 
+    def width(self):
+        return self.x2 - self.x1
+
+    def height(self):
+        return self.y2 - self.y1
+
 
 class Location(object):
     def __init__(self, x, y):
