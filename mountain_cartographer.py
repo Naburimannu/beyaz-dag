@@ -418,7 +418,7 @@ def _make_caravanserai(new_map):
     # TODO: create an upstairs and a cellar
 
 
-def _place_quarry(new_map, region_span):
+def _test_quarry_placement(new_map, region_span):
     """
     Look for a site of a given elevation in a particular consecutive range of regions.
     """
@@ -449,21 +449,36 @@ def _mark_quarry_slopes(new_map, region):
                     new_map.terrain[x][y] = 1
 
 
-def _dig_quarry(new_map, peak):
-    # Consider choosing randomly from among multiple possible sites?
+def _place_quarry(new_map, peak):
+    """
+    Looks for a site just below the top of the hills,
+    south and ideally a little east of the peak.
+    Sets new_map.quarry_region
+    """
     peak_region = new_map.region[peak[0]][peak[1]]
     column_start = peak_region + 20 * libtcod.random_get_int(0, 0, 2)
     column_end = (column_start / 20) * 20 + 19
     print('Searching for quarry between ' + str(column_start) + ' and ' + str(column_end))
-    new_map.quarry_region = _place_quarry(new_map, (column_start, column_end))
+    new_map.quarry_region = _test_quarry_placement(new_map, (column_start, column_end))
     if not new_map.quarry_region:
-     new_map.quarry_region = _place_quarry(new_map, (column_start, column_end))
+        new_map.quarry_region = _test_quarry_placement(new_map, (column_start+20, column_end+20))
+    if not new_map.quarry_region:
+        new_map.quarry_region = _test_quarry_placement(new_map, (column_start+40, column_end+40))
+    if not new_map.quarry_region:
+        new_map.quarry_region = _test_quarry_placement(new_map, (column_start-20, column_end-20))
+    if not new_map.quarry_region:
+        new_map.quarry_region = _test_quarry_placement(new_map, (column_start-40, column_end-40))
        
+
+def _dig_quarry(new_map, peak):
+    """
+    """
+    _place_quarry(new_map, peak)
     if not new_map.quarry_region:
         print("Couldn't find anywhere to dig a quarry; sorry!")
         return
 
-    # Doing this right would require switching to per-tile elevation
+    # Doing this as originally envisioned would require switching to per-tile elevation
     # instead of per-region elevation.
 
     # Stopgap: drop the entire region, reevaluate for slopes,
@@ -472,6 +487,7 @@ def _dig_quarry(new_map, peak):
     new_map.region_terrain[new_map.quarry_region] = 'rock'
     _mark_quarry_slopes(new_map, new_map.quarry_region)
 
+    # Extend east, or west if that doesn't work
     if new_map.region_elevations[new_map.quarry_region+20] > 2:
         new_map.region_elevations[new_map.quarry_region+20] = 2
         new_map.region_terrain[new_map.quarry_region+20] = 'rock'
