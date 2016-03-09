@@ -174,7 +174,10 @@ def pick_up(actor, o, report=True):
         actor.inventory.append(o)
         actor.current_map.objects.remove(o)
         if report:
-            log.message(actor.name.capitalize() + ' picked up a ' + o.name + '!', libtcod.green)
+            if o.item.count > 0:
+                log.message(actor.name.capitalize() + ' picked up ' + str(o.item.count) + 'x ' + o.name + '!', libtcod.green)
+            else:
+                log.message(actor.name.capitalize() + ' picked up a ' + o.name + '!', libtcod.green)
 
         # Special case: automatically equip if the corresponding equipment slot is unused.
         equipment = o.equipment
@@ -183,14 +186,14 @@ def pick_up(actor, o, report=True):
         return True
 
 
-def drop(actor, o, report=True):
+def drop(actor, o, report=True, all=False):
     """
     Remove an Object from the actor's inventory and add it to the map
     at the player's coordinates.
     If it's equipment, dequip before dropping.
     """
     must_split = False
-    if o.item.count > 1:
+    if o.item.count > 1 and not all:
         o.item.count -= 1
         must_split = True
     else:
@@ -201,7 +204,10 @@ def drop(actor, o, report=True):
     combined = False
     for p in actor.current_map.objects:
         if p.pos == actor.pos and o.item.can_combine(p):
-            p.item.count += 1
+            if all:
+                p.item.count += o.item.count
+            else:
+                p.item.count += 1
             combined = True
             break
 
@@ -209,12 +215,18 @@ def drop(actor, o, report=True):
         new_o = o
         if must_split:
             new_o = copy.deepcopy(o)
-        new_o.item.count = 1
+        if all:
+            new_o.item.count = o.item.count
+        else:
+            new_o.item.count = 1
         new_o.pos = actor.pos
         actor.current_map.objects.append(new_o)
 
     if report:
-        log.message(actor.name.capitalize() + ' dropped a ' + o.name + '.', libtcod.yellow)
+        if all:
+            log.message(actor.name.capitalize() + ' dropped ' + str(o.item.count) + 'x ' + o.name + '.', libtcod.yellow)
+        else:
+            log.message(actor.name.capitalize() + ' dropped a ' + o.name + '.', libtcod.yellow)
 
 
 def use(actor, o, report=True):

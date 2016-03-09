@@ -65,16 +65,16 @@ def monster_death(monster):
     monster.blocks = False
     monster.fighter = None
     monster.ai = None
+
+    if hasattr(monster, 'inventory'):
+        while len(monster.inventory) > 0:
+            # Might be nice to report what's dropped; even though we
+            # have drop-all, we can't suppress unequip reporting while
+            # still reporting dropping.
+            actions.drop(monster, monster.inventory[0], report=False, all=True)
+
     monster.name = 'remains of ' + monster.name
     monster.current_map.objects.remove(monster)
     monster.current_map.objects.insert(0, monster)
 
-    if hasattr(monster, 'inventory'):
-        for obj in monster.inventory:
-            # Might be nice to report what's dropped, but current mass objects
-            # are dropped one-at-a-time, which would be very noisy
-            actions.drop(monster, obj, False)
-            #monster.inventory.remove(obj)
-            #monster.current_map.objects.insert(0, obj)
-            #obj.pos = monster.pos
 
