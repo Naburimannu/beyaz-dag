@@ -631,6 +631,7 @@ def _build_map(new_map):
 
     _clump_terrain(new_map)
     _place_seaside_height(new_map)
+    # TODO: level_desert() here to guarantee caravanserai is in the northeast
     # TODO: sink_quarry() here before we _mark_slopes
     # to get rid of messy after-the-fact slope fixup in dig_quarry()
     _debug_region_terrain(new_map)
