@@ -98,13 +98,13 @@ def _place_objects(new_map, room, player):
             choice = _random_choice(monster_chances)
             if choice == 'orc':
                 fighter_component = Fighter(hp=20, death_function=ai.monster_death)
-                ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
+                ai_component = AI(ai.hostile_monster, ai.hostile_monster_metadata(player))
                 monster = Object(pos, 'o', 'orc', libtcod.desaturated_green,
                                  blocks=True, fighter=fighter_component, ai=ai_component)
 
             elif choice == 'troll':
                 fighter_component = Fighter(hp=30, death_function=ai.monster_death)
-                ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
+                ai_component = AI(ai.hostile_monster, ai.hostile_monster_metadata(player))
                 monster = Object(pos, 'T', 'troll', libtcod.darker_green,
                                  blocks=True, fighter=fighter_component, ai=ai_component)
 

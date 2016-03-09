@@ -89,6 +89,7 @@ class Fighter(Component):
         self.bleeding = 0
         self.exhaustion = 0
         self.inebriation = 0
+        self.last_attacker = None
 
     @property
     def action_penalty(self):

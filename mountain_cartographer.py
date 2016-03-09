@@ -100,7 +100,7 @@ def _place_test_creatures(new_map, player):
             continue
         if new_map.region_terrain[r] == 'marsh':
             fighter_component = Fighter(hp=12, death_function=ai.monster_death)
-            ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
+            ai_component = AI(ai.hostile_monster, ai.hostile_monster_metadata(player))
             monster = Object(algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
                              'g', 'swamp goblin', libtcod.red, blocks=True,
                              fighter=fighter_component, ai=ai_component)
@@ -126,7 +126,7 @@ def _inhabit_caravanserai(map, player):
 
         bandit = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
             fighter = Fighter(hp=16, death_function=ai.monster_death),
-            ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
+            ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
         map.objects.append(bandit)
         bandit.current_map = map
         bandit.inventory = []
@@ -150,7 +150,7 @@ def _inhabit_quarry(new_map, player):
 
         ghul = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
             fighter = Fighter(hp=20, unarmed_damage=4, death_function=ai.monster_death),
-            ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
+            ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
         new_map.objects.append(ghul)
         ghul.current_map = new_map
 

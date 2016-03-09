@@ -44,6 +44,7 @@ def attack(fighter, target, report=True):
     Melee impact: attacker's weapon damage.
     Melee absorption: defender's armor soak.
     """
+    target.fighter.last_attacker = fighter.owner
 
     a_weapon_skill = fighter.skills.get('grappling', 10)
     # print('Attacker grappling is ' + str(a_weapon_skill))

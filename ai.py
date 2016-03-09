@@ -14,12 +14,31 @@ import actions
 CONFUSE_NUM_TURNS = 10
 
 
-class basic_monster_metadata:
+def random_direction():
+    return algebra.directions[libtcod.random_get_int(0, 0, 7)]
+
+
+def ignoring_monster(monster, player, metadata):
+    """
+    A creature that moves randomly (q.v. confused_monster) and ignores
+    the player unless hurt, in which case it becomes hostile.
+    """
+    if monster.fighter.last_attacker:
+        monster.ai = AI(hostile_monster,
+                        hostile_monster_metadata(monster.fighter.last_attacker))
+        return monster.ai.take_turn(player)
+    # TODO: this movement may fail, so the monster will appear to
+    # move less when in constricted quarters.
+    actions.move(monster, random_direction())
+
+
+
+class hostile_monster_metadata:
     def __init__(self, target):
         self.target = target
 
 
-def basic_monster(monster, player, metadata):
+def hostile_monster(monster, player, metadata):
     """
     A basic monster takes its turn. if you can see it, it can see you.
     """
@@ -37,10 +56,6 @@ class confused_monster_metadata:
     def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
         self.old_ai = old_ai
         self.num_turns = num_turns
-
-
-def random_direction():
-    return algebra.directions[libtcod.random_get_int(0, 0, 7)]
 
 
 def confused_monster(monster, player, metadata):
