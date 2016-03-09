@@ -396,9 +396,9 @@ def new_game():
     log.init()
 
     fighter_component = Fighter(hp=25, death_function=player_death)
-    fighter_component.skills['bow'] = 50
-    fighter_component.skills['climb'] = 10
-    fighter_component.skills['grappling'] = 30
+    fighter_component.skills['bow'] = 70
+    fighter_component.skills['first aid'] = 25
+    fighter_component.skills['grappling'] = 40
     player = Object(algebra.Location(0, 0), '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
     player.inventory = []
     player.level = 1
@@ -441,9 +441,9 @@ def new_game():
     log.message('Press ? or F1 for help.')
 
     # TEST
-    if player.current_map.quarry_region:
-        quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
-        player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
+    # if player.current_map.quarry_region:
+    #     quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
+    #     player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
 
     # TEST
     obj = Object(None, '/', 'sword', libtcod.dark_sky,
