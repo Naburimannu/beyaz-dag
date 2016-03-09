@@ -13,6 +13,7 @@ import algebra
 from components import *
 import renderer
 import interface
+import miscellany
 import actions
 import ai
 import spells
@@ -408,12 +409,6 @@ def new_game():
     player.endangered = False
 
     _new_equipment(player,
-        Object(None, '/', 'dagger', libtcod.dark_sky,
-            item=Item(description='A leaf-shaped iron knife; inflicts 4 damage'),
-            equipment=Equipment(slot='right hand'),
-            melee=MeleeWeapon(skill='grappling', damage=4)))
-
-    _new_equipment(player,
         Object(None, '[', 'silk undertunic', libtcod.dark_sky,
             item=Item(description='A thick under-tunic of raw silk; prevents 2 bleeding.'),
             equipment=Equipment(slot='underclothes', bleeding_defense=2)))
@@ -428,15 +423,9 @@ def new_game():
             item=Item(description='A Phrygian felt cap with a loose veil to keep the sun off.'),
             equipment=Equipment(slot='head')))
 
-    _new_equipment(player,
-        Object(None, '/', 'horn bow', libtcod.dark_sky,
-            item=Item(description='A short, sharply-curved, horn-backed bow.'),
-            equipment=Equipment(slot='missile weapon')))
-
-    _new_equipment(player,
-        Object(None, '/', 'arrow', libtcod.dark_sky,
-            item=Item(description='A gold-feathered beech arrow.', count=12),
-            equipment=Equipment(slot='quiver')))
+    _new_equipment(player, miscellany.horn_bow())
+    _new_equipment(player, miscellany.arrow(12))
+    _new_equipment(player, miscellany.dagger())
 
     _new_item(player,
         Object(None, '!', 'kumiss', libtcod.dark_sky,

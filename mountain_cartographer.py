@@ -7,6 +7,7 @@ import config
 import algebra
 import map
 from components import *
+import miscellany
 import ai
 import actions
 import spells
@@ -133,26 +134,12 @@ def _inhabit_caravanserai(map, player):
         choice = libtcod.random_get_int(0, 1, 3)
         weapon = None
         if choice == 1:
-            _new_equipment(bandit,
-                Object(None, '/', 'sword', libtcod.dark_sky,
-                    item=Item(description='A broad iron sword; inflicts 8 damage.'),
-                    equipment=Equipment(slot='right hand'),
-                    melee=MeleeWeapon(skill='sword', damage=8)))
+            _new_equipment(bandit, miscellany.sword())
         elif choice == 2:
-            _new_equipment(bandit,
-                Object(None, '/', 'spear', libtcod.dark_sky,
-                item=Item(description='An iron-headed spear; inflicts 8 damage.'),
-                equipment=Equipment(slot='right hand'),
-                melee=MeleeWeapon(skill='spear', damage=8)))
+            _new_equipment(bandit, miscellany.spear())
         else:
-            _new_equipment(bandit,
-                Object(None, '/', 'arrow', libtcod.dark_sky,
-                item=Item(description='A gold-feathered beech arrow.', count=4),
-                equipment=Equipment(slot='quiver')))
-            _new_equipment(bandit,
-                Object(None, '/', 'horn bow', libtcod.dark_sky,
-                item=Item(description='A short, sharply-curved, horn-backed bow.'),
-                equipment=Equipment(slot='missile weapon')))
+            _new_equipment(bandit, miscellany.arrow(4))
+            _new_equipment(bandit, miscellany.horn_bow())
 
 
 def _inhabit_quarry(new_map, player):
@@ -412,8 +399,8 @@ def _make_caravanserai(new_map):
     bounds = algebra.Rect(tl[0], tl[1],
                           min(br[0] - tl[0] + 1, MAX_CARAVANSERAI_SIZE),
                           min(br[1] - tl[1] + 1, MAX_CARAVANSERAI_SIZE))
-    for x in range(bounds.x1, bounds.x2):
-        for y in range(bounds.y1, bounds.y2):
+    for x in range(bounds.x1, bounds.x2+1):
+        for y in range(bounds.y1, bounds.y2+1):
             if (x == bounds.x1 or x == bounds.x2 or
                 y == bounds.y1 or y == bounds.y2):
                 new_map.terrain[x][y] = 0
@@ -422,8 +409,8 @@ def _make_caravanserai(new_map):
 
     # Cut gates in it facing east and south
     center = bounds.center()
-    new_map.terrain[center.x][bounds.y2-1] = 1
-    new_map.terrain[bounds.x2-1][center.y] = 1
+    new_map.terrain[center.x][bounds.y2] = 1
+    new_map.terrain[bounds.x2][center.y] = 1
 
     new_map.caravanserai = bounds
 
