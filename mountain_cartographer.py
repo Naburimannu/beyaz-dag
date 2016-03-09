@@ -14,6 +14,8 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
+MAX_CARAVANSERAI_SIZE = 24
+QUARRY_ELEVATION = 3
 
 def _random_position_in_room(room):
     """
@@ -22,6 +24,18 @@ def _random_position_in_room(room):
     return algebra.Location(libtcod.random_get_int(0, room.x1+1, room.x2-1),
                             libtcod.random_get_int(0, room.y1+1, room.y2-1))
 
+
+def _random_position_in_region(new_map, region):
+    """
+    Given a region of a map, return an algebra.Location in the region
+    """
+    center = new_map.region_seeds[region]
+    while True:
+        candidate = algebra.Location(
+                libtcod.random_get_int(0, center[0]-5, center[0]+5),
+                libtcod.random_get_int(0, center[1]-5, center[1]+5))
+        if new_map.region[candidate.x][candidate.y] == region:
+            return candidate
 
 def _create_room(new_map, room):
     """
@@ -101,6 +115,17 @@ def _inhabit_caravanserai(map, player):
             ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
         map.objects.append(bandit)
         bandit.current_map = map
+
+
+def _inhabit_quarry(new_map, player):
+    for i in range(3):
+        pos = _random_position_in_region(new_map, new_map.quarry_region)
+
+        bandit = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
+            fighter = Fighter(hp=20, death_function=ai.monster_death),
+            ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
+        new_map.objects.append(bandit)
+        bandit.current_map = new_map
 
 
 def _place_objects(new_map, room, player):
@@ -261,19 +286,26 @@ def _extend_hills(new_map, peak):
             new_map.region_elevations[r] = e
 
 
+def _should_slope(new_map, x, y):
+    """
+    True if any adjacent tile is higher than this one.
+    """
+    el = new_map.region_elevations[new_map.region[x][y]]
+    return (new_map.elevation(x-1, y-1) == el+1 or
+            new_map.elevation(x, y-1) == el+1 or
+            new_map.elevation(x+1, y-1) == el+1 or
+            new_map.elevation(x-1, y) == el+1 or
+            new_map.elevation(x+1, y) == el+1 or
+            new_map.elevation(x-1, y+1) == el+1 or
+            new_map.elevation(x, y+1) == el+1 or
+            new_map.elevation(x+1, y+1) == el+1)
+
+
 def _mark_slopes(new_map):
     print('Finding the slopes')
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
         for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
-            el = new_map.region_elevations[new_map.region[x][y]]
-            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
+            if _should_slope(new_map, x, y):
                 new_map.terrain[x][y] = 2
 
 
@@ -352,15 +384,18 @@ def _make_rotunda(map, peak):
                     map.terrain[x][y] = 0
 
 
-def _make_caravanserai(map):
-    # find a space to fit it along the right-hand side,
-    # starting from the top own
+def _place_caravanserai(new_map):
+    """
+    Find a 3x3 region of desert near but not on the east or south edges.
+    """
+    # find a space to fit it along the eastern edge,
+    # starting from the north
     found_y = -1
     rows = 0
     for y in range(4, 17):
         cols = 0
         for x in range(16, 18):
-            if map.region_terrain[x*20+y] != 'desert':
+            if new_map.region_terrain[x*20+y] != 'desert':
                 break
             cols += 1
         if cols < 2:
@@ -370,30 +405,64 @@ def _make_caravanserai(map):
         if rows == 3:
             found_y = y - 2
             break
-    if found_y < 2:
+
+    if found_y > 1:
+        return (16, found_y)
+
+    # find a space to fit it along the southern edge,
+    # starting from the west
+    found_x = -1
+    rows = 0
+    for x in range(4, 17):
+        cols = 0
+        for y in range(16, 18):
+            if new_map.region_terrain[x*20+y] != 'desert':
+                break
+            cols += 1
+        if cols < 2:
+            rows = 0
+            continue
+        rows += 1
+        if rows == 3:
+            found_x = x - 2
+            break
+
+    if found_x > 1:
+        return (found_x, 16)
+
+    return (-1, -1)
+
+
+def _make_caravanserai(new_map):
+    (found_x, found_y) = _place_caravanserai(new_map)
+    if found_x < 0 or found_y < 0:
         print("Couldn't fit caravanserai anywhere; sorry!")
-        map.caravanserai = None
+        new_map.caravanserai = None
         return
 
-    tl = map.region_seeds[340 + found_y]
-    br = map.region_seeds[380 + found_y + 2]
-    print('Caravanserai stretches from ', tl, ' to ', br)
+    tl = new_map.region_seeds[found_x * 20 + found_y]
+    br = new_map.region_seeds[found_x * 20 + found_y + 42]
+    print('Caravanserai stretches from ', tl, ' to ', br, ' or so')
     bounds = algebra.Rect(tl[0], tl[1],
-                          br[0] - tl[0] + 1, br[1] - tl[1] + 1)
+                          min(br[0] - tl[0] + 1, MAX_CARAVANSERAI_SIZE),
+                          min(br[1] - tl[1] + 1, MAX_CARAVANSERAI_SIZE))
     for x in range(bounds.x1, bounds.x2):
         for y in range(bounds.y1, bounds.y2):
             if (x == bounds.x1 or x == bounds.x2-1 or
                 y == bounds.y1 or y == bounds.y2-1):
-                map.terrain[x][y] = 0
+                new_map.terrain[x][y] = 0
             else:
-                map.terrain[x][y] = 1
+                new_map.terrain[x][y] = 1
 
     # Cut gates in it facing east and south
     center = bounds.center()
-    map.terrain[center.x][bounds.y2-1] = 1
-    map.terrain[bounds.x2-1][center.y] = 1
+    new_map.terrain[center.x][bounds.y2-1] = 1
+    new_map.terrain[bounds.x2-1][center.y] = 1
 
-    map.caravanserai = bounds
+    new_map.caravanserai = bounds
+
+    # TODO: create a couple of rooms
+    # TODO: create an upstairs and a cellar
 
 
 def _mark_quarry_slopes(new_map, region):
@@ -404,28 +473,21 @@ def _mark_quarry_slopes(new_map, region):
         for y in range(max(center[1] - 10, 0), min(center[1] + 10, new_map.height - 1)):
             if new_map.region[x][y] != region:
                 continue
-            el = new_map.region_elevations[new_map.region[x][y]]
-            if (new_map.region_elevations[new_map.region[x-1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y-1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y]] == el+1 or
-                    new_map.region_elevations[new_map.region[x-1][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x][y+1]] == el+1 or
-                    new_map.region_elevations[new_map.region[x+1][y+1]] == el+1):
+            if _should_slope(new_map, x, y):
                 new_map.terrain[x][y] = 2
             else:
                 new_map.terrain[x][y] = 1
 
 
 def _dig_quarry(new_map, peak):
+    # Consider choosing randomly from among multiple possible sites?
     peak_region = new_map.region[peak[0]][peak[1]]
     column_start = peak_region + 20 * libtcod.random_get_int(0, 0, 2)
     column_end = (column_start / 20) * 20 + 19
     print('Searching for quarry between ' + str(column_start) + ' and ' + str(column_end))
     new_map.quarry_region = None
     for r in range(column_start, column_end):
-        if new_map.region_elevations[r] == 3:
+        if new_map.region_elevations[r] == QUARRY_ELEVATION:
             new_map.quarry_region = r
             break
     if not new_map.quarry_region:
@@ -438,7 +500,11 @@ def _dig_quarry(new_map, peak):
     # Stopgap: drop the entire region, reevaluate for slopes,
     # and rewrite terrain.
     new_map.region_elevations[new_map.quarry_region] = 2
+    new_map.region_terrain[new_map.quarry_region] = 'rock'
     _mark_quarry_slopes(new_map, new_map.quarry_region)
+
+    # TODO: dig a dungeon underneath
+
 
 def _debug_region_heights(map):
     for u in range(20):
@@ -528,6 +594,8 @@ def make_map(player, dungeon_level):
     _place_test_creatures(new_map, player)
     if new_map.caravanserai:
         _inhabit_caravanserai(new_map, player)
+    if new_map.quarry_region:
+        _inhabit_quarry(new_map, player)
 
     player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
 
