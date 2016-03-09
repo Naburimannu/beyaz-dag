@@ -8,6 +8,7 @@ import algebra
 import map
 from components import *
 import miscellany
+import bestiary
 import ai
 import actions
 import spells
@@ -99,13 +100,9 @@ def _place_test_creatures(new_map, player):
         if r == start_region:
             continue
         if new_map.region_terrain[r] == 'marsh':
-            fighter_component = Fighter(hp=12, death_function=ai.monster_death)
-            ai_component = AI(ai.hostile_monster, ai.hostile_monster_metadata(player))
-            monster = Object(algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
-                             'g', 'swamp goblin', libtcod.red, blocks=True,
-                             fighter=fighter_component, ai=ai_component)
-            new_map.objects.append(monster)
-            monster.current_map = new_map
+            bestiary.swamp_goblin(new_map,
+                algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
+                player)
 
 
 def _new_item(actor, obj):
@@ -117,19 +114,12 @@ def _new_equipment(actor, obj):
     actions.equip(actor, obj.equipment, False)
 
 
-def _inhabit_caravanserai(map, player):
+def _inhabit_caravanserai(new_map, player):
     # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
     #       ' and ' + str(map.caravanserai.x2) + ' ' + str(map.caravanserai.y2))
     for i in range(3):
-        pos = _random_position_in_rect(map.caravanserai)
-        # print('  Bandit at ' + str(pos.x) + ' ' + str(pos.y))
-
-        bandit = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
-            fighter = Fighter(hp=16, death_function=ai.monster_death),
-            ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
-        map.objects.append(bandit)
-        bandit.current_map = map
-        bandit.inventory = []
+        bandit = bestiary.bandit(new_map,
+            _random_position_in_rect(new_map.caravanserai), player)
 
         choice = libtcod.random_get_int(0, 1, 3)
         weapon = None
@@ -145,14 +135,9 @@ def _inhabit_caravanserai(map, player):
 def _inhabit_quarry(new_map, player):
     # print('Quarry near ', new_map.region_seeds[new_map.quarry_region])
     for i in range(3):
-        pos = _random_position_in_region(new_map, new_map.quarry_region)
-        # print('Ghul at ' + str(pos.x) + ' ' + str(pos.y))
-
-        ghul = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
-            fighter = Fighter(hp=20, unarmed_damage=4, death_function=ai.monster_death),
-            ai = AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
-        new_map.objects.append(ghul)
-        ghul.current_map = new_map
+        ghul = bestiary.ghul(new_map,
+            _random_position_in_region(new_map, new_map.quarry_region),
+            player)
 
 
 def _interpolate_heights(new_map, peak):

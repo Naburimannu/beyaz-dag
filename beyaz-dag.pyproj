@@ -35,6 +35,9 @@
     <Compile Include="actions.py" />
     <Compile Include="ai.py" />
     <Compile Include="algebra.py" />
+    <Compile Include="bestiary.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="miscellany.py">
       <SubType>Code</SubType>
     </Compile>
