@@ -399,7 +399,7 @@ def new_game():
     # Must initialize the log before we do anything that might emit a message.
     log.init()
 
-    fighter_component = Fighter(hp=25, death_function=player_death)
+    fighter_component = Fighter(hp=36, death_function=player_death)
     fighter_component.skills['bow'] = 70
     fighter_component.skills['first aid'] = 25
     fighter_component.skills['grappling'] = 40
@@ -448,9 +448,9 @@ def new_game():
     # if player.current_map.quarry_region:
     #     quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
     #     player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
-    if player.current_map.grotto_region:
-        grotto_center = player.current_map.region_seeds[player.current_map.grotto_region]
-        player.pos = algebra.Location(grotto_center[0]+20, grotto_center[1])
+    #if player.current_map.grotto_region:
+    #    grotto_center = player.current_map.region_seeds[player.current_map.grotto_region]
+    #    player.pos = algebra.Location(grotto_center[0]+20, grotto_center[1])
 
     # TEST
     obj = Object(None, '/', 'sword', libtcod.dark_sky,
@@ -548,8 +548,8 @@ def play_game(player):
             break
 
         if (player_action != 'didnt-take-turn' and
-            (player.game_state == 'playing' or
-             player.game_state == 'running')):
+                (player.game_state == 'playing' or
+                 player.game_state == 'running')):
             for object in player.current_map.objects:
                 if object.ai:
                     object.ai.take_turn(player)
@@ -557,6 +557,8 @@ def play_game(player):
                     # this will also include the player
                     actions.bleed(object)
             player.turn_count += 1
+            if player.fighter.inebriation > 0:
+                player.fighter.inebriation -= 1
 
 
 if __name__ == '__main__':
