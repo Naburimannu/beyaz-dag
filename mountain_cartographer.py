@@ -132,19 +132,19 @@ def _inhabit_caravanserai(map, player):
         if choice == 1:
             _new_equipment(bandit,
                 Object(None, '/', 'sword', libtcod.dark_sky,
-                    item=Item(description='A broad iron sword; inflicts 8 damage'),
+                    item=Item(description='A broad iron sword; inflicts 8 damage.'),
                     equipment=Equipment(slot='right hand'),
                     melee=MeleeWeapon(skill='sword', damage=8)))
         elif choice == 2:
             _new_equipment(bandit,
                 Object(None, '/', 'spear', libtcod.dark_sky,
-                item=Item(description='An iron-headed spear; inflicts 8 damage'),
+                item=Item(description='An iron-headed spear; inflicts 8 damage.'),
                 equipment=Equipment(slot='right hand'),
                 melee=MeleeWeapon(skill='spear', damage=8)))
         else:
             _new_equipment(bandit,
                 Object(None, '/', 'arrow', libtcod.dark_sky,
-                item=Item(description='A gold-feathered beech arrow.', count=12),
+                item=Item(description='A gold-feathered beech arrow.', count=4),
                 equipment=Equipment(slot='quiver')))
             _new_equipment(bandit,
                 Object(None, '/', 'horn bow', libtcod.dark_sky,
@@ -336,7 +336,7 @@ def _make_rotunda(map, peak):
                     map.terrain[x][y] = 0
 
 
-def _place_caravanserai(new_map):
+def _place_caravanserai(new_map, size):
     """
     Find a 3x3 region of desert near but not on the east or south edges.
     """
@@ -344,56 +344,65 @@ def _place_caravanserai(new_map):
     # starting from the north
     found_y = -1
     rows = 0
-    for y in range(4, 17):
+    for y in range(2, 19):
         cols = 0
-        for x in range(16, 18):
+        for x in range(19 - size, 19):
+            # print(x, y, new_map.region_terrain[x*20+y])
             if new_map.region_terrain[x*20+y] != 'desert':
                 break
             cols += 1
-        if cols < 2:
+        if cols < size:
             rows = 0
             continue
         rows += 1
-        if rows == 3:
-            found_y = y - 2
+        if rows == size:
+            found_y = y - size + 1
             break
 
     if found_y > 1:
-        return (16, found_y)
+        # print('Can place size ' + str(size) + ' at y=' + str(found_y))
+        return (19 - size, found_y)
 
     # find a space to fit it along the southern edge,
     # starting from the west
     found_x = -1
     rows = 0
-    for x in range(4, 17):
+    for x in range(2, 19):
         cols = 0
-        for y in range(16, 18):
+        for y in range(19 - size, 19):
+            # print(x, y, new_map.region_terrain[x*20+y])
             if new_map.region_terrain[x*20+y] != 'desert':
                 break
             cols += 1
-        if cols < 2:
+        if cols < size:
             rows = 0
             continue
         rows += 1
-        if rows == 3:
-            found_x = x - 2
+        if rows == size:
+            found_x = x - size + 1
             break
 
     if found_x > 1:
-        return (found_x, 16)
+        # print('Can place size ' + str(size) + ' at x=' + str(found_x))
+        return (found_x, 19 - size)
 
     return (-1, -1)
 
 
 def _make_caravanserai(new_map):
-    (found_x, found_y) = _place_caravanserai(new_map)
+    size = 3
+    (found_x, found_y) = _place_caravanserai(new_map, size)
     if found_x < 0 or found_y < 0:
-        print("Couldn't fit caravanserai anywhere; sorry!")
-        new_map.caravanserai = None
-        return
+        # Better undersized than none at all?
+        size = 2
+        (found_x, found_y) = _place_caravanserai(new_map, size)
+        if found_x < 0 or found_y < 0:
+            print("Couldn't fit caravanserai anywhere; sorry!")
+            new_map.caravanserai = None
+            return
 
     tl = new_map.region_seeds[found_x * 20 + found_y]
-    br = new_map.region_seeds[found_x * 20 + found_y + 42]
+    br = new_map.region_seeds[found_x * 20 + found_y + (size - 1) * 20 + (size - 1)]
     print('Caravanserai stretches from ', tl, ' to ', br, ' or so')
     bounds = algebra.Rect(tl[0], tl[1],
                           min(br[0] - tl[0] + 1, MAX_CARAVANSERAI_SIZE),
