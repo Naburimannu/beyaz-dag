@@ -446,8 +446,9 @@ def new_game():
     log.message('Press ? or F1 for help.')
 
     # TEST
-    quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
-    player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
+    if player.current_map.quarry_region:
+        quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
+        player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
 
     # TEST
     obj = Object(None, '/', 'sword', libtcod.dark_sky,

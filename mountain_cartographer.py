@@ -418,17 +418,23 @@ def _make_caravanserai(new_map):
 
 
 def _mark_quarry_slopes(new_map, region):
+    # BUG still not quite right
     center = new_map.region_seeds[region]
     print('Centering quarry at ' + str(center[0]) + ' ' + str(center[1]))
     
     for x in range(max(center[0] - 10, 0), min(center[0] + 10, new_map.width - 1)):
         for y in range(max(center[1] - 10, 0), min(center[1] + 10, new_map.height - 1)):
-            if new_map.region[x][y] != region:
-                continue
             if _should_slope(new_map, x, y):
+                # add new slopes within the quarry, if necessary
+                if new_map.region[x][y] != region:
+                    continue
                 new_map.terrain[x][y] = 2
             else:
-                new_map.terrain[x][y] = 1
+                if new_map.region[x][y] == region:
+                    new_map.terrain[x][y] = 1
+                elif new_map.terrain[x][y] == 2:
+                    # get rid of now-obsolete slopes nearby
+                    new_map.terrain[x][y] = 1
 
 
 def _dig_quarry(new_map, peak):
@@ -454,6 +460,10 @@ def _dig_quarry(new_map, peak):
     new_map.region_elevations[new_map.quarry_region] = 2
     new_map.region_terrain[new_map.quarry_region] = 'rock'
     _mark_quarry_slopes(new_map, new_map.quarry_region)
+
+    new_map.region_elevations[new_map.quarry_region+20] = 2
+    new_map.region_terrain[new_map.quarry_region+20] = 'rock'
+    _mark_quarry_slopes(new_map, new_map.quarry_region+20)
 
     # TODO: dig a dungeon underneath
 
