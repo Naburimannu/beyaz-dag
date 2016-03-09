@@ -43,7 +43,7 @@ class Skill(object):
 
 skill_list = [
     Skill('bow', 5, 'Shoot with a bow.'),
-    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
+#    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
     Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages.'),
     Skill('grappling', 3, 'Fight with bare hands or a knife.'),
     Skill('spear', 4, 'Attack and defend with a spear.'),
@@ -184,11 +184,11 @@ def display_character_info(player):
 
 
 def increase_player_skills(player):
-    options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) +
-               ', costs ' + str(s.cost) + ' sp'
-        for s in skill_list]
-
     while True:
+        options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) +
+                   ', costs ' + str(s.cost) + ' sp'
+            for s in skill_list]
+
         # Make sure log.message() displays as we loop
         renderer.render_all(player, None)
         (key, target) = renderer.menu('Choose skill to increase, or x to explain:\n' +
