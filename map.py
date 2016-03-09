@@ -214,7 +214,7 @@ class OutdoorMap(object):
         if terrain_types[self.terrain[pos.x][pos.y]].blocks:
             return True
         for object in self.objects:
-            if object.blocks and object.pos == pos and obj != ignore:
+            if object.blocks and object.pos == pos and object != ignore:
                 return True
         return False
 
