@@ -111,6 +111,12 @@ def _colored_text_list(lines, width):
                         (direction == algebra.south and shift)):
                     offset += height
                     break
+            elif mouse.wheel_up:
+                offset -= height/2
+                break
+            elif mouse.wheel_down:
+                offset += height/2
+                break
             elif (key.vk == libtcod.KEY_ALT or
                   key.vk == libtcod.KEY_CONTROL or
                   key.vk == libtcod.KEY_SHIFT or
