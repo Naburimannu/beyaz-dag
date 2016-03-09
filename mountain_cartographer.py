@@ -106,110 +106,59 @@ def _place_test_creatures(new_map, player):
             monster.current_map = new_map
 
 
+def _new_item(player, obj):
+    player.inventory.append(obj)
+    obj.always_visible = True
+
+def _new_equipment(player, obj):
+    _new_item(player, obj)
+    actions.equip(player, obj.equipment, False)
+
+
 def _inhabit_caravanserai(map, player):
     for i in range(3):
         pos = _random_position_in_room(map.caravanserai)
 
         bandit = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
-            fighter = Fighter(hp=20, death_function=ai.monster_death),
+            fighter = Fighter(hp=16, death_function=ai.monster_death),
             ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
         map.objects.append(bandit)
         bandit.current_map = map
+
+        choice = libtcod.random_get_int(0, 1, 3)
+        weapon = None
+        if choice == 1:
+            _new_equipment(bandit,
+                Object(None, '/', 'sword', libtcod.dark_sky,
+                    item=Item(description='A broad iron sword; inflicts 8 damage'),
+                    equipment=Equipment(slot='right hand'),
+                    melee=MeleeWeapon(skill='sword', damage=8)))
+        elif choice == 2:
+            _new_equipment(bandit,
+                Object(None, '/', 'spear', libtcod.dark_sky,
+                item=Item(description='An iron-headed spear; inflicts 8 damage'),
+                equipment=Equipment(slot='right hand'),
+                melee=MeleeWeapon(skill='spear', damage=8)))
+        else:
+            _new_equipment(bandit,
+                Object(None, '/', 'arrow', libtcod.dark_sky,
+                item=Item(description='A gold-feathered beech arrow.', count=12),
+                equipment=Equipment(slot='quiver')))
+            _new_equipment(bandit,
+                Object(None, '/', 'horn bow', libtcod.dark_sky,
+                item=Item(description='A short, sharply-curved, horn-backed bow.'),
+                equipment=Equipment(slot='missile weapon')))
 
 
 def _inhabit_quarry(new_map, player):
     for i in range(3):
         pos = _random_position_in_region(new_map, new_map.quarry_region)
 
-        bandit = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
-            fighter = Fighter(hp=20, death_function=ai.monster_death),
+        ghul = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
+            fighter = Fighter(hp=20, unarmed_damage=4, death_function=ai.monster_death),
             ai = AI(ai.basic_monster, ai.basic_monster_metadata(player)))
-        new_map.objects.append(bandit)
-        bandit.current_map = new_map
-
-
-def _place_objects(new_map, room, player):
-    max_monsters = _from_dungeon_level(new_map, [[2, 1], [3, 4], [5, 6]])
-
-    monster_chances = {}
-    # orc always shows up, even if all other monsters have 0 chance.
-    monster_chances['orc'] = 80
-    monster_chances['troll'] = _from_dungeon_level(new_map, [[15, 3], [30, 5], [60, 7]])
-
-    max_items = _from_dungeon_level(new_map, [[1, 1], [2, 4]])
-
-    item_chances = {}
-    # Healing potion always shows up, even if all other items have 0 chance.
-    item_chances['heal'] = 35
-    item_chances['lightning'] = _from_dungeon_level(new_map, [[25, 4]])
-    item_chances['fireball'] = _from_dungeon_level(new_map, [[25, 6]])
-    item_chances['confuse'] = _from_dungeon_level(new_map, [[10, 2]])
-    item_chances['sword'] = _from_dungeon_level(new_map, [[5, 4]])
-    item_chances['shield'] = _from_dungeon_level(new_map, [[15, 8]])
-
-    num_monsters = libtcod.random_get_int(0, 0, max_monsters)
-    for i in range(num_monsters):
-        pos = _random_position_in_room(room)
-
-        if not new_map.is_blocked_at(pos):
-            choice = _random_choice(monster_chances)
-            if choice == 'orc':
-                fighter_component = Fighter(hp=20, death_function=ai.monster_death)
-                ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
-                monster = Object(pos, 'o', 'orc', libtcod.desaturated_green,
-                                 blocks=True, fighter=fighter_component, ai=ai_component)
-
-            elif choice == 'troll':
-                fighter_component = Fighter(hp=30, death_function=ai.monster_death)
-                ai_component = AI(ai.basic_monster, ai.basic_monster_metadata(player))
-                monster = Object(pos, 'T', 'troll', libtcod.darker_green,
-                                 blocks=True, fighter=fighter_component, ai=ai_component)
-
-            new_map.objects.append(monster)
-            monster.current_map = new_map
-
-    num_items = libtcod.random_get_int(0, 0, max_items)
-    for i in range(num_items):
-        pos = _random_position_in_room(room)
-
-        if not new_map.is_blocked_at(pos):
-            choice = _random_choice(item_chances)
-            if choice == 'heal':
-                item_component = Item(use_function=spells.cast_heal,
-                    description='A flask of revivifying alchemical mixtures; heals ' + str(spells.HEAL_AMOUNT) + ' hp.')
-                item = Object(pos, '!', 'healing potion', libtcod.violet, item=item_component)
-
-            elif choice == 'lightning':
-                item_component = Item(use_function=spells.cast_lightning,
-                    description='Reading these runes will strike your nearest foe with lightning for ' +
-                        str(spells.LIGHTNING_DAMAGE) + ' hp.')
-                item = Object(pos, '#', 'scroll of lightning bolt', libtcod.light_yellow, item=item_component)
-
-            elif choice == 'fireball':
-                item_component = Item(use_function=spells.cast_fireball,
-                    description='Reading these runes will cause a burst of flame inflicting ' + str(spells.FIREBALL_DAMAGE) +
-                        ' hp on nearby creatures.')
-                item = Object(pos, '#', 'scroll of fireball', libtcod.light_yellow, item=item_component)
-
-            elif choice == 'confuse':
-                item_component = Item(use_function=spells.cast_confuse,
-                    description='Reading these runes will confuse the creature you focus on for a short time.')
-                item = Object(pos, '#', 'scroll of confusion', libtcod.light_yellow, item=item_component)
-
-            elif choice == 'sword':
-                equipment_component = Equipment(slot='right hand')
-                item_component = Item(description='A heavy-tipped bronze chopping sword; inflicts 8 damage')
-                melee_weapon_component = MeleeWeapon(skill='sword', damage=8)
-                item = Object(pos, '/', 'sword', libtcod.dark_sky,
-                              item=item_component, equipment=equipment_component)
-
-            elif choice == 'shield':
-                equipment_component = Equipment(slot='left hand')
-                item_component = Item(description='A bronze-edged oval shield; provides +1 Defense')
-                item = Object(pos, '[', 'shield', libtcod.darker_orange, equipment=equipment_component)
-
-            new_map.objects.insert(0, item)
-            item.always_visible = True  # Items are visible even out-of-FOV, if in an explored area
+        new_map.objects.append(ghul)
+        ghul.current_map = new_map
 
 
 def _interpolate_heights(new_map, peak):
@@ -375,7 +324,8 @@ def _make_rotunda(map, peak):
                 # if one exists
                 map.region[x][y] = map.region[peak[0]][peak[1]]
             # interior of rotunda is clear
-            map.terrain[x][y] = 1
+            if map.terrain[x][y] != 2:
+                map.terrain[x][y] = 1
             if (x == peak[0]-2 or x == peak[0]+2 or
                     y == peak[1]-2 or y == peak[1]+2):
                 # borders have alternating pillars

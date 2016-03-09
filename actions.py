@@ -80,7 +80,7 @@ def attack(fighter, target, report=True):
                 ' but misses.')
         return
 
-    impact = 2
+    impact = fighter.unarmed_damage
     if a_weapon:
         impact = a_weapon.owner.melee_weapon.damage
 
