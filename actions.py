@@ -179,7 +179,7 @@ def pick_up(actor, o, report=True):
         # Special case: automatically equip if the corresponding equipment slot is unused.
         equipment = o.equipment
         if equipment and _get_equipped_in_slot(actor, equipment.slot) is None:
-            equip(actor, equipment)
+            equip(actor, equipment, report)
         return True
 
 
@@ -195,7 +195,7 @@ def drop(actor, o, report=True):
         must_split = True
     else:
         if o.equipment:
-            dequip(actor, o.equipment, True)
+            dequip(actor, o.equipment, report)
         actor.inventory.remove(o)
 
     combined = False

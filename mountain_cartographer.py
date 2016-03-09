@@ -18,7 +18,7 @@ MAX_ROOMS = 30
 MAX_CARAVANSERAI_SIZE = 24
 QUARRY_ELEVATION = 3
 
-def _random_position_in_room(room):
+def _random_position_in_rect(room):
     """
     Given a rect, return an algebra.Location *inside* the rect (not along the borders)
     """
@@ -117,8 +117,11 @@ def _new_equipment(actor, obj):
 
 
 def _inhabit_caravanserai(map, player):
+    # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
+    #       ' and ' + str(map.caravanserai.x2) + ' ' + str(map.caravanserai.y2))
     for i in range(3):
-        pos = _random_position_in_room(map.caravanserai)
+        pos = _random_position_in_rect(map.caravanserai)
+        # print('  Bandit at ' + str(pos.x) + ' ' + str(pos.y))
 
         bandit = Object(pos, 'U', 'bandit', libtcod.white, blocks=True,
             fighter = Fighter(hp=16, death_function=ai.monster_death),
@@ -153,8 +156,10 @@ def _inhabit_caravanserai(map, player):
 
 
 def _inhabit_quarry(new_map, player):
+    # print('Quarry near ', new_map.region_seeds[new_map.quarry_region])
     for i in range(3):
         pos = _random_position_in_region(new_map, new_map.quarry_region)
+        # print('Ghul at ' + str(pos.x) + ' ' + str(pos.y))
 
         ghul = Object(pos, 'U', 'ghul', libtcod.white, blocks=True,
             fighter = Fighter(hp=20, unarmed_damage=4, death_function=ai.monster_death),
@@ -409,8 +414,8 @@ def _make_caravanserai(new_map):
                           min(br[1] - tl[1] + 1, MAX_CARAVANSERAI_SIZE))
     for x in range(bounds.x1, bounds.x2):
         for y in range(bounds.y1, bounds.y2):
-            if (x == bounds.x1 or x == bounds.x2-1 or
-                y == bounds.y1 or y == bounds.y2-1):
+            if (x == bounds.x1 or x == bounds.x2 or
+                y == bounds.y1 or y == bounds.y2):
                 new_map.terrain[x][y] = 0
             else:
                 new_map.terrain[x][y] = 1
@@ -480,11 +485,11 @@ def _dig_quarry(new_map, peak):
     new_map.region_terrain[new_map.quarry_region] = 'rock'
     _mark_quarry_slopes(new_map, new_map.quarry_region)
 
-    if new_map.region[new_map.quarry_region+20] > 2:
+    if new_map.region_elevations[new_map.quarry_region+20] > 2:
         new_map.region_elevations[new_map.quarry_region+20] = 2
         new_map.region_terrain[new_map.quarry_region+20] = 'rock'
         _mark_quarry_slopes(new_map, new_map.quarry_region+20)
-    elif new_map.region[new_map.quarry_region-20] > 2:
+    elif new_map.region_elevations[new_map.quarry_region-20] > 2:
         new_map.region_elevations[new_map.quarry_region-20] = 2
         new_map.region_terrain[new_map.quarry_region-20] = 'rock'
         _mark_quarry_slopes(new_map, new_map.quarry_region-20)

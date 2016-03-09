@@ -71,7 +71,10 @@ def monster_death(monster):
 
     if hasattr(monster, 'inventory'):
         for obj in monster.inventory:
-            monster.inventory.remove(obj)
-            monster.current_map.objects.insert(0, obj)
-            obj.pos = monster.pos
+            # Might be nice to report what's dropped, but current mass objects
+            # are dropped one-at-a-time, which would be very noisy
+            actions.drop(monster, obj, False)
+            #monster.inventory.remove(obj)
+            #monster.current_map.objects.insert(0, obj)
+            #obj.pos = monster.pos
 
