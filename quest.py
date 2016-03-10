@@ -1,7 +1,9 @@
 import libtcodpy as libtcod
 
 import config
+import log
 import renderer
+import actions
 
 
 TEXT_WIDTH = config.SCREEN_WIDTH - 20
@@ -22,6 +24,20 @@ def goddess_charge(player, goddess):
     line += 1
 
     renderer.finish_welcome()
+    goddess.wait_count = 0
+    goddess.interactable.use_function = goddess_waiting
+
+
+def goddess_waiting(player, goddess):
+    for obj in player.inventory:
+        # if it's the maguffin, win the game
+        pass
+
+    goddess.wait_count += 1
+    log.message('I await the amulet; until then I have nothing further for you.', color=libtcod.light_blue)
+    if goddess.wait_count > 2:
+        log.message('Do not try my patience!', color=libtcod.light_blue)
+        actions.inflict_bleeding(goddess, player.fighter, goddess.wait_count + player.fighter.bleeding_defense)
 
 
 def display_welcome():
