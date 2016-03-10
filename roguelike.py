@@ -80,7 +80,7 @@ def try_fire(player):
         return False
     ammo = actions.get_equipped_in_slot(player, 'quiver')
     if not ammo or ammo.owner.name != weapon.owner.missile_weapon.ammo:
-        log.message('You need ' + weapon.owner.missile_weapon.ammo + ' to fire the ' + weapon.owner.name)
+        log.message('You need at least one ' + weapon.owner.missile_weapon.ammo + ' to fire the ' + weapon.owner.name)
         return False
     # TODO pass this turn
     # TODO enter targeting mode
@@ -449,6 +449,7 @@ def new_game():
         Object(None, '!', 'kumiss', libtcod.dark_sky,
             item=Item(description='An invigorating draught of kumiss in a wineskin.',
                       use_function=spells.drink_kumiss, count=4)))
+    _new_item(player, miscellany.bandage(2))
 
     mountain_cartographer.make_map(player, 1)
     renderer.update_camera(player)

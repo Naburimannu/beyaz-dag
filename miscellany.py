@@ -2,7 +2,7 @@ import libtcodpy as libtcod
 
 import algebra
 from components import *
-
+import spells  # nasty levelization violation?!
 
 def dagger():
     return Object(None, '|', 'dagger', libtcod.dark_sky,
@@ -28,3 +28,8 @@ def arrow(count):
     return Object(None, '{', 'arrow', libtcod.dark_sky,
             item=Item(description='A gold-feathered beech arrow.', count=count),
             equipment=Equipment(slot='quiver'))
+
+def bandage(count):
+    return Object(None, '~', 'bandage', libtcod.dark_sky,
+            item=Item(description='A clean-enough length of cloth for binding wounds, and a bit of herbs for a poultice.',
+                    count=count, use_function=spells.use_bandage))
