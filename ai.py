@@ -14,10 +14,6 @@ import actions
 CONFUSE_NUM_TURNS = 10
 
 
-def random_direction():
-    return algebra.directions[libtcod.random_get_int(0, 0, 7)]
-
-
 def fleeing_monster(monster, player, metadata):
     if libtcod.map_is_in_fov(monster.current_map.fov_map,
                              monster.x, monster.y):
@@ -43,7 +39,7 @@ def ignoring_monster(monster, player, metadata):
             return monster.ai.take_turn(player)
         # TODO: this movement may fail, so the monster will appear to
         # move less when in constricted quarters.
-        actions.move(monster, random_direction())
+        actions.move(monster, actions.random_direction())
 
 
 
@@ -74,7 +70,7 @@ class confused_monster_metadata:
 
 def confused_monster(monster, player, metadata):
     if metadata.num_turns > 0:
-        actions.move(monster, random_direction())
+        actions.move(monster, actions.random_direction())
         metadata.num_turns -= 1
     else:
         # Restore the previous AI (this one will be deleted

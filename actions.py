@@ -15,6 +15,10 @@ import algebra
 from components import *
 
 
+def random_direction():
+    return algebra.directions[libtcod.random_get_int(0, 0, 7)]
+
+
 def move(o, direction):
     """
     Moves object by (dx, dy).
@@ -53,84 +57,110 @@ def move_away_from(o, target_pos):
     return move(o, dir)
 
 
-def attack(fighter, target, report=True):
+def _assign_damage(fighter, attack, target, defense, quantity, method, report=True):
+    if quantity > 0:
+        if report:
+            log.message(
+                fighter.name.capitalize() + ' (' + str(attack) + ')' +
+                method + ' ' + target.name + ' (' + str(defense) + ')' +
+                ' for ' + str(quantity) + ' wounds.')
+        inflict_damage(fighter, target.fighter, quantity)
+    elif report:
+        log.message(
+            fighter.name.capitalize() + ' (' + str(attack) + ') ' +
+            method + ' ' + target.name + ' (' + str(defense) + ')' +
+            ' but it has no effect!')
+
+
+def _drop_ammo_on_hit(target, ammo):
+    """
+    If a shot hits, ammo is 33% reusable, found in same square
+    """
+    if libtcod.random_get_int(0, 1, 6) > 2:
+        return
+    new_ammo = copy.deepcopy(ammo)
+    new_ammo.item.count = 1
+    new_ammo.pos = target.pos
+    target.current_map.objects.append(new_ammo)
+
+
+def _drop_ammo_on_miss(target, ammo):
+    """
+    If a shot misses, ammo goes into an adjacent square,
+    reusable if that square is not blocked.
+    """
+    site = target.pos + random_direction()
+    if target.current_map.is_blocked_at(site):
+        return
+    new_ammo = copy.deepcopy(ammo)
+    new_ammo.item.count = 1
+    new_ammo.pos = site
+    target.current_map.objects.append(new_ammo)
+
+
+def attack(attacker_ftr, target_obj, report=True):
     """
     Melee offence: attacker's weapon skill.
     Melee defense: half defender's weapon skill, plus defender's shield skill.
     Melee impact: attacker's weapon damage.
     Melee absorption: defender's armor soak.
     """
-    target.fighter.last_attacker = fighter.owner
+    target_obj.fighter.last_attacker = attacker_ftr.owner
 
-    a_weapon_skill = fighter.skills.get('grappling', 10)
+    a_weapon_skill = attacker_ftr.skills.get('grappling', 10)
     # print('Attacker grappling is ' + str(a_weapon_skill))
-    a_weapon = get_equipped_in_slot(fighter.owner, 'right hand')
-    if a_weapon:
+    a_weapon_eq = get_equipped_in_slot(attacker_ftr.owner, 'right hand')
+    if a_weapon_eq:
         # print('Attacker is wielding ' + a_weapon.owner.name)
-        a_weapon_skill = fighter.skills.get(a_weapon.owner.melee_weapon.skill, 10)
+        a_weapon_skill = attacker_ftr.skills.get(a_weapon_eq.owner.melee_weapon.skill, 10)
         # print('Attacker ' + a_weapon.owner.melee_weapon.skill + ' is ' + str(a_weapon_skill))
 
-    d_weapon_skill = target.fighter.skills.get('grappling', 10)
-    d_weapon = get_equipped_in_slot(target, 'right hand')
-    if d_weapon:
-        d_weapon_skill = target.fighter.skills.get(d_weapon.owner.melee_weapon.skill, 10)
+    d_weapon_skill = target_obj.fighter.skills.get('grappling', 10)
+    d_weapon_eq = get_equipped_in_slot(target_obj, 'right hand')
+    if d_weapon_eq:
+        d_weapon_skill = target_obj.fighter.skills.get(d_weapon_eq.owner.melee_weapon.skill, 10)
 
     # TODO - no allowance for left-hand items other than shield
-    d_shield = get_equipped_in_slot(target, 'left hand')
+    d_shield_eq = get_equipped_in_slot(target_obj, 'left hand')
     shield_skill = 0
-    if d_shield:
-        shield_skill = target.fighter.skills.get('shield', 10)
+    if d_shield_eq:
+        shield_skill = target_obj.fighter.skills.get('shield', 10)
     total_defense_skill = shield_skill + d_weapon_skill / 2
 
     # print('Attacker action penalty is ' + str(fighter.action_penalty))
-    effective_attack_skill = max(a_weapon_skill - fighter.action_penalty, 10)
-    effective_defense_skill = max(total_defense_skill - target.fighter.action_penalty, 10)
+    effective_attack_skill = max(a_weapon_skill - attacker_ftr.action_penalty, 10)
+    effective_defense_skill = max(total_defense_skill - target_obj.fighter.action_penalty, 10)
     attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
     defense_roll = libtcod.random_get_int(0, 1, effective_defense_skill)
 
     if defense_roll > attack_roll:
         if report:
-            log.message(fighter.owner.name.capitalize() +
-                ' (' + str(effective_attack_skill) + ')' +
-                ' attacks ' + target.name +
-                ' (' + str(effective_defense_skill) + ')' +
+            log.message(attacker_ftr.owner.name.capitalize() + ' (' + str(effective_attack_skill) + ')' +
+                ' attacks ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
                 ' but misses.')
         return
 
-    impact = fighter.unarmed_damage
-    if a_weapon:
-        impact = a_weapon.owner.melee_weapon.damage
+    impact = attacker_ftr.unarmed_damage
+    if a_weapon_eq:
+        impact = a_weapon_eq.owner.melee_weapon.damage
 
-    damage = impact - target.fighter.defense
+    damage = impact - target_obj.fighter.defense
 
-    if damage > 0:
-        if report:
-            log.message(
-                fighter.owner.name.capitalize() +
-                ' (' + str(effective_attack_skill) + ')' +
-                ' attacks ' + target.name +
-                ' (' + str(effective_defense_skill) + ')' +
-                ' for ' + str(damage) + ' wounds.')
-        inflict_damage(fighter.owner, target.fighter, damage)
-    elif report:
-        log.message(
-            fighter.owner.name.capitalize() +
-            ' (' + str(effective_attack_skill) + ')' +
-            ' attacks ' + target.name +
-            ' (' + str(effective_defense_skill) + ')' +
-            ' but it has no effect!')
+    _assign_damage(attacker_ftr.owner, effective_attack_skill,
+                    target_obj, effective_defense_skill,
+                    damage, 'attacks', report)
 
 
-def fire(actor, weapon, ammo, target, report=True):
-    ammo.owner.item.count -= 1
-    if ammo.owner.item.count == 0:
-        dequip(actor, ammo, False)
-        actor.inventory.remove(ammo.owner)
-    target.fighter.last_attacker = actor
+def fire(actor_obj, weapon_eq, ammo_eq, target_obj, report=True):
+    ammo_eq.owner.item.count -= 1
+    if ammo_eq.owner.item.count == 0:
+        unequip(actor_obj, ammo_eq, False)
+        actor_obj.inventory.remove(ammo_eq.owner)
+    target_obj.fighter.last_attacker = actor_obj
 
-    a_weapon_skill = actor.fighter.skills.get(weapon.owner.missile_weapon.skill, 10)
-    effective_attack_skill = max(a_weapon_skill - actor.fighter.action_penalty, 10)
-    vector = target.pos - actor.pos
+    a_weapon_skill = actor_obj.fighter.skills.get(weapon_eq.owner.missile_weapon.skill, 10)
+    effective_attack_skill = max(a_weapon_skill - actor_obj.fighter.action_penalty, 10)
+    vector = target_obj.pos - actor_obj.pos
     distance = math.sqrt(vector.x ** 2 + vector.y **  2)
     effective_defense_skill = 10 + 5 * int(distance)
     attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
@@ -138,83 +168,66 @@ def fire(actor, weapon, ammo, target, report=True):
 
     if defense_roll > attack_roll:
         if report:
-            log.message(actor.name.capitalize() +
-                ' (' + str(effective_attack_skill) + ')' +
-                ' shoots at ' + target.name +
-                ' (' + str(effective_defense_skill) + ')' +
+            log.message(actor_obj.name.capitalize() + ' (' + str(effective_attack_skill) + ')' +
+                ' shoots at ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
                 ' but misses.')
-        # TODO possibly drop ammo in world at or near target
+        _drop_ammo_on_miss(target_obj, ammo_eq.owner)
         return
 
-    damage = weapon.owner.missile_weapon.damage - target.fighter.defense
-
-    if damage > 0:
-        if report:
-            log.message(
-                actor.name.capitalize() +
-                ' (' + str(effective_attack_skill) + ')' +
-                ' shoots ' + target.name +
-                ' (' + str(effective_defense_skill) + ')' +
-                ' for ' + str(damage) + ' wounds.')
-        inflict_damage(actor, target.fighter, damage)
-    elif report:
-        log.message(
-            actor.name.capitalize() +
-            ' (' + str(effective_attack_skill) + ')' +
-            ' shoots ' + target.name +
-            ' (' + str(effective_defense_skill) + ')' +
-            ' but it has no effect!')
-
-    # TODO possibly drop ammo in world at or near target
+    damage = weapon_eq.owner.missile_weapon.damage - target_obj.fighter.defense
+    _assign_damage(actor_obj, effective_attack_skill,
+                    target_obj, effective_defense_skill,
+                    damage, 'shoots', report)
+    _drop_ammo_on_hit(target_obj, ammo_eq.owner)
 
 
-def inflict_damage(actor, fighter, damage):
+def inflict_damage(actor_obj, target_ftr, damage):
     """
     Apply damage.
     """
     if damage > 0:
-        fighter.wounds += damage
+        target_ftr.wounds += damage
         # for now flat 50% chance of inflicting bleeding
         # TODO: base on weapon type?
         if libtcod.random_get_int(0, 0, 1):
-            inflict_bleeding(actor, fighter, damage / 2)
+            inflict_bleeding(actor_obj, target_ftr, damage / 2)
 
-        if fighter.wounds >= fighter.max_hp:
+        if target_ftr.wounds >= target_ftr.max_hp:
             # combat model says we just fall unconscious
             # but in a single-player game is that really
             # worth simulating?
-            function = fighter.death_function
+            function = target_ftr.death_function
             if function is not None:
-                function(fighter.owner)
+                function(target_ftr.owner)
 
 
-def inflict_bleeding(actor, fighter, bloodloss):
+def inflict_bleeding(actor_obj, target_ftr, bloodloss):
     """
     Apply bleeding.
     """
-    bloodloss -= fighter.bleeding_defense
+    bloodloss -= target_ftr.bleeding_defense
     if bloodloss > 0:
-        fighter.bleeding += bloodloss
-        log.message(fighter.owner.name.capitalize() + ' bleeds!', libtcod.red)
+        target_ftr.bleeding += bloodloss
+        log.message(target_ftr.owner.name.capitalize() + ' bleeds!', libtcod.red)
 
 
-def bleed(actor):
+def bleed(actor_obj):
     # go into floats here so that we can model bleeding continuously
     # instead of assessing it every 10 turns
-    actor.fighter.hp -= actor.fighter.bleeding / 10.
-    if actor.fighter.hp <= 0:
-        function = actor.fighter.death_function
+    actor_obj.fighter.hp -= actor_obj.fighter.bleeding / 10.
+    if actor_obj.fighter.hp <= 0:
+        function = actor_obj.fighter.death_function
         if function is not None:
-            function(actor)
+            function(actor_obj)
         
 
-def heal(fighter, amount):
+def heal(target_ftr, amount):
     """
     Heal by the given amount, without going over the maximum.
     """
-    fighter.hp += amount
-    if fighter.hp > fighter.max_hp:
-        fighter.hp = fighter.max_hp
+    target_ftr.hp += amount
+    if target_ftr.hp > target_ftr.max_hp:
+        target_ftr.hp = target_ftr.max_hp
 
 
 def pick_up(actor, o, report=True):
@@ -254,7 +267,7 @@ def drop(actor, o, report=True, all=False):
     """
     Remove an Object from the actor's inventory and add it to the map
     at the player's coordinates.
-    If it's equipment, dequip before dropping.
+    If it's equipment, unequip before dropping.
     """
     must_split = False
     if o.item.count > 1 and not all:
@@ -262,7 +275,7 @@ def drop(actor, o, report=True, all=False):
         must_split = True
     else:
         if o.equipment:
-            dequip(actor, o.equipment, report)
+            unequip(actor, o.equipment, report)
         actor.inventory.remove(o)
 
     combined = False
@@ -295,7 +308,7 @@ def drop(actor, o, report=True, all=False):
 
 def use(actor, o, report=True):
     """
-    If the object has the Equipment component, toggle equip/dequip.
+    If the object has the Equipment component, toggle equip/unequip.
     Otherwise invoke its use_function and (if not cancelled) destroy it.
     """
     if o.equipment:
@@ -315,7 +328,7 @@ def use(actor, o, report=True):
 
 def _toggle_equip(actor, eqp, report=True):
     if eqp.is_equipped:
-        dequip(actor, eqp, report)
+        unequip(actor, eqp, report)
     else:
         equip(actor, eqp, report)
 
@@ -327,22 +340,22 @@ def equip(actor, eqp, report=True):
     """
     old_equipment = get_equipped_in_slot(actor, eqp.slot)
     if old_equipment is not None:
-        dequip(actor, old_equipment, report)
+        unequip(actor, old_equipment, report)
 
     eqp.is_equipped = True
     if report:
         log.message('Equipped ' + eqp.owner.name + ' on ' + eqp.slot + '.', libtcod.light_green)
 
 
-def dequip(actor, eqp, report=True):
+def unequip(actor, eqp, report=True):
     """
-    Dequip the object (and log).
+    Unequip the object (and log).
     """
     if not eqp.is_equipped:
         return
     eqp.is_equipped = False
     if report:
-        log.message('Dequipped ' + eqp.owner.name + ' from ' + eqp.slot + '.', libtcod.light_yellow)
+        log.message('Unequipped ' + eqp.owner.name + ' from ' + eqp.slot + '.', libtcod.light_yellow)
 
 
 def get_equipped_in_slot(actor, slot):

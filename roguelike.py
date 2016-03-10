@@ -320,13 +320,13 @@ def handle_keys(player, key):
         interface.log_display()
 
     if player.game_state == 'shooting':
-        weapon = actions.get_equipped_in_slot(player, 'missile weapon')
-        ammo = actions.get_equipped_in_slot(player, 'quiver')
-        target = spells._target_monster(player, weapon.owner.missile_weapon.range)
+        weapon_eq = actions.get_equipped_in_slot(player, 'missile weapon')
+        ammo_eq = actions.get_equipped_in_slot(player, 'quiver')
+        target = spells._target_monster(player, weapon_eq.owner.missile_weapon.range)
         player.game_state = 'playing'
         if not target:
             return 'didnt-take-turn'
-        actions.fire(player, weapon, ammo, target)
+        actions.fire(player, weapon_eq, ammo_eq, target)
         return
 
     if player.game_state == 'running':

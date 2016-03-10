@@ -87,7 +87,7 @@ def _place_random_creatures(new_map, player):
         if fn is not None:
             pos = algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1])
             while new_map.is_blocked_at(pos):
-                pos += ai.random_direction()
+                pos += actions.random_direction()
                 pos.bound(algebra.Rect(0, 0, new_map.width-1, new_map.height-1))
             # print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
             fn(new_map, pos, player)
@@ -118,6 +118,7 @@ def _inhabit_caravanserai(new_map, player):
         else:
             _new_equipment(bandit, miscellany.arrow(4))
             _new_equipment(bandit, miscellany.horn_bow())
+            bandit.name = 'bandit archer'
 
 
 def _inhabit_quarry(new_map, player):
@@ -657,7 +658,7 @@ def make_map(player, dungeon_level):
     # make sure we're not starting on top of an object or terrain feature
     while (new_map.terrain_at(player.pos).name != 'ground'):
         # subtle bug? doesn't use the map-building random number generator
-        player.pos = player.pos + ai.random_direction()
+        player.pos = player.pos + actions.random_direction()
         player.pos.bound(algebra.Rect(0, 0, new_map.width - 1, new_map.height - 1))
 
     new_map.initialize_fov()
