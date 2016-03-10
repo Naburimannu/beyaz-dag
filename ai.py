@@ -30,17 +30,20 @@ def ignoring_monster(monster, player, metadata):
     A creature that moves randomly (q.v. confused_monster) and ignores
     the player unless hurt, in which case it becomes hostile or scared.
     """
-    if monster.fighter.last_attacker:
-        if monster.fighter.unarmed_damage > 2:
-            monster.ai = AI(hostile_monster,
-                            hostile_monster_metadata(monster.fighter.last_attacker))
-        else:
-            monster.ai = AI(fleeing_monster,
-                            hostile_monster_metadata(monster.fighter.last_attacker))
-        return monster.ai.take_turn(player)
-    # TODO: this movement may fail, so the monster will appear to
-    # move less when in constricted quarters.
-    actions.move(monster, random_direction())
+    if libtcod.map_is_in_fov(monster.current_map.fov_map,
+                             monster.x, monster.y):
+        if monster.fighter.last_attacker:
+            if monster.fighter.unarmed_damage > 2:
+                monster.ai = AI(hostile_monster,
+                                hostile_monster_metadata(monster.fighter.last_attacker))
+            else:
+                monster.ai = AI(fleeing_monster,
+                                hostile_monster_metadata(monster.fighter.last_attacker))
+            monster.ai.set_owner(monster)
+            return monster.ai.take_turn(player)
+        # TODO: this movement may fail, so the monster will appear to
+        # move less when in constricted quarters.
+        actions.move(monster, random_direction())
 
 
 

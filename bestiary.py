@@ -59,6 +59,9 @@ def wolf(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'wolf',
                             libtcod.darker_orange, hp=16, unarmed_damage=4)
 
+def hyena(new_map, pos, player):
+    return _hostile_monster(new_map, pos, player, 'C', 'hyena',
+                            libtcod.amber, hp=12, unarmed_damage=3)
 
 def snow_leopard(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'f', 'snow leopard',
@@ -67,6 +70,10 @@ def snow_leopard(new_map, pos, player):
 def deer(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'deer',
                              libtcod.darker_yellow, hp=16)
+
+def gazelle(new_map, pos, player):
+    return _ignoring_monster(new_map, pos, player, 'q', 'gazelle',
+                             libtcod.amber, hp=12)
 
 def steppe_pony(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'steppe pony',

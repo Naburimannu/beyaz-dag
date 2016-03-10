@@ -21,6 +21,12 @@ def move(o, direction):
     Returns true if move succeeded.
     """
     goal = o.pos + direction
+    if (goal.x < 0 or goal.y < 0 or
+            goal.x >= o.current_map.width or
+            goal.y >= o.current_map.height):
+        # try_ catches this for the player, but need to
+        # check here for NPCs
+        return False
     if not o.current_map.is_blocked_from(o.pos, goal):
         o.pos = goal
         return True

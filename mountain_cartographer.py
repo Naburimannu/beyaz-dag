@@ -40,24 +40,6 @@ def _random_position_in_region(new_map, region):
         if new_map.region[candidate.x][candidate.y] == region:
             return candidate
 
-def _create_room(new_map, room):
-    """
-    Make the tiles in a rectangle passable
-    """
-    for x in range(room.x1 + 1, room.x2):
-        for y in range(room.y1 + 1, room.y2):
-            new_map.terrain[x][y] = 1
-
-
-def _create_h_tunnel(new_map, x1, x2, y):
-    for x in range(min(x1, x2), max(x1, x2) + 1):
-        new_map.terrain[x][y] = 1
-
-
-def _create_v_tunnel(new_map, y1, y2, x):
-    for y in range(min(y1, y2), max(y1, y2) + 1):
-        new_map.terrain[x][y] = 1
-
 
 def _random_choice_index(chances):
     """
@@ -85,24 +67,29 @@ def _random_choice(chances_dict):
     return strings[_random_choice_index(chances)]
 
 
-def _from_dungeon_level(new_map, table):
-    # Returns a value that depends on level.
-    # The table specifies what value occurs after each level, default is 0.
-    for (value, level) in reversed(table):
-        if new_map.dungeon_level >= level:
-            return value
-    return 0
-
-
-def _place_test_creatures(new_map, player):
+def _place_random_creatures(new_map, player):
     start_region = new_map.region[player.pos.x][player.pos.y]
+    terrain_chances = {
+        'lake' : { None : 10 },
+        'marsh' : { None : 10, bestiary.swamp_goblin : 10 },
+        'desert' : { None : 10, bestiary.hyena : 5, bestiary.gazelle : 5 },
+        'scrub' : { None : 10 },
+        'forest' : { None : 10 },
+        'rock' : { None : 10 },
+        'ice' : { None : 10 }
+    }
     for r in range(len(new_map.region_seeds)):
         if r == start_region:
             continue
-        if new_map.region_terrain[r] == 'marsh':
-            bestiary.swamp_goblin(new_map,
-                algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
-                player)
+        #if new_map.region_terrain[r] == 'marsh':
+        #    bestiary.swamp_goblin(new_map,
+        #        algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
+        #        player)
+        fn = _random_choice(terrain_chances[new_map.region_terrain[r]])
+        if fn is not None:
+            pos = algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1])
+            print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
+            fn(new_map, pos, player)
 
 
 def _new_item(actor, obj):
@@ -658,8 +645,7 @@ def make_map(player, dungeon_level):
     new_map.random_seed = libtcod.random_save(0)
     _build_map(new_map)
 
-    # TODO: place objects and creatures
-    _place_test_creatures(new_map, player)
+    _place_random_creatures(new_map, player)
     if new_map.caravanserai:
         _inhabit_caravanserai(new_map, player)
     if new_map.quarry_region:
