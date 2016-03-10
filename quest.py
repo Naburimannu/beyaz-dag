@@ -7,6 +7,12 @@ import actions
 
 
 TEXT_WIDTH = config.SCREEN_WIDTH - 20
+QUEST_SP = 6
+
+
+def _grant_quest_sp(player):
+    player.skill_points += QUEST_SP
+    log.message('You gained ' + str(QUEST_SP) + ' skill points.')
 
 
 def goddess_charge(player, goddess):
@@ -26,6 +32,7 @@ def goddess_charge(player, goddess):
     renderer.finish_welcome()
     goddess.wait_count = 0
     goddess.interactable.use_function = goddess_waiting
+    _grant_quest_sp(player)
 
 
 def goddess_waiting(player, goddess):
@@ -63,6 +70,12 @@ def nymph_info(player, nymph):
     line += 1
 
     renderer.finish_welcome()
+    nymph.interactable.use_function = nymph_unhappy
+    _grant_quest_sp(player)
+
+
+def nymph_unhappy(player, nymph):
+    log.message("Indeed, it is fated - necessary, even - that Tepegoz be slain, but do not think I'm happy about it. Neither be certain that you are fated to be his slayer.", color=libtcod.azure)
 
 
 def display_welcome():
