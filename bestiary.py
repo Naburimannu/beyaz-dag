@@ -49,7 +49,7 @@ def swamp_goblin(new_map, pos, player):
                             skills={'grappling':20})
 
 def bear(new_map, pos, player):
-    return _hostile_monster(new_map, pos, player, 'q', 'bear',
+    return _hostile_monster(new_map, pos, player, 'U', 'bear',
                             libtcod.darker_orange, hp=40, unarmed_damage=6,
                             skills={'grappling':30})
 
