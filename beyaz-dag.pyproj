@@ -39,6 +39,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ca_cartographer.py" />
+    <Compile Include="compound_cartographer.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="miscellany.py">
       <SubType>Code</SubType>
     </Compile>
