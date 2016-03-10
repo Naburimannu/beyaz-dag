@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d14cb18f-be1d-4333-b281-dc739aa7133f}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>roguelike.py</StartupFile>
+    <StartupFile>ca_cartographer.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -38,6 +38,7 @@
     <Compile Include="bestiary.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ca_cartographer.py" />
     <Compile Include="miscellany.py">
       <SubType>Code</SubType>
     </Compile>
