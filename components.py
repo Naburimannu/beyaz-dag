@@ -14,7 +14,7 @@ class Object:
     def __init__(self, pos, char, name, color,
                  blocks=False, always_visible=False,
                  fighter=None, ai=None, item=None, equipment=None,
-                 melee=None):
+                 melee=None, missile=None):
         self.pos = pos
         self.char = char
         self.name = name
@@ -33,6 +33,8 @@ class Object:
 
         self.melee_weapon = melee
         self._ensure_ownership(melee)
+        self.missile_weapon = missile
+        self._ensure_ownership(missile)
 
     @property
     def x(self):
@@ -155,11 +157,21 @@ class MeleeWeapon(Component):
 
     def set_owner(self, entity):
         Component.set_owner(self, entity)
-
-        # There must be an Equipment component for the MeleeWeapon
-        # component to work properly.
         if entity.equipment is None:
             entity.equipment = Equipment('right hand')
+            entity.equipment.set_owner(entity)
+
+
+class MissileWeapon(Component):
+    def __init__(self, skill, damage, ammo):
+        self.skill = skill
+        self.damage = damage
+        self.ammo = ammo
+
+    def set_owner(self, entity):
+        Component.set_owner(self, entity)
+        if entity.equipment is None:
+            entity.equipment = Equipment('missile weapon')
             entity.equipment.set_owner(entity)
 
 

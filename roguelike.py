@@ -51,11 +51,16 @@ skill_list = [
 ]
 
 
-def try_pick_up(player):
-    for object in player.current_map.objects:
-        if object.x == player.x and object.y == player.y and object.item:
-            return actions.pick_up(player, object)
-    return False
+def display_character_info(player):
+    data = ['Skill points: ' + str(player.skill_points),
+        'Current health: ' + str(int(player.fighter.hp)),
+        'Maximum wounds: ' + str(player.fighter.max_hp),
+        'Skills:']
+    for key, value in player.fighter.skills.items():
+        data.append('  ' + key + ': ' + str(value))
+
+    info_string = '\n'.join(data)
+    renderer.msgbox(info_string, CHARACTER_SCREEN_WIDTH)
 
 
 def try_drop(player):
@@ -68,6 +73,27 @@ def try_drop(player):
     return False
 
 
+def try_fire(player):
+    weapon = actions.get_equipped_in_slot(player, 'missile weapon')
+    if not weapon:
+        log.message('No missile weapon ready to fire.')
+        return False
+    ammo = actions.get_equipped_in_slot(player, 'quiver')
+    if not ammo or ammo.owner.name != weapon.owner.missile_weapon.ammo:
+        log.message('You need ' + weapon.owner.missile_weapon.ammo + ' to fire the ' + weapon.owner.name)
+        return False
+    # TODO pass this turn
+    # TODO enter targeting mode
+    # TODO next turn invoke actions.fire actions.fire(player)
+
+
+def try_pick_up(player):
+    for object in player.current_map.objects:
+        if object.x == player.x and object.y == player.y and object.item:
+            return actions.pick_up(player, object)
+    return False
+
+
 def try_use(player):
     chosen_item = inventory_menu(
         player,
@@ -76,6 +102,84 @@ def try_use(player):
         actions.use(player, chosen_item.owner)
         return True
     return False
+
+
+def increase_player_skills(player):
+    while True:
+        options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) +
+                   ', costs ' + str(s.cost) + ' sp'
+            for s in skill_list]
+
+        # Make sure log.message() displays as we loop
+        renderer.render_all(player, None)
+        (key, target) = renderer.menu('Choose skill to increase, or x to explain:\n' +
+                                      '(' + str(player.skill_points) + ' skill points available)\n',
+                                      options, INVENTORY_WIDTH)
+        if key == ord('x'):
+            (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n\n', options, INVENTORY_WIDTH)
+            if i2 is not None:
+                log.message(skill_list[i2].name + ': ' + skill_list[i2].description)
+            
+        if not target:
+            return
+
+        if skill_list[target].cost > player.skill_points:
+            log.message(skill_list[target].name.capitalize() + ' costs ' + str(skill_list[target].cost) +
+                        ' skill points, you only have ' + str(player.skill_points))
+            continue
+
+        value = player.fighter.skills.get(skill_list[target].name, 0)
+        if value >= 250:
+            log.message(skill_list[target].name.capitalize() + ' is already at its maximum.')
+            continue
+
+        player.skill_points -= skill_list[target].cost
+        if value < 100:
+            value += libtcod.random_get_int(0, 1, 8)
+        elif value < 150:
+            value += libtcod.random_get_int(0, 1, 4)
+        elif value < 200:
+            value += libtcod.random_get_int(0, 1, 2)
+        elif value < 250:
+            value += 1
+        player.fighter.skills[skill_list[target].name] = value
+        log.message('Increased ' + skill_list[target].name + ' to ' + str(value))
+
+
+def try_stairs(player):
+    for f in player.current_map.portals:
+        if f.pos == player.pos:
+            if f.destination is None:
+                f.destination = next_level(player, f)
+                # player.pos was changed by next_level()!
+                f.dest_position = player.pos
+                return True
+            else:
+                revisit_level(player, f)
+                return True
+    return False
+
+
+def display_help():
+    renderer.msgbox('move using numpad or "vi" keys:\n' +
+                    '  7 8 9   y k u\n' +
+                    '   \|/     \|/ \n' +
+                    '  4-+-6   h-+-l\n' +
+                    '   /|\     /|\ \n' +
+                    '  1 2 3   b j m\n' +
+                    '\n' +
+                    '  numpad 5 or . (period) to wait,\n' +
+                    '  shift-move to run\n' +
+                    '\n' +
+                    'g/get, d/drop, c/character information\n' +
+                    'f/fire your bow\n' +
+                    'i/view inventory; equip or use carried items\n' +
+                    's/increase skills\n' +
+                    '</traverse stairs\n' +
+                    '\n' +
+                    'control-p/scroll through old log messages\n' +
+                    'mouse over objects to look at them\n',
+                    INVENTORY_WIDTH)
 
 
 def _check_exploration_xp(player, new_region, new_elevation):
@@ -174,96 +278,6 @@ def inventory_menu(player, header):
     return None
 
 
-def display_character_info(player):
-    data = ['Skill points: ' + str(player.skill_points),
-        'Current health: ' + str(int(player.fighter.hp)),
-        'Maximum wounds: ' + str(player.fighter.max_hp),
-        'Skills:']
-    for key, value in player.fighter.skills.items():
-        data.append('  ' + key + ': ' + str(value))
-
-    info_string = '\n'.join(data)
-    renderer.msgbox(info_string, CHARACTER_SCREEN_WIDTH)
-
-
-def increase_player_skills(player):
-    while True:
-        options = [s.name + ': currently ' + str(player.fighter.skills.get(s.name, 0)) +
-                   ', costs ' + str(s.cost) + ' sp'
-            for s in skill_list]
-
-        # Make sure log.message() displays as we loop
-        renderer.render_all(player, None)
-        (key, target) = renderer.menu('Choose skill to increase, or x to explain:\n' +
-                                      '(' + str(player.skill_points) + ' skill points available)\n',
-                                      options, INVENTORY_WIDTH)
-        if key == ord('x'):
-            (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n\n', options, INVENTORY_WIDTH)
-            if i2 is not None:
-                log.message(skill_list[i2].name + ': ' + skill_list[i2].description)
-            
-        if not target:
-            return
-
-        if skill_list[target].cost > player.skill_points:
-            log.message(skill_list[target].name.capitalize() + ' costs ' + str(skill_list[target].cost) +
-                        ' skill points, you only have ' + str(player.skill_points))
-            continue
-
-        value = player.fighter.skills.get(skill_list[target].name, 0)
-        if value >= 250:
-            log.message(skill_list[target].name.capitalize() + ' is already at its maximum.')
-            continue
-
-        player.skill_points -= skill_list[target].cost
-        if value < 100:
-            value += libtcod.random_get_int(0, 1, 8)
-        elif value < 150:
-            value += libtcod.random_get_int(0, 1, 4)
-        elif value < 200:
-            value += libtcod.random_get_int(0, 1, 2)
-        elif value < 250:
-            value += 1
-        player.fighter.skills[skill_list[target].name] = value
-        log.message('Increased ' + skill_list[target].name + ' to ' + str(value))
-
-
-def display_help():
-    renderer.msgbox('move using numpad or "vi" keys:\n' +
-                    '  7 8 9   y k u\n' +
-                    '   \|/     \|/ \n' +
-                    '  4-+-6   h-+-l\n' +
-                    '   /|\     /|\ \n' +
-                    '  1 2 3   b j m\n' +
-                    '\n' +
-                    '  numpad 5 or . (period) to wait,\n' +
-                    '  shift-move to run\n' +
-                    '\n' +
-                    'g/get, d/drop, c/character information\n' +
-                    'f/fire your bow\n' +
-                    'i/view inventory; equip or use carried items\n' +
-                    's/increase skills\n' +
-                    '</traverse stairs\n' +
-                    '\n' +
-                    'control-p/scroll through old log messages\n' +
-                    'mouse over objects to look at them\n',
-                    INVENTORY_WIDTH)
-
-
-def try_stairs(player):
-    for f in player.current_map.portals:
-        if f.pos == player.pos:
-            if f.destination is None:
-                f.destination = next_level(player, f)
-                # player.pos was changed by next_level()!
-                f.dest_position = player.pos
-                return True
-            else:
-                revisit_level(player, f)
-                return True
-    return False
-
-
 def _running_lookahead(player):
     """
     Returns true if the upcoming terrain doesn't match the current terrain,
@@ -320,16 +334,16 @@ def handle_keys(player, key):
                 # Do nothing
                 pass
         else:
+            if key_char == 'c':
+                display_character_info(player)
+            if key_char == 'd':
+                try_drop(player)
+            if key_char == 'f':
+                try_fire(player)
             if key_char == 'g':
                 try_pick_up(player)
             if key_char == 'i':
-                # interface.debounce()
                 try_use(player)
-            if key_char == 'd':
-                # interface.debounce()
-                try_drop(player)
-            if key_char == 'c':
-                display_character_info(player)
             if key_char == 's':
                 increase_player_skills(player)
             if key_char == '<':
@@ -358,9 +372,6 @@ def save_game(player):
     overwrites any existing data.
     """
     file = shelve.open('savegame', 'n')
-    # Can't shelve kdtree
-    # TODO: zero out the trees in ALL maps
-    player.current_map.region_tree = None
     file['current_map'] = player.current_map
     file['player_index'] = player.current_map.objects.index(player)
     file['game_msgs'] = log.game_msgs

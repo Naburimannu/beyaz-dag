@@ -89,13 +89,19 @@ class Direction(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def length(self):
+        """
+        Usually 1, but sometimes we have unnormalized Directions.
+        """
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
     def normalize(self):
         """
         Normalize to length 1 (preserving direction), then round and
         convert to integer so the movement is restricted to the map grid.
         If length is 0, remains 0.
         """
-        distance = math.sqrt(self.x ** 2 + self.y ** 2)
+        distance = self.length()
         if distance > 0:
             self.x = int(round(self.x / distance))
             self.y = int(round(self.y / distance))

@@ -169,7 +169,6 @@ class OutdoorMap(object):
 
         self.region_seeds = []
         self.region_elevations = []
-        self.region_tree = None
         self.region_terrain = []
 
         self.region_entered = []

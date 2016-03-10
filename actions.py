@@ -64,19 +64,19 @@ def attack(fighter, target, report=True):
 
     a_weapon_skill = fighter.skills.get('grappling', 10)
     # print('Attacker grappling is ' + str(a_weapon_skill))
-    a_weapon = _get_equipped_in_slot(fighter.owner, 'right hand')
+    a_weapon = get_equipped_in_slot(fighter.owner, 'right hand')
     if a_weapon:
         # print('Attacker is wielding ' + a_weapon.owner.name)
         a_weapon_skill = fighter.skills.get(a_weapon.owner.melee_weapon.skill, 10)
         # print('Attacker ' + a_weapon.owner.melee_weapon.skill + ' is ' + str(a_weapon_skill))
 
     d_weapon_skill = target.fighter.skills.get('grappling', 10)
-    d_weapon = _get_equipped_in_slot(target, 'right hand')
+    d_weapon = get_equipped_in_slot(target, 'right hand')
     if d_weapon:
         d_weapon_skill = target.fighter.skills.get(d_weapon.owner.melee_weapon.skill, 10)
 
     # TODO - no allowance for left-hand items other than shield
-    d_shield = _get_equipped_in_slot(target, 'left hand')
+    d_shield = get_equipped_in_slot(target, 'left hand')
     shield_skill = 0
     if d_shield:
         shield_skill = target.fighter.skills.get('shield', 10)
@@ -119,6 +119,53 @@ def attack(fighter, target, report=True):
             ' attacks ' + target.name +
             ' (' + str(effective_defense_skill) + ')' +
             ' but it has no effect!')
+
+
+def fire(actor, weapon, ammo, target):
+    ammo.owner.item.count -= 1
+    if ammo.owner.item.count == 0:
+        dequip(actor, ammo, False)
+        actor.inventory.remove(ammo.owner)
+    target.fighter.last_attacker = actor
+
+    a_weapon_skill = actor.fighter.skills.get(weapon.owner.missile_weapon.skill, 10)
+    effective_attack_skill = max(a_weapon_skill - actor.fighter.action_penalty, 10)
+    vector = target.pos - actor.pos
+    distance = math.sqrt(vector.x ** 2 + vector.y **  2)
+    effective_defense_skill = 10 + 5 * distance
+    attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
+    defense_roll = libtcod.random_get_int(0, 1, effective_defense_skill)
+
+    if defense_roll > attack_roll:
+        if report:
+            log.message(fighter.owner.name.capitalize() +
+                ' (' + str(effective_attack_skill) + ')' +
+                ' shoots at ' + target.name +
+                ' (' + str(effective_defense_skill) + ')' +
+                ' but misses.')
+        # TODO possibly drop ammo in world at or near target
+        return
+
+    damage = weapon.owner.missile_weapon.damage - target.fighter.defense
+
+    if damage > 0:
+        if report:
+            log.message(
+                fighter.owner.name.capitalize() +
+                ' (' + str(effective_attack_skill) + ')' +
+                ' shoots ' + target.name +
+                ' (' + str(effective_defense_skill) + ')' +
+                ' for ' + str(damage) + ' wounds.')
+        inflict_damage(fighter.owner, target.fighter, damage)
+    elif report:
+        log.message(
+            fighter.owner.name.capitalize() +
+            ' (' + str(effective_attack_skill) + ')' +
+            ' shoots ' + target.name +
+            ' (' + str(effective_defense_skill) + ')' +
+            ' but it has no effect!')
+
+    # TODO possibly drop ammo in world at or near target
 
 
 def inflict_damage(actor, fighter, damage):
@@ -198,7 +245,7 @@ def pick_up(actor, o, report=True):
 
         # Special case: automatically equip if the corresponding equipment slot is unused.
         equipment = o.equipment
-        if equipment and _get_equipped_in_slot(actor, equipment.slot) is None:
+        if equipment and get_equipped_in_slot(actor, equipment.slot) is None:
             equip(actor, equipment, report)
         return True
 
@@ -278,7 +325,7 @@ def equip(actor, eqp, report=True):
     Equip the object (and log unless report=False).
     Ensure only one object per slot.
     """
-    old_equipment = _get_equipped_in_slot(actor, eqp.slot)
+    old_equipment = get_equipped_in_slot(actor, eqp.slot)
     if old_equipment is not None:
         dequip(actor, old_equipment, report)
 
@@ -298,7 +345,7 @@ def dequip(actor, eqp, report=True):
         log.message('Dequipped ' + eqp.owner.name + ' from ' + eqp.slot + '.', libtcod.light_yellow)
 
 
-def _get_equipped_in_slot(actor, slot):
+def get_equipped_in_slot(actor, slot):
     """
     Returns Equipment in a slot, or None.
     """
