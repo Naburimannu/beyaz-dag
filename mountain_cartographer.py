@@ -156,7 +156,7 @@ def _interpolate_heights(new_map, peak):
         new_map.region_elevations[p] = max(elevation, 0)
 
 
-def _ensure_penultimate_height(new_map, peak):
+def _ensure_penultimate_height(new_map, peak, region_tree):
     """
     Worldgen will frequently generate a map with a peak at elevation 9,
     and nothing else above elevation 7, which prevents easy access to
@@ -167,7 +167,7 @@ def _ensure_penultimate_height(new_map, peak):
             print('Found height 8 at index ' + str(r))
             return
 
-    (d, i) = new_map.region_tree.query(peak, 8)
+    (d, i) = region_tree.query(peak, 8)
     for r in i:
         if new_map.region_elevations[r] == 9:
             continue
@@ -584,7 +584,7 @@ def _build_map(new_map):
             new_map.region_seeds.append([x, y])
 
     print('Growing the world-tree')
-    new_map.region_tree = scipy.spatial.KDTree(new_map.region_seeds)
+    region_tree = scipy.spatial.KDTree(new_map.region_seeds)
 
     new_map.region_terrain = [None for i in range(len(new_map.region_seeds))]
     new_map.region_elevations = [-1 for r in range(len(new_map.region_seeds))]
@@ -594,7 +594,7 @@ def _build_map(new_map):
     print('Assigning regions')
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
-            (d, i) = new_map.region_tree.query([[x, y]])
+            (d, i) = region_tree.query([[x, y]])
             new_map.region[x][y] = i[0]
             new_map.terrain[x][y] = 1
 
@@ -608,12 +608,12 @@ def _build_map(new_map):
         new_map.region_elevations[r*20] = 0
         new_map.region_elevations[r*20+19] = 0
 
-    (d, peak_regions) = new_map.region_tree.query([peak], 3)
+    (d, peak_regions) = region_tree.query([peak], 3)
     for p in peak_regions[0]:
         new_map.region_elevations[p] = 9
 
     _interpolate_heights(new_map, peak)
-    _ensure_penultimate_height(new_map, peak)
+    _ensure_penultimate_height(new_map, peak, region_tree)
     _extend_hills(new_map, peak)
     _debug_region_heights(new_map)
 
