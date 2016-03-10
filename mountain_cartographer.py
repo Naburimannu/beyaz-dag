@@ -110,6 +110,8 @@ def _new_equipment(actor, obj):
 def _inhabit_rotunda(new_map, peak):
     goddess = Object(algebra.Location(peak[0], peak[1]), '@', 'The White Goddess', libtcod.white, blocks=True,
         interactable=Interactable(use_function=quest.goddess_charge))
+    new_map.objects.append(goddess)
+
 
 def _inhabit_caravanserai(new_map, player):
     # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
@@ -661,6 +663,8 @@ def _build_map(new_map):
     _dig_quarry(new_map, peak)
     _make_grotto(new_map)
 
+    new_map.peak = peak
+
 
 def make_map(player, dungeon_level):
     """
@@ -676,7 +680,7 @@ def make_map(player, dungeon_level):
     _build_map(new_map)
 
     _place_random_creatures(new_map, player)
-    _inhabit_rotunda(new_map, peak)
+    _inhabit_rotunda(new_map, new_map.peak)
     if new_map.caravanserai:
         _inhabit_caravanserai(new_map, player)
     if new_map.quarry_region:
