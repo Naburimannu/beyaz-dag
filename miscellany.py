@@ -11,12 +11,12 @@ import spells  # nasty levelization violation?!
 
 def closed_door(pos):
     return Object(pos, '+', 'closed door', libtcod.white, blocks=True,
-            interactable=Interactable(use_function=do_open_door))
+            interactable=Interactable(use_function=_do_open_door))
 
 def open_door(pos):
     return Object(pos, "'", 'open door', libtcod.white, blocks=False)
 
-def do_open_door(actor, target):
+def _do_open_door(actor, target):
     replacement = open_door(target.pos)
     actor.current_map.objects.append(replacement)
     actor.current_map.objects.remove(target)

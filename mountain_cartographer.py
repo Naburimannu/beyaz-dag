@@ -13,6 +13,7 @@ import ai
 import actions
 import spells
 import quest
+import ca_cartographer
 
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
@@ -578,6 +579,7 @@ def _make_grotto(new_map):
     stairs = Object(region_center, '<', 'stairs down', libtcod.white, always_visible=True)
     stairs.destination = None
     stairs.dest_position = None
+    stairs.generator = ca_cartographer.make_map
     new_map.objects.insert(0, stairs)
     new_map.portals.insert(0, stairs)
 

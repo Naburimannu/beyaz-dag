@@ -74,6 +74,11 @@ class Location(object):
     def to_string(self):
         return str(self.x) + ', ' + str(self.y)
 
+    def distance(self, other):
+        dx = self.x - other.x
+        dy = self.y - other.y
+        return math.sqrt(dx ** 2 + dy ** 2)
+
 
 class Direction(object):
     def __init__(self, x, y, left=None, right=None):

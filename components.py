@@ -55,9 +55,8 @@ class Object:
         """
         Return the distance to another object.
         """
-        dx = other.x - self.x
-        dy = other.y - self.y
-        return math.sqrt(dx ** 2 + dy ** 2)
+        return self.pos.distance(other.pos)
+
 
     def distance(self, x, y):
         """
@@ -69,7 +68,7 @@ class Object:
         """
         Return the distance to some coordinates.
         """
-        return math.sqrt((pos.x - self.x) ** 2 + (pos.y - self.y) ** 2)
+        return self.pos.distance(pos)
 
 
 class Component:

@@ -9,11 +9,27 @@ import ai
 import spells
 
 
+# After code by Eric S. Raymond
+# https://mail.python.org/pipermail/image-sig/2005-September/003559.html
+def _floodfill(new_map, x, y, convert_from, convert_to):
+    edge = [(x, y)]
+    new_map.terrain[x][y] = convert_to
+    while edge:
+        newedge = []
+        for (x, y) in edge:
+            for (s, t) in ((x-1, y-1), (x, y-1), (x+1, y-1), (x-1, y), (x+1, y), (x-1, y+1), (x, y+1), (x+1, y+1)):
+                if (s >= 0 and t >= 0 and s < new_map.width and t < new_map.height and
+                        new_map.terrain[s][t] == convert_from):
+                    new_map.terrain[s][t] = convert_to
+                    newedge.append((s, t))
+        edge = newedge
+    
+
 def _count_neightboring_walls(new_map, x, y):
     neighbors = 0
     for ii in range(x-1, x+2):
         for jj in range(y-1, y+2):
-            if new_map.terrain[ii][jj] == 0:
+            if new_map.terrain[ii][jj] == map.TERRAIN_WALL:
                 neighbors += 1
     return neighbors
 
@@ -31,7 +47,7 @@ def _count_farther_walls(new_map, x, y):
                     ii > new_map.width - 1 or
                     jj > new_map.height - 1):
                 continue
-            if new_map.terrain[ii][jj] == 0:
+            if new_map.terrain[ii][jj] == map.TERRAIN_WALL:
                 neighbors += 1
     return neighbors
 
@@ -44,18 +60,18 @@ def _quickly_count_interior_walls(new_map, x, y):
     neighbors = 0
     far_neighbors = 0
     for ii in range(x-1, x+2):
-        if new_map.terrain[ii][y-2] == 0:
+        if new_map.terrain[ii][y-2] == map.TERRAIN_WALL:
             far_neighbors += 1
-        if new_map.terrain[ii][y+2] == 0:
+        if new_map.terrain[ii][y+2] == map.TERRAIN_WALL:
             far_neighbors += 1
     for jj in range(y-1, y+2):
-        if new_map.terrain[x-2][jj] == 0:
+        if new_map.terrain[x-2][jj] == map.TERRAIN_WALL:
             far_neighbors += 1
-        if new_map.terrain[x+2][jj] == 0:
+        if new_map.terrain[x+2][jj] == map.TERRAIN_WALL:
             far_neighbors += 1
     for ii in range(x-1, x+2):
         for jj in range(y-1, y+2):
-            if new_map.terrain[ii][jj] == 0:
+            if new_map.terrain[ii][jj] == map.TERRAIN_WALL:
                 neighbors += 1
     return (neighbors, neighbors + far_neighbors)
 
@@ -63,9 +79,9 @@ def _quickly_count_interior_walls(new_map, x, y):
 def _assign(new_map, near_min, far_max, x, y, near_count, far_count):
         if (near_count >= near_min or
                 far_count <= far_max):
-            new_map.spare_terrain[x][y] = 0
+            new_map.spare_terrain[x][y] = map.TERRAIN_WALL
         else:
-            new_map.spare_terrain[x][y] = 1
+            new_map.spare_terrain[x][y] = map.TERRAIN_GROUND
 
 
 def _assess_edge(new_map, near_min, far_max, x, y):
@@ -91,6 +107,14 @@ def _generation(new_map, near_min, far_max):
     new_map.terrain, new_map.spare_terrain = new_map.spare_terrain, new_map.terrain
 
 
+def _probe_for_stair(new_map, x_range, center_y):
+    for y in (center_y, center_y - 1, center_y + 1, center_y - 2, center_y + 2):
+        for x in x_range:
+         if new_map.terrain[x][y] != map.TERRAIN_WALL:
+            return algebra.Location(x, y)
+    return None
+
+
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
@@ -99,18 +123,55 @@ def _build_map(new_map):
     for x in range(1, new_map.width - 1):
         for y in range(1, new_map.height - 1):
             if libtcod.random_get_float(new_map.rng, 0., 1.) < 0.6:
-                new_map.terrain[x][y] = 1
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
 
+    # Algorithm from http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
+    # Builds using map.TERRAIN_GROUND; we'll replace that with map.TERRAIN_FLOOR in a post-process
     for i in range(4):
         _generation(new_map, 5, 2)
     for i in range(3):
         _generation(new_map, 5, -1)
 
+    center = algebra.Location(new_map.width / 2, new_map.height / 2)
 
-    # TODO: floodfill for largest connected component
-    # TODO: sanity check and reject if necessary
-    # TODO: stairs down
+    stair_loc = _probe_for_stair(new_map, range(new_map.width - 2, center.x, -1),
+                                 center.y)
 
+    if not stair_loc:
+        # Uh-oh; no guarantee of completion
+        print('Recursing with unenterable map:')
+        # _dump(new_map)
+        new_map.random_seed = libtcod.random_save(new_map.rng)
+        return _build_map(new_map)
+
+    pool_x = new_map.width / 4
+    for x in range(pool_x - 6, pool_x + 7):
+        for y in range(center.y - 6, center.y + 7):
+            dx = x - pool_x
+            dy = y - center.y
+            if math.sqrt(dx ** 2 + dy ** 2) > 6:
+                continue
+            if new_map.terrain[x][y] == map.TERRAIN_WALL:
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
+
+    # Can we reach from the stairs to the center of the pool?
+    _floodfill(new_map, stair_loc.x, stair_loc.y, map.TERRAIN_GROUND, map.TERRAIN_FLOOR)
+    if new_map.terrain[pool_x][center.y] != map.TERRAIN_FLOOR:
+         # Uh-oh; no guarantee of completion
+        print('Recursing with disconnected map:')
+        # _dump(new_map)
+        new_map.random_seed = libtcod.random_save(new_map.rng)
+        return _build_map(new_map)
+
+    # Close up any unconnected subcaves; flood any western bits
+    for x in range(1, new_map.width-1):
+        for y in range(1, new_map.height-1):
+            if new_map.terrain[x][y] == map.TERRAIN_GROUND:
+                new_map.terrain[x][y] = map.TERRAIN_WALL
+            elif x < pool_x and new_map.terrain[x][y] == map.TERRAIN_FLOOR:
+                new_map.terrain[x][y] = map.TERRAIN_WATER
+
+    return stair_loc
 
 
 def make_map(player, dungeon_level):
@@ -124,12 +185,11 @@ def make_map(player, dungeon_level):
     player.current_map = new_map
     player.camera_position = algebra.Location(0, 0)
     new_map.random_seed = libtcod.random_save(0)
-    _build_map(new_map)
-    # for new_room in new_map.rooms:
-    #     _place_objects(new_map, new_room, player)
-    # player.pos = new_map.rooms[0].center()
+    player.pos = _build_map(new_map)
 
-    # new_map.initialize_fov()
+    # TODO: place objects
+
+    new_map.initialize_fov()
     return new_map
 
 
@@ -137,7 +197,14 @@ def _dump(new_map):
     for y in range(new_map.height):
         s = ''
         for x in range(new_map.width):
-            s += str(new_map.terrain[x][y])
+            if new_map.terrain[x][y] == map.TERRAIN_WALL:
+                s += '#'
+            elif new_map.terrain[x][y] == map.TERRAIN_FLOOR:
+                s += '+'
+            elif new_map.terrain[x][y] == map.TERRAIN_WATER:
+                s += '~'
+            else:
+                s += '.'
         print(s)
 
 
@@ -145,7 +212,7 @@ def _test_display_ca(count):
     mock_player = Object(None, '@', 'you', libtcod.white)
     for i in range(count):
         new_map = make_map(mock_player, 1)
-        # _dump(new_map)
+        _dump(new_map)
 
 
 def _test_map_repeatability():
@@ -167,5 +234,5 @@ def _test_map_repeatability():
 if __name__ == '__main__':
     # cProfile.run('_test_display_ca(10)')
     _test_display_ca(10)
-    _test_map_repeatability()
+    # _test_map_repeatability()
     print('Cartographer tests complete.')

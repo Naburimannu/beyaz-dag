@@ -52,6 +52,7 @@ terrain_types = [
 TERRAIN_WALL = 0
 TERRAIN_GROUND = 1
 TERRAIN_SLOPE = 2
+TERRAIN_WATER = 3
 TERRAIN_FLOOR = 10
 
 region_colors_seen =  {

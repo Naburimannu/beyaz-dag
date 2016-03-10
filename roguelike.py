@@ -424,7 +424,22 @@ def _new_item(player, obj):
 def _new_equipment(player, obj):
     _new_item(player, obj)
     actions.equip(player, obj.equipment, False)
-    
+
+
+def _start_near_quarry(player):
+    if player.current_map.quarry_region:
+        quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
+        player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
+
+def _start_near_grotto(player):
+    if player.current_map.grotto_region:
+        grotto_center = player.current_map.region_seeds[player.current_map.grotto_region]
+        player.pos = algebra.Location(grotto_center[0]+20, grotto_center[1])
+
+def _start_near_peak(player):
+    player.pos = algebra.Location(player.current_map.peak[0] + 20,
+                                  player.current_map.peak[1] - 20)
+
 
 def new_game():
     """
@@ -481,19 +496,12 @@ def new_game():
     log.message('At last you have reached the foot of the mountain. She waits above.', libtcod.red)
     log.message('Press ? or F1 for help.')
 
-    # TEST
-    # if player.current_map.quarry_region:
-    #     quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
-    #     player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
-    #if player.current_map.grotto_region:
-    #    grotto_center = player.current_map.region_seeds[player.current_map.grotto_region]
-    #    player.pos = algebra.Location(grotto_center[0]+20, grotto_center[1])
+    # _start_near_quarry(player)
+    _start_near_grotto(player)
+    # _start_near_peak(player)
 
     # TEST
-    obj = Object(None, '/', 'sword', libtcod.dark_sky,
-                    item=Item(description='A broad iron sword; inflicts 8 damage'),
-                    equipment=Equipment(slot='right hand'),
-                    melee=MeleeWeapon(skill='sword', damage=8))
+    obj = miscellany.sword()
     obj.pos = player.pos
     obj.current_map = player.current_map
     player.current_map.objects.append(obj)
@@ -512,7 +520,10 @@ def next_level(player, portal):
 
     log.message('After a rare moment of peace, you descend deeper into the heart of the dungeon...', libtcod.red)
     old_map = player.current_map
-    cartographer.make_map(player, player.current_map.dungeon_level + 1)
+    generator = portal.generator
+    if not generator:
+        generator = cartographer.make_map
+    generator(player, player.current_map.dungeon_level + 1)
     renderer.clear_console()
     renderer.update_camera(player)
 
