@@ -45,8 +45,8 @@ terrain_types = [
                 None, None, True, True),
 
         # 10
-        Terrain('floor', None, '.', libtcod.gray,
-                libtcod.black, libtcod.darkest_gray, False, False)
+        Terrain('floor', None, None, None,
+                libtcod.Color(200, 180, 50), libtcod.Color(50, 50, 150), False, False)
             ]
 
 TERRAIN_WALL = 0

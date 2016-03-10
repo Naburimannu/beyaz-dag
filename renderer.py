@@ -426,15 +426,10 @@ def _draw_outdoors(player):
                 if explored:
                     _draw_unseen(player, screen_x, screen_y, pos, terrain, icon)
             else:
-                if terrain.seen_color:
-                    if icon:
-                        libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color,
-                                terrain.seen_color)
-                    else:
-                        libtcod.console_set_char_background(_con, screen_x, screen_y, terrain.seen_color)
-                else:
-                    libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color,
-                            map.region_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]])
+                seen_color = terrain.seen_color
+                if not seen_color:
+                    seen_color = map.region_colors_seen[current_map.region_terrain[current_map.region[pos.x][pos.y]]]
+                libtcod.console_put_char_ex(_con, screen_x, screen_y, icon, terrain.icon_color, seen_color) 
                 current_map.explore(pos)
             pos.x += 1
 

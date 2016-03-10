@@ -471,6 +471,7 @@ def _make_caravanserai(new_map):
         for y in range(bounds.y1, center.y - wall_offset):
             new_map.terrain[wall_x][y] = map.TERRAIN_WALL
 
+    # TODO: rooms should be floor, but courtyard should be ground
     # TODO: add two more rooms
     # TODO: create an upstairs and a cellar
     # TODO: track these rooms correctly and populate them intentionally
