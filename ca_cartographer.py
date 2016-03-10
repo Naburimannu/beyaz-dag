@@ -5,8 +5,16 @@ import config
 import algebra
 import map
 from components import *
+import quest
 import ai
 import spells
+
+
+def _inhabit_pool(new_map):
+    pos = algebra.Location(new_map.pool_x, new_map.height / 2)
+    nymph = Object(pos, '@', 'nymph', libtcod.azure, blocks=True,
+        interactable=Interactable(use_function=quest.nymph_info))
+    new_map.objects.append(nymph)
 
 
 # After code by Eric S. Raymond
@@ -134,9 +142,9 @@ def _build_map(new_map):
 
     center = algebra.Location(new_map.width / 2, new_map.height / 2)
 
-    stair_loc = _probe_for_stair(new_map, range(new_map.width - 2, center.x, -1),
+    stair_loc = _probe_for_stair(new_map,
+                                 range(new_map.width - 2, center.x, -1),
                                  center.y)
-
     if not stair_loc:
         # Uh-oh; no guarantee of completion
         print('Recursing with unenterable map:')
@@ -171,6 +179,7 @@ def _build_map(new_map):
             elif x < pool_x and new_map.terrain[x][y] == map.TERRAIN_FLOOR:
                 new_map.terrain[x][y] = map.TERRAIN_WATER
 
+    new_map.pool_x = pool_x
     return stair_loc
 
 
@@ -188,6 +197,7 @@ def make_map(player, dungeon_level):
     player.pos = _build_map(new_map)
 
     # TODO: place objects
+    _inhabit_pool(new_map)
 
     new_map.initialize_fov()
     return new_map

@@ -40,6 +40,31 @@ def goddess_waiting(player, goddess):
         actions.inflict_bleeding(goddess, player.fighter, goddess.wait_count + player.fighter.bleeding_defense)
 
 
+def nymph_info(player, nymph):
+    libtcod.console_clear(0)
+
+    line = 4
+    libtcod.console_print_ex(
+        0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
+        libtcod.CENTER, "The nymph's words roil around you, now loud, now soft, now rushing, now slow:")
+    line += 2
+
+    libtcod.console_set_default_foreground(0, libtcod.azure)
+    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+        "You want to kill my son?")
+    line += 1
+
+    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+        "It's about time.")
+    line += 1
+
+    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+        "You'll need a spear to put his eye out - any spear will do. But then to kill him you'll need something special. A black sword lies in the depths below this mountain. The fastest way there might be to pass the horrors in the old quarry, in the southern hills.")
+    line += 1
+
+    renderer.finish_welcome()
+
+
 def display_welcome():
     libtcod.console_clear(0)
 
