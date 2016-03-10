@@ -82,6 +82,8 @@ def try_fire(player):
     if not ammo or ammo.owner.name != weapon.owner.missile_weapon.ammo:
         log.message('You need at least one ' + weapon.owner.missile_weapon.ammo + ' to fire the ' + weapon.owner.name)
         return False
+    log.message('You ready your ' + weapon.owner.name)
+    player.game_state = 'shooting'
     # TODO pass this turn
     # TODO enter targeting mode
     # TODO next turn invoke actions.fire actions.fire(player)
@@ -303,6 +305,7 @@ def _running_lookahead(player):
 def handle_keys(player, key):
     """
     Returns 'playing', 'didnt-take-turn', or 'exit'.
+    (Or None?!)
     """
     key_char = chr(key.c)
 
@@ -316,6 +319,16 @@ def handle_keys(player, key):
     elif key_char == 'p' and (key.lctrl or key.rctrl):
         interface.log_display()
 
+    if player.game_state == 'shooting':
+        weapon = actions.get_equipped_in_slot(player, 'missile weapon')
+        ammo = actions.get_equipped_in_slot(player, 'quiver')
+        target = spells._target_monster(player, weapon.owner.missile_weapon.range)
+        player.game_state = 'playing'
+        if not target:
+            return 'didnt-take-turn'
+        actions.fire(player, weapon, ammo, target)
+        return
+
     if player.game_state == 'running':
         if (player.endangered or
                 key.vk != libtcod.KEY_NONE or
@@ -323,6 +336,7 @@ def handle_keys(player, key):
                 not player_move_or_attack(player, player.run_direction, False)):
             player.game_state = 'playing'
             return 'didnt-take-turn'
+        return
 
     if player.game_state == 'playing':
         # movement keys
@@ -340,6 +354,7 @@ def handle_keys(player, key):
                 try_drop(player)
             if key_char == 'f':
                 try_fire(player)
+                return  # takes turn!
             if key_char == 'g':
                 try_pick_up(player)
             if key_char == 'i':
@@ -564,7 +579,8 @@ def play_game(player):
 
         if (player_action != 'didnt-take-turn' and
                 (player.game_state == 'playing' or
-                 player.game_state == 'running')):
+                 player.game_state == 'running' or
+                 player.game_state == 'shooting')):
             for object in player.current_map.objects:
                 if object.ai:
                     object.ai.take_turn(player)

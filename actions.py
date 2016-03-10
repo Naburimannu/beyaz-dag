@@ -121,7 +121,7 @@ def attack(fighter, target, report=True):
             ' but it has no effect!')
 
 
-def fire(actor, weapon, ammo, target):
+def fire(actor, weapon, ammo, target, report=True):
     ammo.owner.item.count -= 1
     if ammo.owner.item.count == 0:
         dequip(actor, ammo, False)
@@ -132,13 +132,13 @@ def fire(actor, weapon, ammo, target):
     effective_attack_skill = max(a_weapon_skill - actor.fighter.action_penalty, 10)
     vector = target.pos - actor.pos
     distance = math.sqrt(vector.x ** 2 + vector.y **  2)
-    effective_defense_skill = 10 + 5 * distance
+    effective_defense_skill = 10 + 5 * int(distance)
     attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
     defense_roll = libtcod.random_get_int(0, 1, effective_defense_skill)
 
     if defense_roll > attack_roll:
         if report:
-            log.message(fighter.owner.name.capitalize() +
+            log.message(actor.name.capitalize() +
                 ' (' + str(effective_attack_skill) + ')' +
                 ' shoots at ' + target.name +
                 ' (' + str(effective_defense_skill) + ')' +
@@ -151,15 +151,15 @@ def fire(actor, weapon, ammo, target):
     if damage > 0:
         if report:
             log.message(
-                fighter.owner.name.capitalize() +
+                actor.name.capitalize() +
                 ' (' + str(effective_attack_skill) + ')' +
                 ' shoots ' + target.name +
                 ' (' + str(effective_defense_skill) + ')' +
                 ' for ' + str(damage) + ' wounds.')
-        inflict_damage(fighter.owner, target.fighter, damage)
+        inflict_damage(actor, target.fighter, damage)
     elif report:
         log.message(
-            fighter.owner.name.capitalize() +
+            actor.name.capitalize() +
             ' (' + str(effective_attack_skill) + ')' +
             ' shoots ' + target.name +
             ' (' + str(effective_defense_skill) + ')' +
