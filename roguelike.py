@@ -18,7 +18,7 @@ import actions
 import ai
 import spells
 import quest
-import cartographer
+import dungeon_cartographer
 import mountain_cartographer
 
 INVENTORY_WIDTH = 50
@@ -520,7 +520,7 @@ def next_level(player, portal):
     old_map = player.current_map
     generator = portal.generator
     if not generator:
-        generator = cartographer.make_map
+        generator = dungeon_cartographer.make_map
     generator(player, player.current_map.dungeon_level + 1)
     renderer.clear_console()
     renderer.update_camera(player)

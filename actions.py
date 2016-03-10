@@ -7,8 +7,8 @@ Magical effects and targeting (spells.py) could also live here.
 
 Conditionals and interfaces for the player sit up top in roguelike.py.
 """
-import libtcodpy as libtcod
 import copy
+import libtcodpy as libtcod
 
 import log
 import algebra
@@ -25,56 +25,56 @@ def add_to_map(new_map, pos, obj):
     new_map.objects.append(obj)
 
 
-def move(o, direction):
+def move(obj, direction):
     """
     Moves object by (dx, dy).
     Returns true if move succeeded.
     """
-    goal = o.pos + direction
+    goal = obj.pos + direction
     if (goal.x < 0 or goal.y < 0 or
-            goal.x >= o.current_map.width or
-            goal.y >= o.current_map.height):
+            goal.x >= obj.current_map.width or
+            goal.y >= obj.current_map.height):
         # try_ catches this for the player, but need to
         # check here for NPCs
         return False
-    if not o.current_map.is_blocked_from(o.pos, goal):
-        o.pos = goal
+    if not obj.current_map.is_blocked_from(obj.pos, goal):
+        obj.pos = goal
         return True
     return False
 
 
-def move_towards(o, target_pos):
+def move_towards(obj, target_pos):
     """
     Moves object one step towards target location.
     Returns true if move succeeded.
     """
-    dir = algebra.Direction(target_pos.x - o.x, target_pos.y - o.y)
-    dir.normalize()
-    return move(o, dir)
+    d = algebra.Direction(target_pos.x - obj.x, target_pos.y - obj.y)
+    d.normalize()
+    return move(obj, d)
 
 
-def move_away_from(o, target_pos):
+def move_away_from(obj, target_pos):
     """
     Moves object one step away from target location.
     Returns true if move succeeded.
     """
-    dir = algebra.Direction(o.x - target_pos.x , o.y - target_pos.y)
-    dir.normalize()
-    return move(o, dir)
+    d = algebra.Direction(obj.x - target_pos.x, obj.y - target_pos.y)
+    d.normalize()
+    return move(obj, d)
 
 
-def _assign_damage(fighter, attack, target, defense, quantity, method, report=True):
+def _assign_damage(fighter, attack_skill, target, defense_skill, quantity, method, report=True):
     if quantity > 0:
         if report:
             log.message(
-                fighter.name.capitalize() + ' (' + str(attack) + ') ' +
-                method + ' ' + target.name + ' (' + str(defense) + ')' +
+                fighter.name.capitalize() + ' (' + str(attack_skill) + ') ' +
+                method + ' ' + target.name + ' (' + str(defense_skill) + ')' +
                 ' for ' + str(quantity) + ' wounds.')
         inflict_damage(fighter, target.fighter, quantity)
     elif report:
         log.message(
-            fighter.name.capitalize() + ' (' + str(attack) + ') ' +
-            method + ' ' + target.name + ' (' + str(defense) + ')' +
+            fighter.name.capitalize() + ' (' + str(attack_skill) + ') ' +
+            method + ' ' + target.name + ' (' + str(defense_skill) + ')' +
             ' but it has no effect!')
 
 
@@ -140,8 +140,8 @@ def attack(attacker_ftr, target_obj, report=True):
     if defense_roll > attack_roll:
         if report:
             log.message(attacker_ftr.owner.name.capitalize() + ' (' + str(effective_attack_skill) + ')' +
-                ' attacks ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
-                ' but misses.')
+                        ' attacks ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
+                        ' but misses.')
         return
 
     impact = attacker_ftr.unarmed_damage
@@ -151,8 +151,8 @@ def attack(attacker_ftr, target_obj, report=True):
     damage = impact - target_obj.fighter.defense
 
     _assign_damage(attacker_ftr.owner, effective_attack_skill,
-                    target_obj, effective_defense_skill,
-                    damage, 'attacks', report)
+                   target_obj, effective_defense_skill,
+                   damage, 'attacks', report)
 
 
 def draw(actor_obj, weapon_obj, report=True):
@@ -178,15 +178,15 @@ def fire(actor_obj, weapon_eq, ammo_eq, target_obj, report=True):
     if defense_roll > attack_roll:
         if report:
             log.message(actor_obj.name.capitalize() + ' (' + str(effective_attack_skill) + ')' +
-                ' shoots at ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
-                ' but misses.')
+                        ' shoots at ' + target_obj.name + ' (' + str(effective_defense_skill) + ')' +
+                        ' but misses.')
         _drop_ammo_on_miss(target_obj, ammo_eq.owner)
         return
 
     damage = weapon_eq.owner.missile_weapon.damage - target_obj.fighter.defense
     _assign_damage(actor_obj, effective_attack_skill,
-                    target_obj, effective_defense_skill,
-                    damage, 'shoots', report)
+                   target_obj, effective_defense_skill,
+                   damage, 'shoots', report)
     _drop_ammo_on_hit(target_obj, ammo_eq.owner)
 
 
@@ -239,99 +239,100 @@ def heal(target_ftr, amount):
         target_ftr.hp = target_ftr.max_hp
 
 
-def pick_up(actor, o, report=True):
+def pick_up(actor, obj, report=True):
     """
     Add an Object to the actor's inventory and remove from the map.
     """
-    for p in actor.inventory:
-        if o.item.can_combine(p):
-            p.item.count += o.item.count
-            actor.current_map.objects.remove(o)
+    for match in actor.inventory:
+        if obj.item.can_combine(match):
+            match.item.count += obj.item.count
+            actor.current_map.objects.remove(obj)
             if report:
-                log.message(actor.name.capitalize() + ' picked up a ' + o.name + '!', libtcod.green)
+                log.message(actor.name.capitalize() + ' picked up a ' + obj.name + '!', libtcod.green)
             return True
 
     if len(actor.inventory) >= 22:
         if report:
             log.message(actor.name.capitalize() + ' inventory is full, cannot pick up ' +
-                        o.name + '.', libtcod.red)
+                        obj.name + '.', libtcod.red)
         return False
     else:
-        actor.inventory.append(o)
-        actor.current_map.objects.remove(o)
+        actor.inventory.append(obj)
+        actor.current_map.objects.remove(obj)
         if report:
-            if o.item.count > 0:
-                log.message(actor.name.capitalize() + ' picked up ' + str(o.item.count) + 'x ' + o.name + '!', libtcod.green)
+            if obj.item.count > 1:
+                log.message(actor.name.capitalize() + ' picked up ' + str(obj.item.count) +
+                            'x ' + obj.name + '!', libtcod.green)
             else:
-                log.message(actor.name.capitalize() + ' picked up a ' + o.name + '!', libtcod.green)
+                log.message(actor.name.capitalize() + ' picked up a ' + obj.name + '!', libtcod.green)
 
         # Special case: automatically equip if the corresponding equipment slot is unused.
-        equipment = o.equipment
+        equipment = obj.equipment
         if equipment and get_equipped_in_slot(actor, equipment.slot) is None:
             equip(actor, equipment, report)
         return True
 
 
-def drop(actor, o, report=True, all=False):
+def drop(actor, obj, report=True, drop_all=False):
     """
     Remove an Object from the actor's inventory and add it to the map
     at the player's coordinates.
     If it's equipment, unequip before dropping.
     """
     must_split = False
-    if o.item.count > 1 and not all:
-        o.item.count -= 1
+    if obj.item.count > 1 and not drop_all:
+        obj.item.count -= 1
         must_split = True
     else:
-        if o.equipment:
-            unequip(actor, o.equipment, report)
-        actor.inventory.remove(o)
+        if obj.equipment:
+            unequip(actor, obj.equipment, report)
+        actor.inventory.remove(obj)
 
     combined = False
-    for p in actor.current_map.objects:
-        if p.pos == actor.pos and o.item.can_combine(p):
-            if all:
-                p.item.count += o.item.count
+    for match in actor.current_map.objects:
+        if match.pos == actor.pos and obj.item.can_combine(match):
+            if drop_all:
+                match.item.count += obj.item.count
             else:
-                p.item.count += 1
+                match.item.count += 1
             combined = True
             break
 
     if not combined:
-        new_o = o
+        new_o = obj
         if must_split:
-            new_o = copy.deepcopy(o)
-        if all:
-            new_o.item.count = o.item.count
+            new_o = copy.deepcopy(obj)
+        if drop_all:
+            new_o.item.count = obj.item.count
         else:
             new_o.item.count = 1
         add_to_map(actor.current_map, actor.pos, new_o)
 
     if report:
-        if all:
-            log.message(actor.name.capitalize() + ' dropped ' + str(o.item.count) + 'x ' + o.name + '.', libtcod.yellow)
+        if drop_all:
+            log.message(actor.name.capitalize() + ' dropped ' + str(obj.item.count) + 'x ' + obj.name + '.', libtcod.yellow)
         else:
-            log.message(actor.name.capitalize() + ' dropped a ' + o.name + '.', libtcod.yellow)
+            log.message(actor.name.capitalize() + ' dropped a ' + obj.name + '.', libtcod.yellow)
 
 
-def use(actor, o, report=True):
+def use(actor, obj, report=True):
     """
     If the object has the Equipment component, toggle equip/unequip.
     Otherwise invoke its use_function and (if not cancelled) destroy it.
     """
-    if o.equipment:
-        _toggle_equip(actor, o.equipment, report)
+    if obj.equipment:
+        _toggle_equip(actor, obj.equipment, report)
         return
 
-    if o.item.use_function is None:
+    if obj.item.use_function is None:
         if report:
-            log.message('The ' + o.name + ' cannot be used.')
+            log.message('The ' + obj.name + ' cannot be used.')
     else:
-        if o.item.use_function(actor) != 'cancelled':
-            if o.item.count > 1:
-                o.item.count -= 1
+        if obj.item.use_function(actor) != 'cancelled':
+            if obj.item.count > 1:
+                obj.item.count -= 1
             else:
-                actor.inventory.remove(o)
+                actor.inventory.remove(obj)
 
 
 def _toggle_equip(actor, eqp, report=True):
@@ -383,27 +384,27 @@ class _MockMap(object):
 
 
 def _test_move():
-    o = Object(algebra.Location(0, 0), 'o', 'test object', libtcod.white)
-    o.current_map = _MockMap()
-    assert o.pos == algebra.Location(0, 0)
-    move(o, algebra.south)
-    assert o.pos == algebra.Location(0, 1)
-    move(o, algebra.southeast)
-    assert o.pos == algebra.Location(1, 2)
+    obj = Object(algebra.Location(0, 0), 'o', 'test object', libtcod.white)
+    obj.current_map = _MockMap()
+    assert obj.pos == algebra.Location(0, 0)
+    move(obj, algebra.south)
+    assert obj.pos == algebra.Location(0, 1)
+    move(obj, algebra.southeast)
+    assert obj.pos == algebra.Location(1, 2)
 
 
 def _test_move_towards():
-    o = Object(algebra.Location(0, 0), 'o', 'test object', libtcod.white)
-    o.current_map = _MockMap()
-    assert o.pos == algebra.Location(0, 0)
-    move_towards(o, algebra.Location(10, 10))
-    assert o.pos == algebra.Location(1, 1)
-    move_towards(o, algebra.Location(10, 10))
-    assert o.pos == algebra.Location(2, 2)
-    move_towards(o, algebra.Location(-10, 2))
-    assert o.pos == algebra.Location(1, 2)
-    move_towards(o, o.pos)
-    assert o.pos == algebra.Location(1, 2)
+    obj = Object(algebra.Location(0, 0), 'o', 'test object', libtcod.white)
+    obj.current_map = _MockMap()
+    assert obj.pos == algebra.Location(0, 0)
+    move_towards(obj, algebra.Location(10, 10))
+    assert obj.pos == algebra.Location(1, 1)
+    move_towards(obj, algebra.Location(10, 10))
+    assert obj.pos == algebra.Location(2, 2)
+    move_towards(obj, algebra.Location(-10, 2))
+    assert obj.pos == algebra.Location(1, 2)
+    move_towards(obj, obj.pos)
+    assert obj.pos == algebra.Location(1, 2)
 
 
 def _test_attack():

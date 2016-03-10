@@ -117,7 +117,7 @@ def monster_death(monster):
             # Might be nice to report what's dropped; even though we
             # have drop-all, we can't suppress unequip reporting while
             # still reporting dropping.
-            actions.drop(monster, monster.inventory[0], report=False, all=True)
+            actions.drop(monster, monster.inventory[0], report=False, drop_all=True)
 
     monster.name = 'remains of ' + monster.name
     monster.current_map.objects.remove(monster)
