@@ -19,7 +19,8 @@ ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
-MAX_CARAVANSERAI_SIZE = 24
+MIN_CARAVANSERAI_SIZE = 14
+MAX_CARAVANSERAI_SIZE = 26
 QUARRY_ELEVATION = 3
 
 def _random_position_in_rect(room):
@@ -429,8 +430,10 @@ def _make_caravanserai(new_map):
     br = new_map.region_seeds[found_x * 20 + found_y + (size - 1) * 20 + (size - 1)]
     print('Caravanserai stretches from ', tl, ' to ', br, ' or so')
     bounds = algebra.Rect(tl[0], tl[1],
-                          min(br[0] - tl[0] + 1, MAX_CARAVANSERAI_SIZE),
-                          min(br[1] - tl[1] + 1, MAX_CARAVANSERAI_SIZE))
+                          max(min(br[0] - tl[0] + 1, MAX_CARAVANSERAI_SIZE),
+                              MIN_CARAVANSERAI_SIZE),
+                          max(min(br[1] - tl[1] + 1, MAX_CARAVANSERAI_SIZE),
+                              MIN_CARAVANSERAI_SIZE))
     for x in range(bounds.x1, bounds.x2+1):
         for y in range(bounds.y1, bounds.y2+1):
             if (x == bounds.x1 or x == bounds.x2 or
@@ -441,19 +444,20 @@ def _make_caravanserai(new_map):
 
     # Cut gates in it facing east and south
     center = bounds.center()
-    new_map.terrain[center.x][bounds.y2] = map.TERRAIN_FLOOR
-    new_map.terrain[bounds.x2][center.y] = map.TERRAIN_FLOOR
 
     new_map.caravanserai = bounds
 
     if (bounds.width > bounds.height):
+        new_map.terrain[center.x][bounds.y2] = map.TERRAIN_FLOOR
+        new_map.terrain[bounds.x2][center.y+2] = map.TERRAIN_FLOOR
+
         # Rooms in west half
         wall_offset = libtcod.random_get_int(new_map.rng,
             2, (center.x - bounds.x1) / 3)
         for y in range(bounds.y1, bounds.y2+1):
             new_map.terrain[center.x - wall_offset][y] = map.TERRAIN_WALL
 
-        north_door = libtcod.random_get_int(new_map.rng, bounds.y1+1, center.y-1)
+        north_door = libtcod.random_get_int(new_map.rng, bounds.y1+1, center.y-2)
         _place_door(new_map, algebra.Location(center.x - wall_offset, north_door))
         south_door = libtcod.random_get_int(new_map.rng, center.y+1, bounds.y2-1)
         _place_door(new_map, algebra.Location(center.x - wall_offset, south_door))
@@ -462,25 +466,71 @@ def _make_caravanserai(new_map):
         wall_y = (north_door + south_door) / 2
         for x in range(bounds.x1, center.x - wall_offset):
             new_map.terrain[x][wall_y] = map.TERRAIN_WALL
+
+        # outer rooms
+        courtyard_mid_x = (center.x - wall_offset + bounds.x2) / 2
+        outer_wall_y = (bounds.y1 + center.y+2)/2
+        if outer_wall_y < north_door:
+            outer_wall_y = north_door + 1
+        for x in range(center.x - wall_offset, bounds.x2):
+            new_map.terrain[x][outer_wall_y] = map.TERRAIN_WALL
+
+        west_door = libtcod.random_get_int(new_map.rng, center.x - wall_offset + 2, courtyard_mid_x - 2)
+        _place_door(new_map, algebra.Location(west_door, outer_wall_y))
+        east_door = libtcod.random_get_int(new_map.rng, courtyard_mid_x + 2, bounds.x2 - 2)
+        _place_door(new_map, algebra.Location(west_door, outer_wall_y))
+
+        wall_x = (east_door + west_door) / 2
+        for y in range(bounds.y1, outer_wall_y):
+            new_map.terrain[wall_x][y] = map.TERRAIN_WALL
+
+        # Now that we've created all the rooms, courtyard can be set back to ground
+        for x in range(center.x - wall_offset + 1, bounds.x2):
+            for y in range(outer_wall_y + 1, bounds.y2):
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
+
     else:
+        new_map.terrain[center.x+2][bounds.y2] = map.TERRAIN_FLOOR
+        new_map.terrain[bounds.x2][center.y] = map.TERRAIN_FLOOR
+
         # Rooms in north half
         wall_offset = libtcod.random_get_int(new_map.rng,
             2, (center.y - bounds.y1) / 3)
         for x in range(bounds.x1, bounds.x2+1):
             new_map.terrain[x][center.y - wall_offset] = map.TERRAIN_WALL
 
-        east_door = libtcod.random_get_int(new_map.rng, bounds.x1+1, center.x-1)
-        _place_door(new_map, algebra.Location(east_door, center.y - wall_offset))
-        west_door = libtcod.random_get_int(new_map.rng, center.x+1, bounds.x2-1)
+        west_door = libtcod.random_get_int(new_map.rng, bounds.x1+1, center.x-2)
         _place_door(new_map, algebra.Location(west_door, center.y - wall_offset))
+        east_door = libtcod.random_get_int(new_map.rng, center.x+1, bounds.x2-1)
+        _place_door(new_map, algebra.Location(east_door, center.y - wall_offset))
 
         # print('Doors at x= ' + str(east_door) + ' and ' + str(west_door))
         wall_x = (east_door + west_door) / 2
         for y in range(bounds.y1, center.y - wall_offset):
             new_map.terrain[wall_x][y] = map.TERRAIN_WALL
 
-    # TODO: rooms should be floor, but courtyard should be ground
-    # TODO: add two more rooms
+        # outer rooms
+        courtyard_mid_y = (center.y - wall_offset + bounds.y2) / 2
+        outer_wall_x = (bounds.x1 + center.x+2)/2
+        if outer_wall_x < west_door:
+            outer_wall_x = west_door + 1
+        for y in range(center.y - wall_offset, bounds.y2):
+            new_map.terrain[outer_wall_x][y] = map.TERRAIN_WALL
+
+        north_door = libtcod.random_get_int(new_map.rng, center.y - wall_offset + 2, courtyard_mid_y - 2)
+        _place_door(new_map, algebra.Location(outer_wall_x, north_door))
+        south_door = libtcod.random_get_int(new_map.rng, courtyard_mid_y + 2, bounds.y2 - 2)
+        _place_door(new_map, algebra.Location(outer_wall_x, south_door))
+
+        wall_y = (south_door + north_door) / 2
+        for x in range(bounds.x1, outer_wall_x):
+            new_map.terrain[x][wall_y] = map.TERRAIN_WALL
+
+        # Now that we've created all the rooms, courtyard can be set back to ground
+        for x in range(outer_wall_x + 1, bounds.x2):
+            for y in range(center.y - wall_offset + 1, bounds.y2):
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
+
     # TODO: create an upstairs and a cellar
     # TODO: track these rooms correctly and populate them intentionally
     # TODO: generate total bandit population and then divide between areas
@@ -680,14 +730,19 @@ def make_map(player, dungeon_level):
     new_map.random_seed = libtcod.random_save(0)
     _build_map(new_map)
 
+    # Might want to change this later, but this is required in creature placement
+    # routines so we know what region the player starts in so there isn't a
+    # wandering monster jumping down their throat. Unless, of course, this
+    # start point is on a *region border* and there's a monster in the next
+    # region over...
+    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
+
     _place_random_creatures(new_map, player)
     _inhabit_rotunda(new_map, new_map.peak)
     if new_map.caravanserai:
         _inhabit_caravanserai(new_map, player)
     if new_map.quarry_region:
         _inhabit_quarry(new_map, player)
-
-    player.pos = algebra.Location(config.OUTDOOR_MAP_WIDTH - 8, 12)
 
     # make sure we're not starting on top of an object or terrain feature
     while (new_map.terrain_at(player.pos).name != 'ground'):

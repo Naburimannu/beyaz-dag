@@ -43,7 +43,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="mountain_cartographer.py" />
-    <Compile Include="cartographer.py" />
+    <Compile Include="dungeon_cartographer.py" />
     <Compile Include="components.py" />
     <Compile Include="config.py" />
     <Compile Include="dist-windows.py" />

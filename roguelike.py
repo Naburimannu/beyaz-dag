@@ -450,11 +450,12 @@ def new_game():
     log.init()
     quest.display_welcome()
 
-    fighter_component = Fighter(hp=36, death_function=player_death)
-    fighter_component.skills['bow'] = 70
-    fighter_component.skills['first aid'] = 25
-    fighter_component.skills['grappling'] = 40
-    player = Object(algebra.Location(0, 0), '@', 'player', libtcod.white, blocks=True, fighter=fighter_component)
+    player = Object(None, '@', 'player', libtcod.white, blocks=True,
+        fighter=Fighter(
+            # hp=36, # TEST
+            hp=360,
+            death_function=player_death,
+            skills={'bow':70, 'first aid':24, 'grappling':40}))
     player.inventory = []
     player.level = 1
     player.game_state = 'playing'
@@ -497,7 +498,7 @@ def new_game():
     log.message('Press ? or F1 for help.')
 
     # _start_near_quarry(player)
-    _start_near_grotto(player)
+    # _start_near_grotto(player)
     # _start_near_peak(player)
 
     # TEST
