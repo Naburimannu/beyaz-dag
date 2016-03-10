@@ -81,7 +81,8 @@ def _place_random_creatures(new_map, player):
         'ice' : { None : 10, bestiary.snow_leopard : 1 }
     }
     for r in range(len(new_map.region_seeds)):
-        if r == start_region:
+        if (r == start_region or
+            (new_map.quarry_region and r == new_map.quarry_region)):
             continue
         fn = _random_choice(terrain_chances[new_map.region_terrain[r]])
         if fn is not None:
@@ -89,6 +90,8 @@ def _place_random_creatures(new_map, player):
             while new_map.is_blocked_at(pos):
                 pos += actions.random_direction()
                 pos.bound(algebra.Rect(0, 0, new_map.width-1, new_map.height-1))
+            if new_map.caravanserai and new_map.caravanserai.contains(pos):
+                continue
             # print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
             fn(new_map, pos, player)
 
@@ -469,7 +472,10 @@ def _make_caravanserai(new_map):
         for y in range(bounds.y1, center.y - wall_offset):
             new_map.terrain[wall_x][y] = 0
 
+    # TODO: add two more rooms
     # TODO: create an upstairs and a cellar
+    # TODO: track these rooms correctly and populate them intentionally
+    # TODO: generate total bandit population and then divide between areas
 
 
 def _test_quarry_placement(new_map, region_span):
