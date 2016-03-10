@@ -38,34 +38,35 @@ def bandit(new_map, pos, player):
                          'p', 'bandit', libtcod.blue, hp=24,
                          skills={'grappling':30, 'sword':30, 'spear':30, 'bow':30}))
 
-
 def ghul(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
                             'z', 'ghul', libtcod.dark_orange, hp=30, unarmed_damage=4,
                             skills={'grappling':30})
 
-
 def swamp_goblin(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
-                            'g', 'swamp goblin', libtcod.light_blue, hp=16)
-
+                            'g', 'swamp goblin', libtcod.light_blue, hp=16,
+                            skills={'grappling':20})
 
 def bear(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'q', 'bear',
-                            libtcod.darker_orange, hp=40, unarmed_damage=6)
-
+                            libtcod.darker_orange, hp=40, unarmed_damage=6,
+                            skills={'grappling':30})
 
 def wolf(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'wolf',
-                            libtcod.darker_orange, hp=16, unarmed_damage=4)
+                            libtcod.darker_orange, hp=16, unarmed_damage=4,
+                            skills={'grappling':30})
 
 def hyena(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'hyena',
-                            libtcod.amber, hp=12, unarmed_damage=3)
+                            libtcod.amber, hp=12, unarmed_damage=3,
+                            skills={'grappling':20})
 
 def snow_leopard(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'f', 'snow leopard',
-                            libtcod.white, hp=30, unarmed_damage=6)
+                            libtcod.white, hp=30, unarmed_damage=6,
+                            skills={'grappling':30})
 
 def deer(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'deer',
@@ -77,7 +78,8 @@ def gazelle(new_map, pos, player):
 
 def steppe_pony(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'steppe pony',
-                             libtcod.darker_flame, hp=34, unarmed_damage=6)
+                             libtcod.darker_flame, hp=34, unarmed_damage=6,
+                            skills={'grappling':15})
 
 # deserves poison? or just model that as automatic bleeding?
 # def snake(new_map, pos, player):

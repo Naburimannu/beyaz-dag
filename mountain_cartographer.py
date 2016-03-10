@@ -72,19 +72,17 @@ def _place_random_creatures(new_map, player):
     terrain_chances = {
         'lake' : { None : 10 },
         'marsh' : { None : 10, bestiary.swamp_goblin : 10 },
-        'desert' : { None : 10, bestiary.hyena : 5, bestiary.gazelle : 5 },
-        'scrub' : { None : 10 },
-        'forest' : { None : 10 },
-        'rock' : { None : 10 },
-        'ice' : { None : 10 }
+        'desert' : { None : 20, bestiary.hyena : 5, bestiary.gazelle : 10 },
+        'scrub' : { None : 20, bestiary.hyena : 2, bestiary.gazelle : 4,
+                    bestiary.deer : 4, bestiary.wolf : 2 },
+        'forest' : { None : 20, bestiary.deer : 10, bestiary.wolf : 5,
+                     bestiary.bear : 3 },
+        'rock' : { None : 10, bestiary.snow_leopard : 1 },
+        'ice' : { None : 10, bestiary.snow_leopard : 1 }
     }
     for r in range(len(new_map.region_seeds)):
         if r == start_region:
             continue
-        #if new_map.region_terrain[r] == 'marsh':
-        #    bestiary.swamp_goblin(new_map,
-        #        algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1]),
-        #        player)
         fn = _random_choice(terrain_chances[new_map.region_terrain[r]])
         if fn is not None:
             pos = algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1])
