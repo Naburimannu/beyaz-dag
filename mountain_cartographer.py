@@ -321,26 +321,29 @@ def _assign_terrain(new_map):
            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
 
 
-def _make_rotunda(map, peak):
+def _make_rotunda(new_map, peak):
     """
     Create a rotunda on top of the mountain.
     This is always at the peak.
     """
     for x in range(peak[0]-3, peak[0]+4):
         for y in range(peak[1]-3, peak[1]+4):
-            if map.elevation(x, y) != 9:
+            if new_map.elevation(x, y) != 9:
                 # in theory would be better to glom onto a closer region
                 # if one exists
-                map.region[x][y] = map.region[peak[0]][peak[1]]
-            # interior of rotunda is clear
-            if map.terrain[x][y] != 2:
-                map.terrain[x][y] = 1
+                new_map.region[x][y] = new_map.region[peak[0]][peak[1]]
+            # interior of rotunda is floor, edges are bare ground
+            if (x > peak[0]-3 and x < peak[0]+3 and
+                    y > peak[1]-3 and y < peak[1]+3):
+                new_map.terrain[x][y] = map.TERRAIN_FLOOR
+            elif new_map.terrain[x][y] != map.TERRAIN_SLOPE:
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
             if (x == peak[0]-2 or x == peak[0]+2 or
                     y == peak[1]-2 or y == peak[1]+2):
                 # borders have alternating pillars
                 if ((x - peak[0]) % 2 == 0 and
                         (y - peak[1]) % 2 == 0):
-                    map.terrain[x][y] = 0
+                    new_map.terrain[x][y] = map.TERRAIN_WALL
 
 
 def _place_caravanserai(new_map, size):
@@ -396,6 +399,12 @@ def _place_caravanserai(new_map, size):
     return (-1, -1)
 
 
+def _place_door(new_map, pos):
+    new_map.terrain[pos.x][pos.y] = map.TERRAIN_FLOOR
+    door_obj = miscellany.closed_door(pos)
+    new_map.objects.append(door_obj)
+
+
 def _make_caravanserai(new_map):
     size = 3
     (found_x, found_y) = _place_caravanserai(new_map, size)
@@ -418,14 +427,14 @@ def _make_caravanserai(new_map):
         for y in range(bounds.y1, bounds.y2+1):
             if (x == bounds.x1 or x == bounds.x2 or
                 y == bounds.y1 or y == bounds.y2):
-                new_map.terrain[x][y] = 0
+                new_map.terrain[x][y] = map.TERRAIN_WALL
             else:
-                new_map.terrain[x][y] = 1
+                new_map.terrain[x][y] = map.TERRAIN_FLOOR
 
     # Cut gates in it facing east and south
     center = bounds.center()
-    new_map.terrain[center.x][bounds.y2] = 1
-    new_map.terrain[bounds.x2][center.y] = 1
+    new_map.terrain[center.x][bounds.y2] = map.TERRAIN_FLOOR
+    new_map.terrain[bounds.x2][center.y] = map.TERRAIN_FLOOR
 
     new_map.caravanserai = bounds
 
@@ -434,43 +443,33 @@ def _make_caravanserai(new_map):
         wall_offset = libtcod.random_get_int(new_map.rng,
             2, (center.x - bounds.x1) / 3)
         for y in range(bounds.y1, bounds.y2+1):
-            new_map.terrain[center.x - wall_offset][y] = 0
+            new_map.terrain[center.x - wall_offset][y] = map.TERRAIN_WALL
 
         north_door = libtcod.random_get_int(new_map.rng, bounds.y1+1, center.y-1)
-        new_map.terrain[center.x - wall_offset][north_door] = 1
-        door_obj = miscellany.closed_door(algebra.Location(center.x - wall_offset, north_door))
-        new_map.objects.append(door_obj)
-
+        _place_door(new_map, algebra.Location(center.x - wall_offset, north_door))
         south_door = libtcod.random_get_int(new_map.rng, center.y+1, bounds.y2-1)
-        new_map.terrain[center.x - wall_offset][south_door] = 1
-        door_obj = miscellany.closed_door(algebra.Location(center.x - wall_offset, south_door))
-        new_map.objects.append(door_obj)
+        _place_door(new_map, algebra.Location(center.x - wall_offset, south_door))
 
         # print('Doors at y= ' + str(north_door) + ' and ' + str(south_door))
         wall_y = (north_door + south_door) / 2
         for x in range(bounds.x1, center.x - wall_offset):
-            new_map.terrain[x][wall_y] = 0
+            new_map.terrain[x][wall_y] = map.TERRAIN_WALL
     else:
         # Rooms in north half
         wall_offset = libtcod.random_get_int(new_map.rng,
             2, (center.y - bounds.y1) / 3)
         for x in range(bounds.x1, bounds.x2+1):
-            new_map.terrain[x][center.y - wall_offset] = 0
+            new_map.terrain[x][center.y - wall_offset] = map.TERRAIN_WALL
 
         east_door = libtcod.random_get_int(new_map.rng, bounds.x1+1, center.x-1)
-        new_map.terrain[east_door][center.y - wall_offset] = 1
-        door_obj = miscellany.closed_door(algebra.Location(east_door, center.y - wall_offset))
-        new_map.objects.append(door_obj)
-
+        _place_door(new_map, algebra.Location(east_door, center.y - wall_offset))
         west_door = libtcod.random_get_int(new_map.rng, center.x+1, bounds.x2-1)
-        new_map.terrain[west_door][center.y - wall_offset] = 1
-        door_obj = miscellany.closed_door(algebra.Location(west_door, center.y - wall_offset))
-        new_map.objects.append(door_obj)
+        _place_door(new_map, algebra.Location(west_door, center.y - wall_offset))
 
         # print('Doors at x= ' + str(east_door) + ' and ' + str(west_door))
         wall_x = (east_door + west_door) / 2
         for y in range(bounds.y1, center.y - wall_offset):
-            new_map.terrain[wall_x][y] = 0
+            new_map.terrain[wall_x][y] = map.TERRAIN_WALL
 
     # TODO: add two more rooms
     # TODO: create an upstairs and a cellar

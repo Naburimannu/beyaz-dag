@@ -42,9 +42,17 @@ terrain_types = [
         Terrain('ephedra', 'shrub', '"', libtcod.dark_amber,
                 None, None, False, False),
         Terrain('poplar', 'tree', 'T', libtcod.darker_green,
-                None, None, True, True)
+                None, None, True, True),
+
+        # 10
+        Terrain('floor', None, '.', libtcod.gray,
+                libtcod.black, libtcod.darkest_gray, False, False)
             ]
 
+TERRAIN_WALL = 0
+TERRAIN_GROUND = 1
+TERRAIN_SLOPE = 2
+TERRAIN_FLOOR = 10
 
 region_colors_seen =  {
     'lake' : libtcod.dark_azure,
