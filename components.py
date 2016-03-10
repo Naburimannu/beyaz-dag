@@ -163,11 +163,11 @@ class MeleeWeapon(Component):
 
 
 class MissileWeapon(Component):
-    def __init__(self, skill, damage, ammo, range=8):
+    def __init__(self, skill, damage, ammo, max_range=8):
         self.skill = skill
         self.damage = damage
         self.ammo = ammo
-        self.range = range
+        self.max_range = max_range
 
     def set_owner(self, entity):
         Component.set_owner(self, entity)

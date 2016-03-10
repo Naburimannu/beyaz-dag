@@ -61,7 +61,7 @@ def _assign_damage(fighter, attack, target, defense, quantity, method, report=Tr
     if quantity > 0:
         if report:
             log.message(
-                fighter.name.capitalize() + ' (' + str(attack) + ')' +
+                fighter.name.capitalize() + ' (' + str(attack) + ') ' +
                 method + ' ' + target.name + ' (' + str(defense) + ')' +
                 ' for ' + str(quantity) + ' wounds.')
         inflict_damage(fighter, target.fighter, quantity)
@@ -149,6 +149,11 @@ def attack(attacker_ftr, target_obj, report=True):
     _assign_damage(attacker_ftr.owner, effective_attack_skill,
                     target_obj, effective_defense_skill,
                     damage, 'attacks', report)
+
+
+def draw(actor_obj, weapon_obj, report=True):
+    log.message(actor_obj.name.capitalize() + ' readies a ' + weapon_obj.name)
+    actor_obj.game_state = 'shooting'
 
 
 def fire(actor_obj, weapon_eq, ammo_eq, target_obj, report=True):

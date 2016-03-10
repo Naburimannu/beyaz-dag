@@ -62,6 +62,27 @@ def hostile_monster(monster, player, metadata):
                 actions.attack(monster.fighter, metadata.target)
 
 
+def hostile_archer(monster, player, metadata):
+    if libtcod.map_is_in_fov(monster.current_map.fov_map,
+                             monster.x, monster.y):
+        weapon_eq = actions.get_equipped_in_slot(monster, 'missile weapon')
+        ammo_eq = actions.get_equipped_in_slot(monster, 'quiver')
+        if monster.game_state == 'shooting':
+            # TODO: possibly cheats on range
+            actions.fire(monster, weapon_eq, ammo_eq, metadata.target)
+            monster.game_state = None
+            return
+
+        distance = monster.distance(metadata.target.pos)
+        if (weapon_eq is not None and
+                ammo_eq is not None and
+                libtcod.random_get_int(0, 1, 2) == 1 and
+                distance > 1 and
+                distance < weapon_eq.owner.missile_weapon.max_range):
+            monster.game_state = 'shooting'
+        else:
+            hostile_monster(monster, player, metadata)
+
 class confused_monster_metadata:
     def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
         self.old_ai = old_ai

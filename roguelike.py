@@ -82,11 +82,7 @@ def try_fire(player):
     if not ammo or ammo.owner.name != weapon.owner.missile_weapon.ammo:
         log.message('You need at least one ' + weapon.owner.missile_weapon.ammo + ' to fire the ' + weapon.owner.name)
         return False
-    log.message('You ready your ' + weapon.owner.name)
-    player.game_state = 'shooting'
-    # TODO pass this turn
-    # TODO enter targeting mode
-    # TODO next turn invoke actions.fire actions.fire(player)
+    actions.draw(player, weapon.owner)
 
 
 def try_pick_up(player):
@@ -322,7 +318,7 @@ def handle_keys(player, key):
     if player.game_state == 'shooting':
         weapon_eq = actions.get_equipped_in_slot(player, 'missile weapon')
         ammo_eq = actions.get_equipped_in_slot(player, 'quiver')
-        target = spells._target_monster(player, weapon_eq.owner.missile_weapon.range)
+        target = spells._target_monster(player, weapon_eq.owner.missile_weapon.max_range)
         player.game_state = 'playing'
         if not target:
             return 'didnt-take-turn'

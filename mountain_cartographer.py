@@ -119,6 +119,8 @@ def _inhabit_caravanserai(new_map, player):
             _new_equipment(bandit, miscellany.arrow(4))
             _new_equipment(bandit, miscellany.horn_bow())
             bandit.name = 'bandit archer'
+            bandit.ai._turn_function = ai.hostile_archer
+            bandit.game_state = 'playing'
 
 
 def _inhabit_quarry(new_map, player):
