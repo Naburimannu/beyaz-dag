@@ -55,3 +55,8 @@ def bandage(count):
     return Object(None, '~', 'bandage', libtcod.dark_sky,
             item=Item(description='A clean-enough length of cloth for binding wounds, and a bit of herbs for a poultice.',
                     count=count, use_function=spells.use_bandage))
+
+def maguffin():
+    return Object(None, '"', "Yen d'Or", libtcod.gold,
+            item=Item(description="You've never seen anything like it. You can't imagine how you ever managed to live without it. It's so ineffably precious."),
+            equipment=Equipment(slot='amulet'))

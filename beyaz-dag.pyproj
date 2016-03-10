@@ -51,6 +51,9 @@
     <Compile Include="libtcodpy.py" />
     <Compile Include="log.py" />
     <Compile Include="map.py" />
+    <Compile Include="quest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="renderer.py" />
     <Compile Include="roguelike.py" />
     <Compile Include="spells.py" />

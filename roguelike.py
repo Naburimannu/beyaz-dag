@@ -17,6 +17,7 @@ import miscellany
 import actions
 import ai
 import spells
+import quest
 import cartographer
 import mountain_cartographer
 
@@ -432,7 +433,7 @@ def new_game():
     """
     # Must initialize the log before we do anything that might emit a message.
     log.init()
-    renderer.display_welcome()
+    quest.display_welcome()
 
     fighter_component = Fighter(hp=36, death_function=player_death)
     fighter_component.skills['bow'] = 70

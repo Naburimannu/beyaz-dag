@@ -12,6 +12,7 @@ import bestiary
 import ai
 import actions
 import spells
+import quest
 
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
@@ -100,10 +101,15 @@ def _new_item(actor, obj):
     actor.inventory.append(obj)
     obj.always_visible = True
 
+
 def _new_equipment(actor, obj):
     _new_item(actor, obj)
     actions.equip(actor, obj.equipment, False)
 
+
+def _inhabit_rotunda(new_map, peak):
+    goddess = Object(algebra.Location(peak[0], peak[1]), '@', 'The White Goddess', libtcod.white, blocks=True,
+        interactable=Interactable(use_function=quest.goddess_charge))
 
 def _inhabit_caravanserai(new_map, player):
     # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
@@ -670,6 +676,7 @@ def make_map(player, dungeon_level):
     _build_map(new_map)
 
     _place_random_creatures(new_map, player)
+    _inhabit_rotunda(new_map, peak)
     if new_map.caravanserai:
         _inhabit_caravanserai(new_map, player)
     if new_map.quarry_region:
