@@ -501,10 +501,7 @@ def new_game():
     # _start_near_peak(player)
 
     # TEST
-    obj = miscellany.sword()
-    obj.pos = player.pos
-    obj.current_map = player.current_map
-    player.current_map.objects.append(obj)
+    actions.add_to_map(player.current_map, player.pos, miscellany.sword())
 
     return player
 

@@ -19,6 +19,12 @@ def random_direction():
     return algebra.directions[libtcod.random_get_int(0, 0, 7)]
 
 
+def add_to_map(new_map, pos, obj):
+    obj.pos = pos
+    obj.current_map = new_map # not necessarily necessary?
+    new_map.objects.append(obj)
+
+
 def move(o, direction):
     """
     Moves object by (dx, dy).
@@ -80,8 +86,7 @@ def _drop_ammo_on_hit(target, ammo):
         return
     new_ammo = copy.deepcopy(ammo)
     new_ammo.item.count = 1
-    new_ammo.pos = target.pos
-    target.current_map.objects.append(new_ammo)
+    add_to_map(target.current_map, target.pos, new_ammo)
 
 
 def _drop_ammo_on_miss(target, ammo):
@@ -94,8 +99,7 @@ def _drop_ammo_on_miss(target, ammo):
         return
     new_ammo = copy.deepcopy(ammo)
     new_ammo.item.count = 1
-    new_ammo.pos = site
-    target.current_map.objects.append(new_ammo)
+    add_to_map(target.current_map, site, new_ammo)
 
 
 def attack(attacker_ftr, target_obj, report=True):
@@ -301,8 +305,7 @@ def drop(actor, o, report=True, all=False):
             new_o.item.count = o.item.count
         else:
             new_o.item.count = 1
-        new_o.pos = actor.pos
-        actor.current_map.objects.append(new_o)
+        add_to_map(actor.current_map, actor.pos, new_o)
 
     if report:
         if all:
