@@ -13,6 +13,7 @@ class Object:
     """
     def __init__(self, pos, char, name, color,
                  blocks=False, always_visible=False,
+                 interactable=None,
                  fighter=None, ai=None, item=None, equipment=None,
                  melee=None, missile=None):
         self.pos = pos
@@ -22,6 +23,8 @@ class Object:
         self.blocks = blocks
         self.always_visible = always_visible
 
+        self.interactable = interactable
+        self._ensure_ownership(interactable)
         self.fighter = fighter
         self._ensure_ownership(fighter)
         self.ai = ai
@@ -109,6 +112,16 @@ class Fighter(Component):
         bonus = sum(equipment.bleeding_defense for equipment
                     in _get_all_equipped(self.owner))
         return bonus
+
+
+class Interactable(Component):
+    """
+    An object in the world that can be used (but not picked up),
+    presumably by bumping?
+    """
+    def __init__(self, description=None, use_function=None):
+        self.description = description
+        self.use_function = use_function
 
 
 class Item(Component):

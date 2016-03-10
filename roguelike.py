@@ -209,37 +209,47 @@ def player_move_or_attack(player, direction, try_running):
         return False
 
     # Is there an attackable object?
-    target = None
-    for object in player.current_map.objects:
-        if object.fighter and object.pos == goal:
-            target = object
+    target_obj = None
+    for obj in player.current_map.objects:
+        if obj.fighter and obj.pos == goal:
+            target_obj = obj
             break
-
-    if target is not None:
+    if target_obj is not None:
         # Make sure we're not going up or down a cliff
-        if not player.current_map.is_blocked_from(player.pos, target.pos, ignore=target):
-            actions.attack(player.fighter, target)
+        if not player.current_map.is_blocked_from(player.pos, target_obj.pos, ignore=target_obj):
+            actions.attack(player.fighter, target_obj)
             player.fighter.exhaustion += ATTACK_EXHAUSTION
             return True
-    else:
-        if actions.move(player, direction):
-            player.current_map.fov_needs_recompute = True
-            if player.current_map.is_outdoors:
-                new_region = player.current_map.region[player.pos.x][player.pos.y]
-                old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
-                new_elevation = player.current_map.region_elevations[new_region]
-                _check_exploration_xp(player, new_region, new_elevation)
-                if new_elevation != old_elevation:
-                    player.current_map.fov_elevation_changed = True
-                    player.fighter.exhaustion += CLIMB_EXHAUSTION
-                else:
-                    player.fighter.exhaustion += MOVE_EXHAUSTION
+        return False
+
+    # Is there an interactable object?
+    target_obj = None
+    for obj in player.current_map.objects:
+        if obj.interactable and obj.pos == goal:
+            target_obj = obj
+            break
+    if target_obj is not None:
+        target_obj.interactable.use_function(player, target_obj)
+        return True
+
+    if actions.move(player, direction):
+        player.current_map.fov_needs_recompute = True
+        if player.current_map.is_outdoors:
+            new_region = player.current_map.region[player.pos.x][player.pos.y]
+            old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
+            new_elevation = player.current_map.region_elevations[new_region]
+            _check_exploration_xp(player, new_region, new_elevation)
+            if new_elevation != old_elevation:
+                player.current_map.fov_elevation_changed = True
+                player.fighter.exhaustion += CLIMB_EXHAUSTION
             else:
                 player.fighter.exhaustion += MOVE_EXHAUSTION
-            if try_running:
-                player.game_state = 'running'
-                player.run_direction = direction
-            return True
+        else:
+            player.fighter.exhaustion += MOVE_EXHAUSTION
+        if try_running:
+            player.game_state = 'running'
+            player.run_direction = direction
+        return True
 
     return False
 

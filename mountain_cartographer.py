@@ -432,10 +432,17 @@ def _make_caravanserai(new_map):
             2, (center.x - bounds.x1) / 3)
         for y in range(bounds.y1, bounds.y2+1):
             new_map.terrain[center.x - wall_offset][y] = 0
+
         north_door = libtcod.random_get_int(new_map.rng, bounds.y1+1, center.y-1)
         new_map.terrain[center.x - wall_offset][north_door] = 1
+        door_obj = miscellany.closed_door(algebra.Location(center.x - wall_offset, north_door))
+        new_map.objects.append(door_obj)
+
         south_door = libtcod.random_get_int(new_map.rng, center.y+1, bounds.y2-1)
         new_map.terrain[center.x - wall_offset][south_door] = 1
+        door_obj = miscellany.closed_door(algebra.Location(center.x - wall_offset, south_door))
+        new_map.objects.append(door_obj)
+
         # print('Doors at y= ' + str(north_door) + ' and ' + str(south_door))
         wall_y = (north_door + south_door) / 2
         for x in range(bounds.x1, center.x - wall_offset):
@@ -446,10 +453,17 @@ def _make_caravanserai(new_map):
             2, (center.y - bounds.y1) / 3)
         for x in range(bounds.x1, bounds.x2+1):
             new_map.terrain[x][center.y - wall_offset] = 0
+
         east_door = libtcod.random_get_int(new_map.rng, bounds.x1+1, center.x-1)
         new_map.terrain[east_door][center.y - wall_offset] = 1
+        door_obj = miscellany.closed_door(algebra.Location(east_door, center.y - wall_offset))
+        new_map.objects.append(door_obj)
+
         west_door = libtcod.random_get_int(new_map.rng, center.x+1, bounds.x2-1)
         new_map.terrain[west_door][center.y - wall_offset] = 1
+        door_obj = miscellany.closed_door(algebra.Location(west_door, center.y - wall_offset))
+        new_map.objects.append(door_obj)
+
         # print('Doors at x= ' + str(east_door) + ' and ' + str(west_door))
         wall_x = (east_door + west_door) / 2
         for y in range(bounds.y1, center.y - wall_offset):

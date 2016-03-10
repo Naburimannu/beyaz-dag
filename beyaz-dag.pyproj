@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{d14cb18f-be1d-4333-b281-dc739aa7133f}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>ca_cartographer.py</StartupFile>
+    <StartupFile>roguelike.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
