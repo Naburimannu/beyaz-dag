@@ -22,7 +22,7 @@ class Terrain(object):
 
 
 terrain_types = [
-        Terrain('wall', None, None, None,
+        Terrain('wall', 'wall', None, None,
                 libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 100), True, True),
         Terrain('ground', None, None, None,
                 None, None, False, False),
@@ -239,7 +239,13 @@ class OutdoorMap(object):
         self._explored[pos.x][pos.y] = True
 
     def out_of_bounds(self, pos):
-        return "You can't go that way!"
+        if pos.x < 0:
+            return "There's no point in crossing the lake; your fate led you to the mountain."
+        if pos.y < 0:
+            return "There's no point in recrossing the Mother River; you came here with a purpose."
+        if pos.x < 100:
+            return "You're not sure the townsfolk would accept a foreigner like you; there's no safety that way."
+        return "You're not prepared to cross the full width of the desert; right now, that way lies only death."
 
     def elevation(self, x, y):
         return self.region_elevations[self.region[x][y]]

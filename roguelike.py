@@ -198,7 +198,7 @@ def increase_player_skills(player):
                                       '(' + str(player.skill_points) + ' skill points available)\n',
                                       options, INVENTORY_WIDTH)
         if key == ord('x'):
-            (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n', options, INVENTORY_WIDTH)
+            (c2, i2) = renderer.menu('Choose skill to describe, or any other to cancel.\n\n', options, INVENTORY_WIDTH)
             if i2 is not None:
                 log.message(skill_list[i2].name + ': ' + skill_list[i2].description)
             
@@ -229,19 +229,20 @@ def increase_player_skills(player):
 
 
 def display_help():
-    renderer.msgbox('move using numpad keys, or:\n' +
-                    '  y k u\n' +
-                    '   \|/ \n' +
-                    '  h-+-l\n' +
-                    '   /|\ \n' +
-                    '  b j m\n' +
+    renderer.msgbox('move using numpad or "vi" keys:\n' +
+                    '  7 8 9   y k u\n' +
+                    '   \|/     \|/ \n' +
+                    '  4-+-6   h-+-l\n' +
+                    '   /|\     /|\ \n' +
+                    '  1 2 3   b j m\n' +
                     '\n' +
                     '  numpad 5 or . (period) to wait,\n' +
                     '  shift-move to run\n' +
                     '\n' +
                     'g/get, d/drop, c/character information\n' +
+                    'f/fire your bow\n' +
+                    'i/view inventory; equip or use carried items\n' +
                     's/increase skills\n' +
-                    'i/inventory, equip, or use item\n' +
                     '</traverse stairs\n' +
                     '\n' +
                     'control-p/scroll through old log messages\n' +
@@ -386,6 +387,7 @@ def _new_item(player, obj):
     player.inventory.append(obj)
     obj.always_visible = True
 
+
 def _new_equipment(player, obj):
     _new_item(player, obj)
     actions.equip(player, obj.equipment, False)
@@ -398,6 +400,7 @@ def new_game():
     """
     # Must initialize the log before we do anything that might emit a message.
     log.init()
+    renderer.display_welcome()
 
     fighter_component = Fighter(hp=36, death_function=player_death)
     fighter_component.skills['bow'] = 70
@@ -413,17 +416,17 @@ def new_game():
     player.endangered = False
 
     _new_equipment(player,
-        Object(None, '[', 'silk undertunic', libtcod.dark_sky,
+        Object(None, '(', 'silk undertunic', libtcod.dark_sky,
             item=Item(description='A thick under-tunic of raw silk; prevents 2 bleeding.'),
             equipment=Equipment(slot='underclothes', bleeding_defense=2)))
 
     _new_equipment(player,
-        Object(None, '[', 'quilt kaftan', libtcod.dark_sky,
+        Object(None, '(', 'quilt kaftan', libtcod.dark_sky,
             item=Item(description='A heavy quilted kaftan; keeps you warm and prevents 1 wound.'),
             equipment=Equipment(slot='robes', defense_bonus=1)))
 
     _new_equipment(player,
-        Object(None, '[', 'felt cap', libtcod.dark_sky,
+        Object(None, '(', 'felt cap', libtcod.dark_sky,
             item=Item(description='A Phrygian felt cap with a loose veil to keep the sun off.'),
             equipment=Equipment(slot='head')))
 
@@ -436,10 +439,10 @@ def new_game():
             item=Item(description='An invigorating draught of kumiss in a wineskin.',
                       use_function=spells.drink_kumiss, count=4)))
 
-    # cartographer.make_map(player, 1)
     mountain_cartographer.make_map(player, 1)
-    renderer.clear_console()
     renderer.update_camera(player)
+
+    renderer.finish_welcome()
 
     log.message('At last you have reached the foot of the mountain. She waits above.', libtcod.red)
     log.message('Press ? or F1 for help.')

@@ -186,6 +186,46 @@ def main_menu(new_game, play_game, load_game):
             break
 
 
+def display_welcome():
+    libtcod.console_clear(0)
+
+    libtcod.console_set_default_foreground(0, libtcod.light_yellow)
+    line = 4
+    libtcod.console_print_ex(
+        0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
+        libtcod.CENTER, 'BEYAZ DAG')
+    line += 2
+
+    welcome_width = config.SCREEN_WIDTH - 20
+    libtcod.console_set_default_foreground(0, libtcod.white)
+    line += libtcod.console_print_rect(0, 10, line, welcome_width, 0,
+        'It is not far from Navekat and Suyab to the lake they call the Eye of the World. But the visions you sought there carried you much farther, across mountains, deserts, marshes, across the Mother River to the lonely Mount Beyaz. Here, perhaps, you can convince the merciful goddess who lives above the clouds to save your people from the plague.')
+    line += 1
+
+    line += libtcod.console_print_rect(0, 10, line, welcome_width, 0,
+        "Beyaz Dag towers solitary above the deserts. No rival peak dares rear itself nearby, though a desultory range of hills stretches southwards. The mountain's western slopes fall off steeply into a deep blue lake; north lie the marshes that fringe the Mother River.")
+    line += 1
+
+    line += libtcod.console_print_rect(0, 10, line, welcome_width, 0,
+        'You never mastered sword and lance, like your brothers, but can shoot, ride, and wrestle as well as any of them.')
+    line += 1
+
+    libtcod.console_set_default_foreground(0, libtcod.darker_yellow)
+    libtcod.console_print_ex(
+        0, config.SCREEN_WIDTH/2, config.SCREEN_HEIGHT-4, libtcod.BKGND_NONE,
+        libtcod.CENTER, 'Generating the map...')
+
+    libtcod.console_flush()
+
+
+def finish_welcome():
+    libtcod.console_set_default_foreground(0, libtcod.darker_yellow)
+    libtcod.console_print_ex(
+        0, config.SCREEN_WIDTH/2, config.SCREEN_HEIGHT-4, libtcod.BKGND_NONE,
+        libtcod.CENTER, 'Press any key to continue...')
+    libtcod.console_flush()
+    block_for_key()
+
 def clear_console():
     global _con
     libtcod.console_clear(_con)
@@ -516,7 +556,7 @@ def draw_console(player):
                          config.MAP_PANEL_HEIGHT, 0, 0, 0)
 
 
-def _write(line, string, color=libtcod.white):
+def _pwrite(line, string, color=libtcod.white):
     global _panel
     libtcod.console_set_default_foreground(_panel, color)
     libtcod.console_print_ex(_panel, 1, line, libtcod.BKGND_NONE, libtcod.LEFT, string)
@@ -540,24 +580,24 @@ def draw_panel(player, pointer_location):
     #    libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
     line = 2
     if player.fighter.bleeding > 0:
-        _write(line, 'Bleeding: ' + str(player.fighter.bleeding), libtcod.red)
+        _pwrite(line, 'Bleeding: ' + str(player.fighter.bleeding), libtcod.red)
         line += 1
     if player.fighter.wounds > 0:
-        _write(line, 'Wounds: ' + str(player.fighter.wounds))
+        _pwrite(line, 'Wounds: ' + str(player.fighter.wounds))
         line += 1
     if player.fighter.exhaustion / 100 > 0:
-        _write(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
+        _pwrite(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
         line += 1
     if player.current_map.is_outdoors:
-        _write(line,
+        _pwrite(line,
                 'Elevation: ' +
                 str(player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]] * 500) +
                 ' feet')
         line += 1
     elif hasattr(player.current_map, 'dungeon_level'):
-        _write(line, 'Dungeon level ' + str(player.current_map.dungeon_level))
+        _pwrite(line, 'Dungeon level ' + str(player.current_map.dungeon_level))
         line += 1
-    _write(line, 'Turn ' + str(player.turn_count))
+    _pwrite(line, 'Turn ' + str(player.turn_count))
     line += 1
 
     # _debug_positions(player, pointer_location)

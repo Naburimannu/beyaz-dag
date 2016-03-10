@@ -88,7 +88,10 @@ def _place_random_creatures(new_map, player):
         fn = _random_choice(terrain_chances[new_map.region_terrain[r]])
         if fn is not None:
             pos = algebra.Location(new_map.region_seeds[r][0], new_map.region_seeds[r][1])
-            print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
+            while new_map.is_blocked_at(pos):
+                pos += ai.random_direction()
+                pos.bound(algebra.Rect(0, 0, new_map.width-1, new_map.height-1))
+            # print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
             fn(new_map, pos, player)
 
 

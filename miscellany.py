@@ -5,13 +5,13 @@ from components import *
 
 
 def dagger():
-    return Object(None, '/', 'dagger', libtcod.dark_sky,
+    return Object(None, '|', 'dagger', libtcod.dark_sky,
             item=Item(description='A leaf-shaped iron knife; inflicts 4 damage'),
             equipment=Equipment(slot='right hand'),
             melee=MeleeWeapon(skill='grappling', damage=4))
 
 def sword():
-    return Object(None, '/', 'sword', libtcod.dark_sky,
+    return Object(None, '|', 'sword', libtcod.dark_sky,
             item=Item(description='A broad iron sword; inflicts 8 damage.'),
             equipment=Equipment(slot='right hand'),
             melee=MeleeWeapon(skill='sword', damage=8))
@@ -23,11 +23,11 @@ def spear():
             melee=MeleeWeapon(skill='spear', damage=8))
 
 def horn_bow():
-    return Object(None, '/', 'horn bow', libtcod.dark_sky,
+    return Object(None, '}', 'horn bow', libtcod.dark_sky,
             item=Item(description='A short, sharply-curved, horn-backed bow.'),
             equipment=Equipment(slot='missile weapon'))
 
 def arrow(count):
-    return Object(None, '/', 'arrow', libtcod.dark_sky,
+    return Object(None, '{', 'arrow', libtcod.dark_sky,
             item=Item(description='A gold-feathered beech arrow.', count=count),
             equipment=Equipment(slot='quiver'))
