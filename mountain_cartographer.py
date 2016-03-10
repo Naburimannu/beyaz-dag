@@ -122,7 +122,6 @@ def _inhabit_caravanserai(new_map, player):
             _random_position_in_rect(new_map.caravanserai), player)
 
         choice = libtcod.random_get_int(0, 1, 3)
-        weapon = None
         if choice == 1:
             _new_equipment(bandit, miscellany.sword())
         elif choice == 2:

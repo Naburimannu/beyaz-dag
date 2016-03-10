@@ -5,9 +5,65 @@ import config
 import algebra
 import map
 from components import *
+import actions
+import miscellany
+import bestiary
 import quest
 import ai
 import spells
+
+
+RUSALKA_GOAL = 2
+VODANYOI_CLUSTER_GOAL = 3
+VODANYOI_CLUSTER_SIZE = 3
+
+
+def _new_item(actor, obj):
+    actor.inventory.append(obj)
+    obj.always_visible = True
+
+
+def _new_equipment(actor, obj):
+    _new_item(actor, obj)
+    actions.equip(actor, obj.equipment, False)
+
+
+def _place_vodanyoi_cluster(new_map, player, vc_pos):
+    # print('trying to place vc around ' + str(vc_pos.x) + ' ' + str(vc_pos.y))
+    for v_count in range(0, VODANYOI_CLUSTER_SIZE):
+        while True:
+            v_pos = algebra.Location(libtcod.random_get_int(new_map.rng, vc_pos.x - 2, vc_pos.x + 2),
+                                   libtcod.random_get_int(new_map.rng, vc_pos.y - 2, vc_pos.y + 2))
+            if new_map.terrain[v_pos.x][v_pos.y] != map.TERRAIN_WALL:
+                break
+        # print('  v at ' + str(v_pos.x) + ' ' + str(v_pos.y))
+        v = bestiary.vodanyoi(new_map, v_pos, player)
+        choice = libtcod.random_get_int(0, 1, 3)
+        if choice == 1:
+            _new_equipment(v, miscellany.spear())
+
+
+def _place_random_creatures(new_map, player):
+    for r_count in range(0, RUSALKA_GOAL):
+        while True:
+            r_pos = algebra.Location(libtcod.random_get_int(new_map.rng, new_map.pool_x, new_map.width-3),
+                                   libtcod.random_get_int(new_map.rng, 3, new_map.height-3))
+            if new_map.terrain[r_pos.x][r_pos.y] != map.TERRAIN_WALL:
+                break
+        # TODO: can we ensure this doesn't block the passage?
+        for x in range(r_pos.x-2, r_pos.x+3):
+            for y in range(r_pos.y-2, r_pos.y+3):
+                if new_map.terrain[x][y] == map.TERRAIN_FLOOR:
+                    new_map.terrain[x][y] = map.TERRAIN_WATER
+        bestiary.rusalka(new_map, r_pos, player)
+
+    for vc_count in range(0, VODANYOI_CLUSTER_GOAL):
+        while True:
+            vc_pos = algebra.Location(libtcod.random_get_int(new_map.rng, new_map.pool_x, new_map.width-3),
+                                   libtcod.random_get_int(new_map.rng, 3, new_map.height-3))
+            if new_map.terrain[vc_pos.x][vc_pos.y] == map.TERRAIN_FLOOR:
+                break
+        _place_vodanyoi_cluster(new_map, player, vc_pos)
 
 
 def _inhabit_pool(new_map):
@@ -196,14 +252,15 @@ def make_map(player, dungeon_level):
     new_map.random_seed = libtcod.random_save(0)
     player.pos = _build_map(new_map)
 
-    # TODO: place objects
     _inhabit_pool(new_map)
+    _place_random_creatures(new_map, player)
 
     new_map.initialize_fov()
     return new_map
 
 
 def _dump(new_map):
+    desc = []
     for y in range(new_map.height):
         s = ''
         for x in range(new_map.width):
@@ -215,7 +272,10 @@ def _dump(new_map):
                 s += '~'
             else:
                 s += '.'
-        print(s)
+        desc.append(s)
+
+    for y in range(new_map.height):
+        print desc[y]
 
 
 def _test_display_ca(count):
@@ -242,7 +302,7 @@ def _test_map_repeatability():
 
 
 if __name__ == '__main__':
-    # cProfile.run('_test_display_ca(10)')
+    #cProfile.run('_test_display_ca(10)')
     _test_display_ca(10)
-    # _test_map_repeatability()
+    _test_map_repeatability()
     print('Cartographer tests complete.')

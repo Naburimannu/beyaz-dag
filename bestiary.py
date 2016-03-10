@@ -45,8 +45,18 @@ def ghul(new_map, pos, player):
 
 def swamp_goblin(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
-                            'g', 'swamp goblin', libtcod.light_blue, hp=16,
+                            'g', 'swamp goblin', libtcod.light_blue, hp=16, unarmed_damage=3,
                             skills={'grappling':20})
+
+def vodanyoi(new_map, pos, player):
+    return _add_inventory(
+        _hostile_monster(new_map, pos, player,
+                         'k', 'vodanyoi', libtcod.dark_han, hp=16, unarmed_damage=3,
+                         skills={'grappling':20, 'spear':30}))
+
+def rusalka(new_map, pos, player):
+    return _ignoring_monster(new_map, pos, player,
+                             'h', 'rusalka', libtcod.darker_sea, hp=24)
 
 def bear(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'U', 'bear',
