@@ -182,7 +182,7 @@ def fire(actor_obj, weapon_eq, ammo_eq, target_obj, report=True):
         unequip(actor_obj, ammo_eq, False)
         actor_obj.inventory.remove(ammo_eq.owner)
     target_obj.fighter.last_attacker = actor_obj
-    attacker_ftr.exhaustion += ATTACK_EXHAUSTION
+    actor_obj.fighter.exhaustion += ATTACK_EXHAUSTION
 
     a_weapon_skill = actor_obj.fighter.skills.get(weapon_eq.owner.missile_weapon.skill, 10)
     effective_attack_skill = max(a_weapon_skill - actor_obj.fighter.action_penalty, 10)
