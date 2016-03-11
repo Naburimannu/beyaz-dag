@@ -13,6 +13,19 @@ import libtcodpy as libtcod
 import log
 import algebra
 from components import *
+import map
+
+
+# Every 100 pts of exhaustion = -1 to all skills
+#   (equivalent to 1 wound point)
+ATTACK_EXHAUSTION = 20
+CLIMB_EXHAUSTION = 13
+MOVE_EXHAUSTION = 2
+
+# CLIMB_EXHAUSTION is additive with MOVE_EXHAUSTION
+# BUG: AI doesn't suffer climb_exhaustion because of coding awkwardness
+#   (actions.move() doesn't know about elevation changes, only
+#    roguelike.player_move_or_attack())
 
 
 def random_direction():
@@ -39,6 +52,8 @@ def move(obj, direction):
         return False
     if not obj.current_map.is_blocked_from(obj.pos, goal):
         obj.pos = goal
+        if obj.fighter:
+            obj.fighter.exhaustion += MOVE_EXHAUSTION
         return True
     return False
 
@@ -110,6 +125,7 @@ def attack(attacker_ftr, target_obj, report=True):
     Melee absorption: defender's armor soak.
     """
     target_obj.fighter.last_attacker = attacker_ftr.owner
+    attacker_ftr.exhaustion += ATTACK_EXHAUSTION
 
     a_weapon_skill = attacker_ftr.skills.get('grappling', 10)
     # print('Attacker grappling is ' + str(a_weapon_skill))

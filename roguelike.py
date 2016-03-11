@@ -28,12 +28,6 @@ CHARACTER_SCREEN_WIDTH = 30
 REGION_EXPLORATION_SP = 1
 ELEVATION_EXPLORATION_SP = 5
 
-# Every 100 pts of exhaustion = -1 to all skills
-#   is equivalent to 1 wound point
-ATTACK_EXHAUSTION = 20
-CLIMB_EXHAUSTION = 10
-MOVE_EXHAUSTION = 1
-
 
 class Skill(object):
     def __init__(self, name, cost, description):
@@ -219,7 +213,6 @@ def player_move_or_attack(player, direction, try_running):
         # Make sure we're not going up or down a cliff
         if not player.current_map.is_blocked_from(player.pos, target_obj.pos, ignore=target_obj):
             actions.attack(player.fighter, target_obj)
-            player.fighter.exhaustion += ATTACK_EXHAUSTION
             return True
         return False
 
@@ -242,11 +235,7 @@ def player_move_or_attack(player, direction, try_running):
             _check_exploration_xp(player, new_region, new_elevation)
             if new_elevation != old_elevation:
                 player.current_map.fov_elevation_changed = True
-                player.fighter.exhaustion += CLIMB_EXHAUSTION
-            else:
-                player.fighter.exhaustion += MOVE_EXHAUSTION
-        else:
-            player.fighter.exhaustion += MOVE_EXHAUSTION
+                player.fighter.exhaustion += actions.CLIMB_EXHAUSTION
         if try_running:
             player.game_state = 'running'
             player.run_direction = direction
