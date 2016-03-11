@@ -134,12 +134,12 @@ class Item(Component):
         self.use_function = use_function
         self.count = count
 
-    def can_combine(self, other):
+    def can_combine(self, other_obj):
         """
         Returns true if other can stack with self.
         Terribly simple for now.
         """
-        return other.item and other.name == self.owner.name
+        return other_obj and other_obj.item and other_obj.name == self.owner.name
 
 
 class Equipment(Component):

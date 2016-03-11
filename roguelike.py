@@ -239,6 +239,13 @@ def player_move_or_attack(player, direction, try_running):
         if try_running:
             player.game_state = 'running'
             player.run_direction = direction
+        # Automatically sweep up ammunition after a shooting spree
+        ammo_eq = actions.get_equipped_in_slot(player, 'quiver')
+        if ammo_eq:
+            for obj in player.current_map.objects:
+                if (obj.pos == player.pos and obj.item and 
+                        obj.item.can_combine(ammo_eq.owner)):
+                    actions.pick_up(player, obj)
         return True
 
     return False
