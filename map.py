@@ -160,6 +160,8 @@ class Map(BaseMap):
     def out_of_bounds(self, pos):
         return "You can't go that way!"
 
+    def elevation(self, x, y):
+        return 0  # hackish?
 
 class OutdoorMap(BaseMap):
     """
