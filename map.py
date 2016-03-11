@@ -183,12 +183,14 @@ class OutdoorMap(BaseMap):
         self.region_entered = []
         self.elevation_visited = []
 
-    def set_fov_elevation(self, e):
+    def set_fov_elevation(self, player):
+        elevation = self.elevation(player.pos.x, player.pos.y)
         self.fov_needs_recompute = True
+        self.fov_map = libtcod.map_new(self.width, self.height)
         for y in range(self.height):
             for x in range(self.width):
                 blocks_sight = (terrain_types[self.terrain[x][y]].blocks_sight or
-                                (self.region_elevations[self.region[x][y]] > e + 1))
+                                (self.region_elevations[self.region[x][y]] > elevation + 1))
                 libtcod.map_set_properties(
                     self.fov_map, x, y,
                     not blocks_sight, not terrain_types[self.terrain[x][y]].blocks)
@@ -197,7 +199,7 @@ class OutdoorMap(BaseMap):
                 blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
                 blocks_sight = (obj.blocks or
                     terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight or
-                    (self.region_elevations[self.region[x][y]] > e + 1))
+                    (self.region_elevations[self.region[x][y]] > elevation + 1))
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
 
 
