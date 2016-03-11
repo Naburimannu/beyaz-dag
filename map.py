@@ -93,6 +93,9 @@ class BaseMap(object):
         self.terrain = [[default_terrain for y in range(height)] for x in range(width)]
         self._explored = [[False for y in range(height)] for x in range(width)]
 
+    def rnd(self, mi, ma):
+        return libtcod.random_get_int(self.rng, mi, ma)
+
     def initialize_fov(self):
         """
         Set up corresponding C state for libtcod.

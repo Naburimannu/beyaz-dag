@@ -344,6 +344,13 @@ def handle_keys(player, key):
     if player.game_state == 'playing':
         # movement keys
         (parsed, direction, shift) = interface.parse_move(key)
+        if parsed and direction and (key.lctrl or key.rctrl):
+            # Would like to move the camera here, but current
+            # implementation of render_all() forces camera_update()
+            # to refocus on the player every frame.
+            # move_camera(direction)
+            return 'didnt-take-turn'
+
         if parsed:
             if direction:
                 player_move_or_attack(player, direction, shift)
