@@ -94,7 +94,7 @@ def display_welcome():
     page.paragraph(
         'You never mastered sword and lance, like your brothers, but can shoot, ride, and wrestle as well as any of them.')
     page.paragraph(
-        'Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travellers you met on the Northern Road tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...')
+        'Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travelers you met on the Northern Road tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...')
 
     page.line += 2
     page.paragraph(
