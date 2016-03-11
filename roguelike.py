@@ -476,7 +476,7 @@ def new_game():
         Object(None, '!', 'kumiss', libtcod.dark_sky,
             item=Item(description='An invigorating draught of kumiss in a wineskin.',
                       use_function=spells.drink_kumiss, count=4)))
-    _new_item(player, miscellany.bandage(2))
+    _new_item(player, miscellany.bandage(4))
 
     mountain_cartographer.make_map(player, 1)
     renderer.update_camera(player)
