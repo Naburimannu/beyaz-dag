@@ -22,16 +22,16 @@ class PageLayout(object):
 
     def title(self, text):
         libtcod.console_print_ex(
-            0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
+            0, config.SCREEN_WIDTH/2, self.line, libtcod.BKGND_NONE,
             libtcod.CENTER, text)
-        line += 4
+        self.line += 4
 
     def color(self, color):
         libtcod.console_set_default_foreground(0, color)
 
     def paragraph(self, text):
-        line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0, text)
-        line += 1
+        self.line += libtcod.console_print_rect(0, 10, self.line, TEXT_WIDTH, 0, text)
+        self.line += 1
 
 
 def goddess_charge(player, goddess):
@@ -94,7 +94,7 @@ def display_welcome():
     page.paragraph(
         'You never mastered sword and lance, like your brothers, but can shoot, ride, and wrestle as well as any of them.')
     page.paragraph(
-        'Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travellers tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...')
+        'Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travellers you met on the Northern Road tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...')
 
     page.line += 2
     page.paragraph(
