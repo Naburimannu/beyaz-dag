@@ -218,7 +218,7 @@ def make_map(player, dungeon_level):
     player.pos = new_map.rooms[0].center()
 
     new_map.initialize_fov()
-    return new_map
+    return True
 
 
 def _test_map_repeatability():

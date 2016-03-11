@@ -140,4 +140,4 @@ def make_map(player, dungeon_level):
             new_map._explored[x][y] = True
 
     new_map.initialize_fov()
-    return new_map
+    return False

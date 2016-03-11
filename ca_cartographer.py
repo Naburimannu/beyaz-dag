@@ -261,7 +261,7 @@ def make_map(player, dungeon_level):
     _place_random_creatures(new_map, player)
 
     new_map.initialize_fov()
-    return new_map
+    return True
 
 
 def _dump(new_map):

@@ -517,16 +517,16 @@ def next_level(player, portal):
     generator = portal.generator
     if not generator:
         generator = dungeon_cartographer.make_map
-    generator(player, player.current_map.dungeon_level + 1)
+    need_stairs = generator(player, player.current_map.dungeon_level + 1)
     renderer.clear_console()
     renderer.update_camera(player)
 
-    # Create the up stairs at the current position.
-    stairs = Object(player.pos, '>', 'stairs up', libtcod.white, always_visible=True)
-    stairs.destination = old_map
-    stairs.dest_position = portal.pos
-    player.current_map.objects.insert(0, stairs)
-    player.current_map.portals.insert(0, stairs)
+    if need_stairs:
+        stairs = Object(player.pos, '>', 'stairs up', libtcod.white, always_visible=True)
+        stairs.destination = old_map
+        stairs.dest_position = portal.pos
+        player.current_map.objects.insert(0, stairs)
+        player.current_map.portals.insert(0, stairs)
 
     return player.current_map
 

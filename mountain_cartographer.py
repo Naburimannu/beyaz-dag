@@ -568,7 +568,7 @@ def make_map(player, dungeon_level):
         player.pos.bound(algebra.Rect(0, 0, new_map.width - 1, new_map.height - 1))
 
     new_map.initialize_fov()
-    return new_map
+    return True
 
 
 def _test_map_repeatability():
