@@ -6,7 +6,7 @@ import renderer
 import actions
 
 
-TEXT_WIDTH = config.SCREEN_WIDTH - 20
+TEXT_WIDTH = config.SCREEN_WIDTH - 30
 QUEST_SP = 6
 
 
@@ -15,19 +15,32 @@ def _grant_quest_sp(player):
     log.message('You gained ' + str(QUEST_SP) + ' skill points.')
 
 
+class PageLayout(object):
+    def __init__(self):
+        libtcod.console_clear(0)
+        self.line = 4
+
+    def title(self, text):
+        libtcod.console_print_ex(
+            0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
+            libtcod.CENTER, text)
+        line += 4
+
+    def color(self, color):
+        libtcod.console_set_default_foreground(0, color)
+
+    def paragraph(self, text):
+        line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0, text)
+        line += 1
+
+
 def goddess_charge(player, goddess):
-    libtcod.console_clear(0)
+    page = PageLayout()
 
-    line = 4
-    libtcod.console_print_ex(
-        0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
-        libtcod.CENTER, 'The goddess speaks from behind her veil, in a voice as cold as the icy hells:')
-    line += 2
-
-    libtcod.console_set_default_foreground(0, libtcod.light_blue)
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+    page.title('The goddess speaks from behind her veil, in a voice as cold as the icy hells:')
+    page.color(libtcod.light_blue)
+    page.paragraph(
         'If you wish me to heal your people, you will have to right a offense against me. Bring me the Amulet of Golden Desires, which is worn by the cyclops Tepegoz. If you would slay him to gain it, I cannot tell you how; there is a nymph who lives in a grotto on the lakeshore who holds that knowledge to herself.')
-    line += 1
 
     renderer.finish_welcome()
     goddess.wait_count = 0
@@ -48,26 +61,15 @@ def goddess_waiting(player, goddess):
 
 
 def nymph_info(player, nymph):
-    libtcod.console_clear(0)
+    page = PageLayout()
 
-    line = 4
-    libtcod.console_print_ex(
-        0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
-        libtcod.CENTER, "The nymph's words roil around you, now loud, now soft, now rushing, now slow:")
-    line += 2
+    page.title("The nymph's words roil around you, now loud, now soft, now rushing, now slow:")
 
-    libtcod.console_set_default_foreground(0, libtcod.azure)
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
-        "You want to kill my son?")
-    line += 1
-
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
-        "It's about time.")
-    line += 1
-
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+    page.color(libtcod.azure)
+    page.paragraph("You want to kill my son?")
+    page.paragraph("It's about time.")
+    page.paragraph(
         "You'll need a spear to put his eye out - any spear will do. But then to kill him you'll need something special. A black sword lies in the depths below this mountain. The fastest way there might be to pass the horrors in the old quarry, in the southern hills.")
-    line += 1
 
     renderer.finish_welcome()
     nymph.interactable.use_function = nymph_unhappy
@@ -79,31 +81,28 @@ def nymph_unhappy(player, nymph):
 
 
 def display_welcome():
-    libtcod.console_clear(0)
+    page = PageLayout()
 
-    libtcod.console_set_default_foreground(0, libtcod.light_yellow)
-    line = 4
-    libtcod.console_print_ex(
-        0, config.SCREEN_WIDTH/2, line, libtcod.BKGND_NONE,
-        libtcod.CENTER, 'BEYAZ DAG')
-    line += 2
+    page.color(libtcod.light_yellow)
+    page.title('BEYAZ DAG')
 
-    libtcod.console_set_default_foreground(0, libtcod.white)
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+    page.color(libtcod.white)
+    page.paragraph(
         'It is not far from Navekat and Suyab to the lake they call the Eye of the World. But the visions you sought there carried you much farther, across mountains, deserts, marshes, across the Mother River to the lonely Mount Beyaz. Here, perhaps, you can convince the merciful goddess who lives above the clouds to save your people from the plague.')
-    line += 1
-
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+    page.paragraph(
         "Beyaz Dag towers solitary above the deserts. No rival peak dares rear itself nearby, though a desultory range of hills stretches southwards. The mountain's western slopes fall off steeply into a deep blue lake; north lie the marshes that fringe the Mother River.")
-    line += 1
-
-    line += libtcod.console_print_rect(0, 10, line, TEXT_WIDTH, 0,
+    page.paragraph(
         'You never mastered sword and lance, like your brothers, but can shoot, ride, and wrestle as well as any of them.')
-    line += 1
+    page.paragraph(
+        'Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travellers tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...')
+
+    page.line += 2
+    page.paragraph(
+        "Now you're almost through the marshes; the mountain rises to the southwest.")
 
     libtcod.console_set_default_foreground(0, libtcod.darker_yellow)
     libtcod.console_print_ex(
-        0, config.SCREEN_WIDTH/2, config.SCREEN_HEIGHT-4, libtcod.BKGND_NONE,
+        0, config.SCREEN_WIDTH/2, config.SCREEN_HEIGHT-6, libtcod.BKGND_NONE,
         libtcod.CENTER, 'Generating the map...')
 
     libtcod.console_flush()
