@@ -12,7 +12,8 @@ class Object:
     It's always represented by a character on screen.
     """
     def __init__(self, pos, char, name, color,
-                 blocks=False, always_visible=False,
+                 blocks=False, blocks_sight=False,
+                 always_visible=False,
                  interactable=None,
                  fighter=None, ai=None, item=None, equipment=None,
                  melee=None, missile=None):
@@ -21,6 +22,7 @@ class Object:
         self.name = name
         self.color = color
         self.blocks = blocks
+        self.blocks_sight = blocks_sight
         self.always_visible = always_visible
 
         self.interactable = interactable

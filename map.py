@@ -107,6 +107,13 @@ class BaseMap(object):
                     self.fov_map, x, y,
                     not terrain_types[self.terrain[x][y]].blocks_sight,
                     not terrain_types[self.terrain[x][y]].blocks)
+        for obj in self.objects:
+            if obj.blocks_sight or obj.blocks:
+                blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
+                blocks_sight = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight
+                libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
+
+
     def terrain_at(self, pos):
         """
         Returns the Terrain at (pos).
@@ -177,13 +184,22 @@ class OutdoorMap(BaseMap):
         self.elevation_visited = []
 
     def set_fov_elevation(self, e):
+        self.fov_needs_recompute = True
         for y in range(self.height):
             for x in range(self.width):
-                bs = (terrain_types[self.terrain[x][y]].blocks_sight or
-                      (self.region_elevations[self.region[x][y]] > e + 1))
+                blocks_sight = (terrain_types[self.terrain[x][y]].blocks_sight or
+                                (self.region_elevations[self.region[x][y]] > e + 1))
                 libtcod.map_set_properties(
                     self.fov_map, x, y,
-                    not bs, not terrain_types[self.terrain[x][y]].blocks)
+                    not blocks_sight, not terrain_types[self.terrain[x][y]].blocks)
+        for obj in self.objects:
+            if obj.blocks_sight or obj.blocks:
+                blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
+                blocks_sight = (obj.blocks or
+                    terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight or
+                    (self.region_elevations[self.region[x][y]] > e + 1))
+                libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
+
 
     def is_blocked_from(self, origin, dest, ignore=None):
         """

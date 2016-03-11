@@ -11,6 +11,7 @@ import spells  # nasty levelization violation?!
 
 def closed_door(pos):
     return Object(pos, '+', 'closed door', libtcod.white, blocks=True,
+            blocks_sight=True,
             interactable=Interactable(use_function=_do_open_door))
 
 def open_door(pos):
@@ -20,6 +21,8 @@ def _do_open_door(actor, target):
     replacement = open_door(target.pos)
     actor.current_map.objects.append(replacement)
     actor.current_map.objects.remove(target)
+    actor.current_map.fov_needs_recompute = True
+    actor.current_map.fov_elevation_changed = True
     log.message(actor.name.capitalize() + ' opens a door.')
 
 
