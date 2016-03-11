@@ -99,30 +99,30 @@ def _dig_some_caves(new_map, old_quarry_stairs):
     new_map.spare_terrain = copy.deepcopy(new_map.terrain) # [[0 for y in range(new_map.height)] for x in range(new_map.width)]
 
     new_map.cave_zones = []
-    x = libtcod.random_get_int(new_map.rng, 3, old_quarry_stairs[1].dest_position.x / 2)
-    w = libtcod.random_get_int(new_map.rng, 20, old_quarry_stairs[1].dest_position.x - x - 3)
+    x = new_map.rnd(3, old_quarry_stairs[1].dest_position.x / 2)
+    w = new_map.rnd(20, old_quarry_stairs[1].dest_position.x - x - 3)
     if old_quarry_stairs[0].dest_position.y < old_quarry_stairs[1].dest_position.y:
         # staircase 0 in top left quadrant, put caves in bottom left quadrant
-        y = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
-        h = libtcod.random_get_int(new_map.rng, 20, new_map.height - y - 3)
+        y = new_map.rnd(old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
+        h = new_map.rnd(20, new_map.height - y - 3)
     else:
         # staircase 0 in bottom left quadrant, put caves in top left quadrant
-        y = libtcod.random_get_int(new_map.rng, 3, old_quarry_stairs[1].dest_position.y / 2)
-        h = libtcod.random_get_int(new_map.rng, 20, old_quarry_stairs[1].dest_position.y - y - 3)
+        y = new_map.rnd(3, old_quarry_stairs[1].dest_position.y / 2)
+        h = new_map.rnd(20, old_quarry_stairs[1].dest_position.y - y - 3)
 
     target_zone = algebra.Rect(x, y, w, h)
     print("Target zone 0 ", target_zone)
     ca_cartographer.dig_ca_region(new_map, target_zone, 4, 3)
     new_map.cave_zones.append(target_zone)
 
-    x = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.x + 3, old_quarry_stairs[1].dest_position.x * 3 / 2)
-    w = libtcod.random_get_int(new_map.rng, 20, new_map.width - x - 3)
+    x = new_map.rnd(old_quarry_stairs[1].dest_position.x + 3, old_quarry_stairs[1].dest_position.x * 3 / 2)
+    w = new_map.rnd(20, new_map.width - x - 3)
     if old_quarry_stairs[2].dest_position.y < old_quarry_stairs[1].dest_position.y:
-        y = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
-        h = libtcod.random_get_int(new_map.rng, 20, new_map.height - y - 3)
+        y = new_map.rnd(old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
+        h = new_map.rnd(20, new_map.height - y - 3)
     else:
-        y = libtcod.random_get_int(new_map.rng, 3, old_quarry_stairs[1].dest_position.y / 2)
-        h = libtcod.random_get_int(new_map.rng, 20, old_quarry_stairs[1].dest_position.y - y - 3)
+        y = new_map.rnd(3, old_quarry_stairs[1].dest_position.y / 2)
+        h = new_map.rnd(20, old_quarry_stairs[1].dest_position.y - y - 3)
 
     target_zone = algebra.Rect(x, y, w, h)
     print("Target zone 1 ", target_zone)
