@@ -148,8 +148,8 @@ def make_caravanserai(new_map):
     new_map.caravanserai = bounds
 
     if (bounds.width > bounds.height):
-        new_map.terrain[center.x][bounds.y2] = map.TERRAIN_FLOOR
-        new_map.terrain[bounds.x2][center.y+2] = map.TERRAIN_FLOOR
+        new_map.terrain[center.x][bounds.y2] = map.TERRAIN_GROUND
+        new_map.terrain[bounds.x2][center.y+2] = map.TERRAIN_GROUND
 
         # Rooms in west half
         wall_offset = libtcod.random_get_int(new_map.rng,
@@ -190,8 +190,8 @@ def make_caravanserai(new_map):
                 new_map.terrain[x][y] = map.TERRAIN_GROUND
 
     else:
-        new_map.terrain[center.x+2][bounds.y2] = map.TERRAIN_FLOOR
-        new_map.terrain[bounds.x2][center.y] = map.TERRAIN_FLOOR
+        new_map.terrain[center.x+2][bounds.y2] = map.TERRAIN_GROUND
+        new_map.terrain[bounds.x2][center.y] = map.TERRAIN_GROUND
 
         # Rooms in north half
         wall_offset = libtcod.random_get_int(new_map.rng,
