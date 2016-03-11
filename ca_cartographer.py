@@ -179,11 +179,8 @@ def _probe_for_stair(new_map, x_range, center_y):
     return None
 
 
-def _build_map(new_map):
-    new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
-
-    new_map.spare_terrain = [[0 for y in range(new_map.height)] for x in range(new_map.width)]
-
+def dig_ca_region(new_map, rect):
+    new_map.spare_terrain = [[0 for y in range(rect.y1, rect.y2)] for x in range(rect.x1, rect.x2)]
     for x in range(1, new_map.width - 1):
         for y in range(1, new_map.height - 1):
             if libtcod.random_get_float(new_map.rng, 0., 1.) < 0.6:
@@ -196,8 +193,13 @@ def _build_map(new_map):
     for i in range(3):
         _generation(new_map, 5, -1)
 
-    center = algebra.Location(new_map.width / 2, new_map.height / 2)
 
+def _build_map(new_map):
+    new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
+
+    dig_ca_region(new_map, algebra.Rect(0, 0, new_map.width, new_map.height))
+
+    center = algebra.Location(new_map.width / 2, new_map.height / 2)
     stair_loc = _probe_for_stair(new_map,
                                  range(new_map.width - 2, center.x, -1),
                                  center.y)
