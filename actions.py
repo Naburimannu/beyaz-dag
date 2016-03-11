@@ -35,7 +35,7 @@ def random_direction():
 def add_to_map(new_map, pos, obj):
     obj.pos = pos
     obj.current_map = new_map # not necessarily necessary?
-    new_map.objects.append(obj)
+    new_map.objects.insert(0, obj)
 
 
 def move(obj, direction):

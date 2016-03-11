@@ -111,7 +111,7 @@ def _place_caravanserai(new_map, size):
 def _place_door(new_map, pos):
     new_map.terrain[pos.x][pos.y] = map.TERRAIN_FLOOR
     door_obj = miscellany.closed_door(pos)
-    new_map.objects.append(door_obj)
+    new_map.objects.append(0, door_obj)
 
 
 def _clear_outside_walls(new_map, bounds):

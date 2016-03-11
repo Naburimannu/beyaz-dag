@@ -19,7 +19,7 @@ def open_door(pos):
 
 def _do_open_door(actor, target):
     replacement = open_door(target.pos)
-    actor.current_map.objects.append(replacement)
+    actor.current_map.objects.insert(0, replacement)
     actor.current_map.objects.remove(target)
     actor.current_map.fov_needs_recompute = True
     actor.current_map.fov_elevation_changed = True
