@@ -111,6 +111,8 @@ def _dig_some_caves(new_map, old_quarry_stairs):
         h = new_map.rnd(20, old_quarry_stairs[1].dest_position.y - y - 3)
 
     target_zone = algebra.Rect(x, y, w, h)
+    target_zone.x2 = min(target_zone.x2, new_map.width - 2)
+    target_zone.y2 = min(target_zone.y2, new_map.height - 2)
     print("Target zone 0 ", target_zone)
     ca_cartographer.dig_ca_region(new_map, target_zone, 4, 3)
     new_map.cave_zones.append(target_zone)
@@ -125,9 +127,48 @@ def _dig_some_caves(new_map, old_quarry_stairs):
         h = new_map.rnd(20, old_quarry_stairs[1].dest_position.y - y - 3)
 
     target_zone = algebra.Rect(x, y, w, h)
+    target_zone.x2 = min(target_zone.x2, new_map.width - 2)
+    target_zone.y2 = min(target_zone.y2, new_map.height - 2)
     print("Target zone 1 ", target_zone)
     ca_cartographer.dig_ca_region(new_map, target_zone, 4, 3)
     new_map.cave_zones.append(target_zone)
+
+
+def _dig_about(new_map, room_rect, left_min, left_max, right_min, right_max):
+    x = room_rect.center().x
+    top = new_map.rnd(3, room_rect.y1 / 2)
+    _create_v_tunnel(new_map, room_rect.y1, top, x)
+    cross_tunnel_count = new_map.rnd(2, 4)
+    tunnel_interval = (room_rect.y1 - 2 - top) / cross_tunnel_count
+    for i in range(cross_tunnel_count):
+        y = new_map.rnd(0, tunnel_interval - 1) + top + i * tunnel_interval
+        if new_map.cave_zones[0].contains(algebra.Location(x, y)):
+            continue
+        left = new_map.rnd(left_min, left_max)
+        right = new_map.rnd(right_min, right_max)
+        _create_h_tunnel(new_map, left, right, y)
+
+    bottom = new_map.rnd(room_rect.y2 + (new_map.height - room_rect.y2) / 2, new_map.height - 3)
+    _create_v_tunnel(new_map, room_rect.y2, bottom, x)
+    cross_tunnel_count = new_map.rnd(2, 4)
+    tunnel_interval = (bottom - room_rect.y2 - 2) / cross_tunnel_count
+    for i in range(cross_tunnel_count):
+        y = new_map.rnd(0, tunnel_interval - 1) + room_rect.y2 + 3 + i * tunnel_interval
+        if new_map.cave_zones[0].contains(algebra.Location(x, y)):
+            continue
+        left = new_map.rnd(left_min, left_max)
+        right = new_map.rnd(right_min, right_max)
+        _create_h_tunnel(new_map, left, right, y)
+
+
+def _dig_mine_tunnels(new_map):
+    x = new_map.rooms[0].center().x
+    _dig_about(new_map, new_map.rooms[0], 3, x / 2, x + 3, new_map.width / 2 + 3)
+    x = new_map.rooms[1].center().x
+    _dig_about(new_map, new_map.rooms[1], x / 2, x - 3, x + 3, x * 3 / 2)
+    x = new_map.rooms[2].center().x
+    _dig_about(new_map, new_map.rooms[2], new_map.width / 2 - 3,
+               x - 3, x + (new_map.width - x) / 2, new_map.width - 3)
 
 
 def make_map(player, dungeon_level):
@@ -147,85 +188,9 @@ def make_map(player, dungeon_level):
     _create_entries(new_map, old_quarry_stairs)
     _descend_stairs(new_map, player, old_quarry_stairs)
     _dig_some_caves(new_map, old_quarry_stairs)
+    _dig_mine_tunnels(new_map)
 
-    # TODO: build map conecting (not directly!) all three entrances
     # TODO: add inhabitants
-
-    x = new_map.rooms[0].center().x
-    top = new_map.rnd(3, new_map.rooms[0].y1 / 2)
-    _create_v_tunnel(new_map, new_map.rooms[0].y1, top, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (new_map.rooms[0].y1 - 2 - top) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(0, tunnel_interval - 1) + top + i * tunnel_interval
-        if new_map.cave_zones[0].contains(algebra.Location(x, y)):
-            continue
-        left = new_map.rnd(3, x / 2)
-        right = new_map.rnd(x + 3, new_map.width - 3)
-        _create_h_tunnel(new_map, left, right, y)
-
-    bottom = new_map.rnd(new_map.rooms[0].y2 * 3 / 2, new_map.height - 3)
-    _create_v_tunnel(new_map, new_map.rooms[0].y2, bottom, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (bottom - new_map.rooms[0].y2 - 2) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(0, tunnel_interval - 1) + new_map.rooms[0].y2 + 3 + i * tunnel_interval
-        if new_map.cave_zones[0].contains(algebra.Location(x, y)):
-            continue
-        left = new_map.rnd(3, x / 2)
-        right = new_map.rnd(x + 3, new_map.width - 3)
-        _create_h_tunnel(new_map, left, right, y)
-
-    #####
-
-    x = new_map.rooms[1].center().x
-    top = new_map.rnd(3, new_map.rooms[1].y1 / 2)
-    _create_v_tunnel(new_map, new_map.rooms[1].y1, top, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (new_map.rooms[1].y1 - 2 - top) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(0, tunnel_interval - 1) + top + i * tunnel_interval
-        left = new_map.rnd(x / 2, x - 3)
-        right = new_map.rnd(x + 3, x * 3 / 2)
-        _create_h_tunnel(new_map, left, right, y)
-
-    bottom = new_map.rnd(new_map.rooms[1].y2 * 3 / 2, new_map.height - 3)
-    _create_v_tunnel(new_map, new_map.rooms[1].y2, bottom, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (bottom - new_map.rooms[1].y2 - 2) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(0, tunnel_interval - 1) + new_map.rooms[1].y2 + 3 + i * tunnel_interval
-        left = new_map.rnd(x / 2, x - 3)
-        right = new_map.rnd(x + 3, x * 3 / 2)
-        _create_h_tunnel(new_map, left, right, y)
-
-    #####
-
-    x = new_map.rooms[2].center().x
-    top = new_map.rnd(3, new_map.rooms[2].y1 / 2)
-    _create_v_tunnel(new_map, new_map.rooms[2].y1, top, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (new_map.rooms[2].y1 - 2 - top) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(2, tunnel_interval - 1) + top + i * tunnel_interval
-        if new_map.cave_zones[1].contains(algebra.Location(x, y)):
-            continue
-        left = new_map.rnd(3, x / 2)
-        right = new_map.rnd(x + (new_map.width - x) / 2, new_map.width - 3)
-        _create_h_tunnel(new_map, left, right, y)
-
-    bottom = new_map.rnd(new_map.rooms[2].y2 * 3 / 2, new_map.height - 3)
-    _create_v_tunnel(new_map, new_map.rooms[2].y2, bottom, x)
-    cross_tunnel_count = new_map.rnd(2, 4)
-    tunnel_interval = (bottom - new_map.rooms[2].y2 - 2) / cross_tunnel_count
-    for i in range(cross_tunnel_count):
-        y = new_map.rnd(0, tunnel_interval - 1) + new_map.rooms[2].y2 + 3 + i * tunnel_interval
-        if new_map.cave_zones[1].contains(algebra.Location(x, y)):
-            continue
-        left = new_map.rnd(3, x / 2)
-        right = new_map.rnd(x + (new_map.width - x) / 2, new_map.width - 3)
-        _create_h_tunnel(new_map, left, right, y)
-
 
     # TEST
     for x in range(new_map.width):
