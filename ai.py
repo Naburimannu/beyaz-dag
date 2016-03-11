@@ -79,7 +79,7 @@ def hostile_archer(monster, player, metadata):
                 libtcod.random_get_int(0, 1, 2) == 1 and
                 distance > 1 and
                 distance < weapon_eq.owner.missile_weapon.max_range):
-            monster.game_state = 'shooting'
+            actions.draw(monster, weapon_eq.owner)
         else:
             hostile_monster(monster, player, metadata)
 

@@ -172,7 +172,8 @@ def attack(attacker_ftr, target_obj, report=True):
 
 
 def draw(actor_obj, weapon_obj, report=True):
-    log.message(actor_obj.name.capitalize() + ' readies a ' + weapon_obj.name)
+    if report:
+        log.message(actor_obj.name.capitalize() + ' readies a ' + weapon_obj.name)
     actor_obj.game_state = 'shooting'
 
 
