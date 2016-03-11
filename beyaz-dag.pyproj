@@ -42,6 +42,9 @@
     <Compile Include="compound_cartographer.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="mine_cartographer.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="miscellany.py">
       <SubType>Code</SubType>
     </Compile>

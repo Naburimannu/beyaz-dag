@@ -14,6 +14,7 @@ import actions
 import spells
 import quest
 import compound_cartographer
+import mine_cartographer
 import ca_cartographer
 
 ROOM_MAX_SIZE = 10
@@ -22,6 +23,7 @@ MAX_ROOMS = 30
 
 QUARRY_ELEVATION = 3
 GHUL_COUNT_GOAL = 2
+MINE_ENTRANCE_COUNT = 3
 
 
 def _random_position_in_region(new_map, region):
@@ -403,7 +405,29 @@ def _dig_quarry(new_map, peak):
     for rgn in new_map.quarry_regions:
         _mark_quarry_slopes(new_map, rgn)
 
-    # TODO: dig multiple mines underneath
+    for ii in range(MINE_ENTRANCE_COUNT):
+        stairheads = []
+        while True:
+            rgn = new_map.quarry_regions[_random_choice_index([1 for ii in range(len(new_map.quarry_regions))])]
+            pos = _random_position_in_region(new_map, rgn)
+            for stair_pos in stairheads:
+                if pos.distance(stair_pos) < 3:
+                    continue
+            # Maybe try to enforce that it's near a cliff / slope...
+            break
+
+    # Arrange west-to-east to make it easier to dig below
+    stairheads.sort(key = lambda pos : pos.x)
+
+    new_map.quarry_stairs = []
+    for ii in stairheads:
+        stairs = Object(ii, '<', 'mine entrance', libtcod.white, always_visible=True)
+        stairs.destination = None
+        stairs.dest_position = None
+        stairs.generator = mine_cartographer.make_map
+        new_map.objects.insert(0, stairs)
+        new_map.portals.insert(0, stairs)
+        new_map.quarry_stairs.append(stairs)
 
 
 def _make_grotto(new_map):
@@ -413,7 +437,7 @@ def _make_grotto(new_map):
     region_center = algebra.Location(new_map.region_seeds[new_map.grotto_region][0],
                                      new_map.region_seeds[new_map.grotto_region][1])
     print('Grotto at ' + str(region_center.x) + ' ' + str(region_center.y))
-    stairs = Object(region_center, '<', 'stairs down', libtcod.white, always_visible=True)
+    stairs = Object(region_center, '<', 'grotto entrance', libtcod.white, always_visible=True)
     stairs.destination = None
     stairs.dest_position = None
     stairs.generator = ca_cartographer.make_map
@@ -547,11 +571,11 @@ def _test_map_repeatability():
     Require that two calls to _build_map() with the same seed produce the
     same corridors and rooms.
     """
-    map1 = map.Map(config.MAP_HEIGHT, config.MAP_WIDTH, 3)
+    map1 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map1.random_seed = libtcod.random_save(0)
     _build_map(map1)
 
-    map2 = map.Map(config.MAP_HEIGHT, config.MAP_WIDTH, 3)
+    map2 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map2.random_seed = map1.random_seed
     _build_map(map2)
 

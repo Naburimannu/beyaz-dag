@@ -245,7 +245,7 @@ def make_map(player, dungeon_level):
     Sets player.current_map to the new map, and adds the player as the first
     object.
     """
-    new_map = map.Map(config.MAP_HEIGHT, config.MAP_WIDTH, dungeon_level)
+    new_map = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, dungeon_level)
     new_map.objects.append(player)
     player.current_map = new_map
     player.camera_position = algebra.Location(0, 0)
@@ -290,11 +290,11 @@ def _test_map_repeatability():
     Require that two calls to _build_map() with the same seed produce the
     same corridors and rooms.
     """
-    map1 = map.Map(config.MAP_HEIGHT, config.MAP_WIDTH, 3)
+    map1 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map1.random_seed = libtcod.random_save(0)
     _build_map(map1)
 
-    map2 = map.Map(config.MAP_HEIGHT, config.MAP_WIDTH, 3)
+    map2 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map2.random_seed = map1.random_seed
     _build_map(map2)
 
