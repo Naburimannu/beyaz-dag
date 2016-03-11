@@ -1,5 +1,7 @@
-import libtcodpy as libtcod
+import copy
 import cProfile
+
+import libtcodpy as libtcod
 
 import config
 import algebra
@@ -154,17 +156,17 @@ def _assess_edge(new_map, near_min, far_max, x, y):
             _count_farther_walls(new_map, x, y))
 
 
-def _generation(new_map, near_min, far_max):
-    for x in range(1, new_map.width - 1):
+def _generation(new_map, rect, near_min, far_max):
+    for x in range(rect.x1 + 1, rect.x2 - 1):
         _assess_edge(new_map, near_min, far_max, x, 1)
         _assess_edge(new_map, near_min, far_max, x, new_map.height - 2)
 
-    for y in range(1, new_map.height - 1):
+    for y in range(rect.y1 + 1, rect.y2 - 1):
         _assess_edge(new_map, near_min, far_max, 1, y)
         _assess_edge(new_map, near_min, far_max, new_map.width - 2, y)
 
-    for x in range(2, new_map.width - 2):
-        for y in range(2, new_map.height - 2):
+    for x in range(rect.x1 + 2, rect.x2 - 2):
+        for y in range(rect.y1 + 2, rect.y2 - 2):
             neighboring_walls, farther_walls = _quickly_count_interior_walls(new_map, x, y)
             _assign(new_map, near_min, far_max, x, y, neighboring_walls, farther_walls)
 
@@ -180,23 +182,24 @@ def _probe_for_stair(new_map, x_range, center_y):
 
 
 def dig_ca_region(new_map, rect):
-    new_map.spare_terrain = [[0 for y in range(rect.y1, rect.y2)] for x in range(rect.x1, rect.x2)]
-    for x in range(1, new_map.width - 1):
-        for y in range(1, new_map.height - 1):
+    # print('Dig cellular automata in rect ', rect)
+    for x in range(rect.x1 + 1, rect.x2 - 1):
+        for y in range(rect.y1 + 1, rect.y2 - 1):
             if libtcod.random_get_float(new_map.rng, 0., 1.) < 0.6:
                 new_map.terrain[x][y] = map.TERRAIN_GROUND
 
     # Algorithm from http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
     # Builds using map.TERRAIN_GROUND; we'll replace that with map.TERRAIN_FLOOR in a post-process
     for i in range(4):
-        _generation(new_map, 5, 2)
+        _generation(new_map, rect, 5, 2)
     for i in range(3):
-        _generation(new_map, 5, -1)
+        _generation(new_map, rect, 5, -1)
 
 
 def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
+    new_map.spare_terrain = copy.deepcopy(new_map.terrain) # [[0 for y in range(new_map.height)] for x in range(new_map.width)]
     dig_ca_region(new_map, algebra.Rect(0, 0, new_map.width, new_map.height))
 
     center = algebra.Location(new_map.width / 2, new_map.height / 2)
