@@ -410,11 +410,14 @@ def _dig_quarry(new_map, peak):
         while True:
             rgn = new_map.quarry_regions[_random_choice_index([1 for ii in range(len(new_map.quarry_regions))])]
             pos = _random_position_in_region(new_map, rgn)
+            sufficiently_distant = True
             for stair_pos in stairheads:
-                if pos.distance(stair_pos) < 3:
-                    continue
+                print('distance between ', pos, stair_pos, pos.distance(stair_pos))
+                if pos.distance(stair_pos) < 5:
+                    sufficiently_distant = False
             # Maybe try to enforce that it's near a cliff / slope...
-            break
+            if sufficiently_distant:
+                break
         stairheads.append(pos)
 
     # Arrange west-to-east to make it easier to dig below

@@ -17,6 +17,10 @@ class Rect(object):
                 self.y1 == other.y1 and
                 self.y2 == other.y2)
 
+    def __repr__(self):
+        return ('Rect: from ' + str(self.x1) + ' ' + str(self.y1) + ' to ' +
+                str(self.x2) + ' ' + str(self.y2))
+
     def center(self):
         return Location((self.x1 + self.x2) / 2,
                         (self.y1 + self.y2) / 2)

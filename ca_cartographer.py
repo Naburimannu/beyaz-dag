@@ -181,7 +181,7 @@ def _probe_for_stair(new_map, x_range, center_y):
     return None
 
 
-def dig_ca_region(new_map, rect):
+def dig_ca_region(new_map, rect, gen1_count, gen2_count):
     # print('Dig cellular automata in rect ', rect)
     for x in range(rect.x1 + 1, rect.x2 - 1):
         for y in range(rect.y1 + 1, rect.y2 - 1):
@@ -190,9 +190,9 @@ def dig_ca_region(new_map, rect):
 
     # Algorithm from http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
     # Builds using map.TERRAIN_GROUND; we'll replace that with map.TERRAIN_FLOOR in a post-process
-    for i in range(4):
+    for i in range(gen1_count):
         _generation(new_map, rect, 5, 2)
-    for i in range(3):
+    for i in range(gen2_count):
         _generation(new_map, rect, 5, -1)
 
 
@@ -200,7 +200,7 @@ def _build_map(new_map):
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
     new_map.spare_terrain = copy.deepcopy(new_map.terrain) # [[0 for y in range(new_map.height)] for x in range(new_map.width)]
-    dig_ca_region(new_map, algebra.Rect(0, 0, new_map.width, new_map.height))
+    dig_ca_region(new_map, algebra.Rect(0, 0, new_map.width, new_map.height), 4, 3)
 
     center = algebra.Location(new_map.width / 2, new_map.height / 2)
     stair_loc = _probe_for_stair(new_map,
