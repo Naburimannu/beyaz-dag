@@ -447,8 +447,9 @@ def _make_grotto(new_map):
     # Would be nice to have a structure around it, but for now just keep the top clear.
     for x in range(region_center.x - 2, region_center.x + 3):
         for y in range(region_center.y - 2, region_center.y + 3):
-            if new_map.region[x][y] == new_map.grotto_region:
-                new_map.terrain[x][y] = 1
+            if (new_map.region[x][y] == new_map.grotto_region
+                    and new_map.terrain[x][y] != map.TERRAIN_SLOPE):
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
 
 
 def _debug_region_heights(new_map):

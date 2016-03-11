@@ -135,7 +135,8 @@ def _clear_outside_walls(new_map, bounds):
 def _clear_courtyard(new_map, courtyard_bounds):
     for x in range(courtyard_bounds.x1, courtyard_bounds.x2):
         for y in range(courtyard_bounds.y1, courtyard_bounds.y2):
-            new_map.terrain[x][y] = map.TERRAIN_GROUND
+            if new_map.terrain[x][y] != map.TERRAIN_SLOPE:
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
 
 
 def make_caravanserai(new_map):
