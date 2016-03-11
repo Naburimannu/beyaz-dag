@@ -487,7 +487,7 @@ def new_game():
     log.message('Press ? or F1 for help.')
 
     # _start_near_quarry(player)
-    # _start_near_grotto(player)
+    _start_near_grotto(player)
     # _start_near_peak(player)
 
     # TEST

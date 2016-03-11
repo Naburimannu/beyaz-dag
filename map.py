@@ -77,29 +77,20 @@ region_colors_unseen = {
 }
 
 
-class Map(object):
-    """
-    A (width x height) region of tiles, presumably densely occupied.
-    Has a dungeon_level and a collection of (rectangular) rooms.
-    Has portals connecting to other maps.
-    """
-    def __init__(self, height, width, dungeon_level):
-        self.height = height
+class BaseMap(object):
+    def __init__(self, width, height, default_terrain):
         self.width = width
-        self.is_outdoors = False
-        self.dungeon_level = dungeon_level
+        self.height = height
         self.objects = []
-        self.rooms = []
         self.portals = []
 
         self.random_seed = None
         self.rng = None
 
         self.fov_map = None
-        self.fov_elevation_changed = False  # HACK
+        self.fov_needs_recompute = True
 
-        # Maps default to walls (blocked) & unexplored
-        self.terrain = [[0 for y in range(height)] for x in range(width)]
+        self.terrain = [[default_terrain for y in range(height)] for x in range(width)]
         self._explored = [[False for y in range(height)] for x in range(width)]
 
     def initialize_fov(self):
@@ -116,7 +107,6 @@ class Map(object):
                     self.fov_map, x, y,
                     not terrain_types[self.terrain[x][y]].blocks_sight,
                     not terrain_types[self.terrain[x][y]].blocks)
-
     def terrain_at(self, pos):
         """
         Returns the Terrain at (pos).
@@ -136,43 +126,46 @@ class Map(object):
                 return True
         return False
 
-    def is_blocked_from(self, origin, dest, ignore=None):
-        return self.is_blocked_at(dest, ignore)
-
     def is_explored(self, pos):
         return self._explored[pos.x][pos.y]
 
     def explore(self, pos):
         self._explored[pos.x][pos.y] = True
 
-    def out_of_bounds(self, pos):
-        return "You can't go that way!"
 
-
-class OutdoorMap(object):
+class Map(BaseMap):
     """
     A (width x height) region of tiles, presumably densely occupied.
     Has a dungeon_level and a collection of (rectangular) rooms.
     Has portals connecting to other maps.
     """
-    def __init__(self, height, width, dungeon_level):
-        self.height = height
-        self.width = width
+    def __init__(self, width, height, dungeon_level):
+        super(Map, self).__init__(width, height, TERRAIN_WALL)
+        self.is_outdoors = False
+        self.dungeon_level = dungeon_level
+        self.rooms = []
+
+        self.fov_elevation_changed = False  # HACK
+
+    def is_blocked_from(self, origin, dest, ignore=None):
+        return self.is_blocked_at(dest, ignore)
+
+    def out_of_bounds(self, pos):
+        return "You can't go that way!"
+
+
+class OutdoorMap(BaseMap):
+    """
+    A (width x height) region of tiles, presumably densely occupied.
+    Has a dungeon_level and a collection of (rectangular) rooms.
+    Has portals connecting to other maps.
+    """
+    def __init__(self, width, height, dungeon_level):
+        super(OutdoorMap, self).__init__(width, height, TERRAIN_GROUND)
         self.is_outdoors = True
         self.dungeon_level = 0  # HACK
-        self.objects = []
-        self.portals = []
 
-        self.random_seed = None
-        self.rng = None
-
-        self.fov_map = None
-        self.fov_needs_recompute = True
         self.fov_elevation_changed = False
-
-        # OutdoorMaps default to open (unblocked) & unexplored
-        self.terrain = [[1 for y in range(height)] for x in range(width)]
-        self._explored = [[False for y in range(height)] for x in range(width)]
 
         self.region = [[-1 for y in range(height)] for x in range(width)]
 
@@ -183,21 +176,6 @@ class OutdoorMap(object):
         self.region_entered = []
         self.elevation_visited = []
 
-    def initialize_fov(self):
-        """
-        Set up corresponding C state for libtcod.
-        Must be called explicitly after loading from savegame or entering from
-        another map.
-        """
-        self.fov_needs_recompute = True
-        self.fov_map = libtcod.map_new(self.width, self.height)
-        for y in range(self.height):
-            for x in range(self.width):
-                libtcod.map_set_properties(
-                    self.fov_map, x, y,
-                    not terrain_types[self.terrain[x][y]].blocks_sight,
-                    not terrain_types[self.terrain[x][y]].blocks)
-
     def set_fov_elevation(self, e):
         for y in range(self.height):
             for x in range(self.width):
@@ -206,25 +184,6 @@ class OutdoorMap(object):
                 libtcod.map_set_properties(
                     self.fov_map, x, y,
                     not bs, not terrain_types[self.terrain[x][y]].blocks)
-
-    def terrain_at(self, pos):
-        """
-        Returns the Terrain at (pos).
-        position *must* be within the current map.
-        """
-        return terrain_types[self.terrain[pos.x][pos.y]]
-
-    def is_blocked_at(self, pos, ignore=None):
-        """
-        Returns true if impassible map terrain or any blocking objects
-        are at (x, y).
-        """
-        if terrain_types[self.terrain[pos.x][pos.y]].blocks:
-            return True
-        for object in self.objects:
-            if object.blocks and object.pos == pos and object != ignore:
-                return True
-        return False
 
     def is_blocked_from(self, origin, dest, ignore=None):
         """
@@ -239,12 +198,6 @@ class OutdoorMap(object):
         if (delta > 1 or delta < -1):
             return True
         return False
-
-    def is_explored(self, pos):
-        return self._explored[pos.x][pos.y]
-
-    def explore(self, pos):
-        self._explored[pos.x][pos.y] = True
 
     def out_of_bounds(self, pos):
         if pos.x < 0:
