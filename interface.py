@@ -180,7 +180,8 @@ def target_tile(actor, max_range=None):
 
         # Accept the target if the player clicked in FOV
         # and within the range specified.
-        if ((mouse.lbutton_pressed or key.vk == libtcod.KEY_ENTER) and
+        if ((mouse.lbutton_pressed or key.vk == libtcod.KEY_ENTER or
+             key.vk == libtcod.KEY_KPENTER) and
                 libtcod.map_is_in_fov(actor.current_map.fov_map, pos.x, pos.y) and
                 (max_range is None or actor.distance(pos) <= max_range)):
             libtcod.console_clear(renderer._overlay)
