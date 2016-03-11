@@ -57,6 +57,17 @@ class Location(object):
     def __sub__(self, other):
         return Location(self.x - other.x, self.y - other.y)
 
+    def __mul__(self, n):
+        return Location(self.x * n, self.y * n)
+
+    __rmul__ = __mul__
+
+    def __str__(self):  # ignored??
+        return str(self.x) + ' ' + str(self.y)
+
+    def __repr__(self):
+        return str(self.x) + ' ' + str(self.y)
+
     def set(self, x, y):
         self.x = x
         self.y = y

@@ -423,8 +423,8 @@ def _new_equipment(player, obj):
 
 
 def _start_near_quarry(player):
-    if player.current_map.quarry_region:
-        quarry_center = player.current_map.region_seeds[player.current_map.quarry_region]
+    if player.current_map.quarry_regions:
+        quarry_center = player.current_map.region_seeds[player.current_map.quarry_regions[0]]
         player.pos = algebra.Location(quarry_center[0]+20, quarry_center[1]-20)
 
 def _start_near_grotto(player):
@@ -493,7 +493,7 @@ def new_game():
     log.message('At last you have reached the foot of the mountain. She waits above.', libtcod.red)
     log.message('Press ? or F1 for help.')
 
-    # _start_near_quarry(player)
+    _start_near_quarry(player)
     # _start_near_grotto(player)
     # _start_near_peak(player)
 
@@ -554,14 +554,14 @@ def process_visible_objects(player):
     """
     player.endangered = False
     visible_objects = []
-    for o in player.current_map.objects:
-        if o == player:
+    for obj in player.current_map.objects:
+        if obj == player:
             continue
-        if (libtcod.map_is_in_fov(player.current_map.fov_map, o.x, o.y) or
-                (o.always_visible and
-                 player.current_map.is_explored(o.pos))):
-            visible_objects.append(o)
-            if o.fighter:
+        if (libtcod.map_is_in_fov(player.current_map.fov_map, obj.x, obj.y) or
+                (obj.always_visible and
+                 player.current_map.is_explored(obj.pos))):
+            visible_objects.append(obj)
+            if obj.fighter:
                 player.endangered = True
     return visible_objects
 

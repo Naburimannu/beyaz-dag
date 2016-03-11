@@ -405,8 +405,8 @@ def _dig_quarry(new_map, peak):
     for rgn in new_map.quarry_regions:
         _mark_quarry_slopes(new_map, rgn)
 
+    stairheads = []
     for ii in range(MINE_ENTRANCE_COUNT):
-        stairheads = []
         while True:
             rgn = new_map.quarry_regions[_random_choice_index([1 for ii in range(len(new_map.quarry_regions))])]
             pos = _random_position_in_region(new_map, rgn)
@@ -415,6 +415,7 @@ def _dig_quarry(new_map, peak):
                     continue
             # Maybe try to enforce that it's near a cliff / slope...
             break
+        stairheads.append(pos)
 
     # Arrange west-to-east to make it easier to dig below
     stairheads.sort(key = lambda pos : pos.x)
@@ -572,11 +573,11 @@ def _test_map_repeatability():
     Require that two calls to _build_map() with the same seed produce the
     same corridors and rooms.
     """
-    map1 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
+    map1 = map.OutdoorMap(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map1.random_seed = libtcod.random_save(0)
     _build_map(map1)
 
-    map2 = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
+    map2 = map.OutdoorMap(config.MAP_WIDTH, config.MAP_HEIGHT, 3)
     map2.random_seed = map1.random_seed
     _build_map(map2)
 

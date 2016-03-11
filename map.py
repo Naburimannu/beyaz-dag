@@ -139,21 +139,6 @@ class BaseMap(object):
     def explore(self, pos):
         self._explored[pos.x][pos.y] = True
 
-
-class Map(BaseMap):
-    """
-    A (width x height) region of tiles, presumably densely occupied.
-    Has a dungeon_level and a collection of (rectangular) rooms.
-    Has portals connecting to other maps.
-    """
-    def __init__(self, width, height, dungeon_level):
-        super(Map, self).__init__(width, height, TERRAIN_WALL)
-        self.is_outdoors = False
-        self.dungeon_level = dungeon_level
-        self.rooms = []
-
-        self.fov_elevation_changed = False  # HACK
-
     def is_blocked_from(self, origin, dest, ignore=None):
         return self.is_blocked_at(dest, ignore)
 
@@ -162,6 +147,22 @@ class Map(BaseMap):
 
     def elevation(self, x, y):
         return 0  # hackish?
+
+
+class DungeonMap(BaseMap):
+    """
+    A (width x height) region of tiles, presumably densely occupied.
+    Has a dungeon_level and a collection of (rectangular) rooms.
+    Has portals connecting to other maps.
+    """
+    def __init__(self, width, height, dungeon_level):
+        super(DungeonMap, self).__init__(width, height, TERRAIN_WALL)
+        self.is_outdoors = False
+        self.dungeon_level = dungeon_level
+        self.rooms = []
+
+        self.fov_elevation_changed = False  # HACK
+
 
 class OutdoorMap(BaseMap):
     """

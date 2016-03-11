@@ -11,6 +11,24 @@ import quest
 import ai
 import spells
 
+def _create_room(new_map, room):
+    """
+    Make the tiles in a rectangle passable.
+    """
+    for x in range(room.x1 + 1, room.x2):
+        for y in range(room.y1 + 1, room.y2):
+            new_map.terrain[x][y] = map.TERRAIN_GROUND
+
+
+def _create_h_tunnel(new_map, x1, x2, y):
+    for x in range(min(x1, x2), max(x1, x2) + 1):
+        new_map.terrain[x][y] = map.TERRAIN_GROUND
+
+
+def _create_v_tunnel(new_map, y1, y2, x):
+    for y in range(min(y1, y2), max(y1, y2) + 1):
+        new_map.terrain[x][y] = map.TERRAIN_GROUND
+
 def make_map(player, dungeon_level):
     """
     Creates a new simple map at the given dungeon level.
@@ -19,7 +37,7 @@ def make_map(player, dungeon_level):
     """
     old_map = player.current_map
 
-    new_map = map.Map(config.MAP_WIDTH, config.MAP_HEIGHT, dungeon_level)
+    new_map = map.DungeonMap(100, 100, dungeon_level)
     new_map.objects.append(player)
     player.current_map = new_map
     player.camera_position = algebra.Location(0, 0)
@@ -27,11 +45,41 @@ def make_map(player, dungeon_level):
 
     oqs = old_map.quarry_stairs
     oqs[1].dest_position = algebra.Location(new_map.width / 2, new_map.height / 2)
-    oqs[0].dest_position = oqs[1].dest_position + 3 * (oqs[1].pos - oqs[0].pos)
-    oqs[2].dest_position = oqs[2].dest_position + 3 * (oqs[2].pos - oqs[0].pos)
+    oqs[0].dest_position = oqs[1].dest_position + 3 * (oqs[0].pos - oqs[1].pos)
+    oqs[2].dest_position = oqs[1].dest_position + 3 * (oqs[2].pos - oqs[0].pos)
 
-    # TODO: build map with three entrances
+    map_inset = algebra.Rect(10, 10, new_map.width - 20, new_map.height - 20)
+    oqs[0].dest_position.bound(map_inset)
+    oqs[2].dest_position.bound(map_inset)
+
+    # print('Map is ' + str(new_map.width) + ' x ' + str(new_map.height))
+    # print('Stairs come from ', [i.pos for i in oqs])
+    # print('Stairs to mines connect to ', [i.dest_position for i in oqs])
+
+    new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
+
+    for i in range(3):
+        w = libtcod.random_get_int(new_map.rng, 1, 3) * 2 + 3
+        h = libtcod.random_get_int(new_map.rng, 1, 3) * 2 + 3
+        x = oqs[i].dest_position.x - w / 2
+        y = oqs[i].dest_position.y - h / 2
+
+        new_room = algebra.Rect(x, y, w, h)
+        _create_room(new_map, new_room)
+
+        new_ctr = new_room.center()
+        assert(new_ctr == oqs[i].dest_position)
+
+    # TODO: build map conecting (not directly!) all three entrances
     # TODO: add inhabitants
+
+    # Which stairs did the player come down?
+    # print('Player was at ', player.pos)
+    for i in range(3):
+        if player.pos == oqs[i].pos:
+            player.pos = oqs[i].dest_position
+            # print('Came down stair #' + str(i))
+            break
 
     new_map.initialize_fov()
     return new_map
