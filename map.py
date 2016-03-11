@@ -110,7 +110,7 @@ class BaseMap(object):
         for obj in self.objects:
             if obj.blocks_sight or obj.blocks:
                 blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
-                blocks_sight = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight
+                blocks_sight = obj.blocks_sight or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
 
 
@@ -200,7 +200,7 @@ class OutdoorMap(BaseMap):
         for obj in self.objects:
             if obj.blocks_sight or obj.blocks:
                 blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
-                blocks_sight = (obj.blocks or
+                blocks_sight = (obj.blocks_sight or
                     terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight or
                     (self.region_elevations[self.region[x][y]] > elevation + 1))
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)

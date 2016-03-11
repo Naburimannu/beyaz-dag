@@ -36,27 +36,27 @@ def _create_v_tunnel(new_map, y1, y2, x):
     for y in range(min(y1, y2), max(y1, y2) + 1):
         new_map.terrain[x][y] = map.TERRAIN_GROUND
 
-def _link_up_stairs(new_map, old_quarry_stairs):
-    oqs[1].dest_position = algebra.Location(new_map.width / 2, new_map.height / 2)
-    oqs[0].dest_position = oqs[1].dest_position + MINE_SCALE * (oqs[0].pos - oqs[1].pos)
-    oqs[2].dest_position = oqs[1].dest_position + MINE_SCALE * (oqs[2].pos - oqs[1].pos)
+def _link_up_stairs(new_map, old_map, old_quarry_stairs):
+    old_quarry_stairs[1].dest_position = algebra.Location(new_map.width / 2, new_map.height / 2)
+    old_quarry_stairs[0].dest_position = old_quarry_stairs[1].dest_position + MINE_SCALE * (old_quarry_stairs[0].pos - old_quarry_stairs[1].pos)
+    old_quarry_stairs[2].dest_position = old_quarry_stairs[1].dest_position + MINE_SCALE * (old_quarry_stairs[2].pos - old_quarry_stairs[1].pos)
 
     map_inset = algebra.Rect(10, 10, new_map.width - 20, new_map.height - 20)
-    oqs[0].dest_position.bound(map_inset)
-    oqs[2].dest_position.bound(map_inset)
+    old_quarry_stairs[0].dest_position.bound(map_inset)
+    old_quarry_stairs[2].dest_position.bound(map_inset)
 
     print('Map is ' + str(new_map.width) + ' x ' + str(new_map.height))
-    print('Stairs come from ', [i.pos for i in oqs])
-    print('Stairs to mines connect to ', [i.dest_position for i in oqs])
+    print('Stairs come from ', [i.pos for i in old_quarry_stairs])
+    print('Stairs to mines connect to ', [i.dest_position for i in old_quarry_stairs])
 
     # Conflicts with stair generation in roguelike.next_level()
     for i in range(3):
-        oqs[i].destination = new_map
-        stairs = Object(oqs[i].dest_position, '>', 'stairs up', libtcod.white, always_visible=True)
+        old_quarry_stairs[i].destination = new_map
+        stairs = Object(old_quarry_stairs[i].dest_position, '>', 'stairs up', libtcod.white, always_visible=True)
         stairs.destination = old_map
-        stairs.dest_position = oqs[i].pos
-        player.current_map.objects.insert(0, stairs)
-        player.current_map.portals.insert(0, stairs)
+        stairs.dest_position = old_quarry_stairs[i].pos
+        new_map.objects.insert(0, stairs)
+        new_map.portals.insert(0, stairs)
 
 
 def _create_entries(new_map, old_quarry_stairs):
@@ -69,10 +69,10 @@ def _create_entries(new_map, old_quarry_stairs):
         new_room = algebra.Rect(x, y, w, h)
         _create_room(new_map, new_room)
         print('Room #' + str(i) + ' at ' + str(new_room))
-        new_map.rooms[i] = new_room
+        new_map.rooms.append(new_room)
 
         new_ctr = new_room.center()
-        assert(new_ctr == oqs[i].dest_position)
+        assert(new_ctr == old_quarry_stairs[i].dest_position)
 
 def _descend_stairs(new_map, player, old_quarry_stairs):
     print('Player was at ', player.pos)
@@ -87,7 +87,7 @@ def _dig_some_caves(new_map, old_quarry_stairs):
 
     x = libtcod.random_get_int(new_map.rng, 3, old_quarry_stairs[1].dest_position.x / 2)
     w = libtcod.random_get_int(new_map.rng, 20, old_quarry_stairs[1].dest_position.x - x - 3)
-    if old_quarry_stairs[0].dest_position.y < oqs[1].dest_position.y:
+    if old_quarry_stairs[0].dest_position.y < old_quarry_stairs[1].dest_position.y:
         y = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
         h = libtcod.random_get_int(new_map.rng, 20, new_map.height - y - 3)
     else:
@@ -97,10 +97,10 @@ def _dig_some_caves(new_map, old_quarry_stairs):
     target_zone = algebra.Rect(x, y, w, h)
     ca_cartographer.dig_ca_region(new_map, target_zone, 3, 2)
 
-    x = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.x + 3, oqs[1].dest_position.x * 3 / 2)
+    x = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.x + 3, old_quarry_stairs[1].dest_position.x * 3 / 2)
     w = libtcod.random_get_int(new_map.rng, 20, new_map.width - x - 3)
-    if old_quarry_stairs[2].dest_position.y < oqs[1].dest_position.y:
-        y = libtcod.random_get_int(new_map.rng, oqs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
+    if old_quarry_stairs[2].dest_position.y < old_quarry_stairs[1].dest_position.y:
+        y = libtcod.random_get_int(new_map.rng, old_quarry_stairs[1].dest_position.y + 3, old_quarry_stairs[1].dest_position.y * 3 / 2)
         h = libtcod.random_get_int(new_map.rng, 20, new_map.height - y - 3)
     else:
         y = libtcod.random_get_int(new_map.rng, 3, old_quarry_stairs[1].dest_position.y * 2)
@@ -125,11 +125,11 @@ def make_map(player, dungeon_level):
     new_map.random_seed = libtcod.random_save(0)
     new_map.rng = libtcod.random_new_from_seed(new_map.random_seed)
 
-    oqs = old_map.quarry_stairs
-    _link_up_stairs(new_map, oqs)
-    _create_entries(new_map, oqs)
-    _descend_stairs(new_map, player, oqs)
-    _dig_some_caves(new_map, oqs)
+    old_quarry_stairs = old_map.quarry_stairs
+    _link_up_stairs(new_map, old_map, old_quarry_stairs)
+    _create_entries(new_map, old_quarry_stairs)
+    _descend_stairs(new_map, player, old_quarry_stairs)
+    _dig_some_caves(new_map, old_quarry_stairs)
 
     # TODO: build map conecting (not directly!) all three entrances
     # TODO: add inhabitants
