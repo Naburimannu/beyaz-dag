@@ -226,14 +226,14 @@ def player_move_or_attack(player, direction, try_running):
         target_obj.interactable.use_function(player, target_obj)
         return True
 
+    elevation_before_moving = player.current_map.elevation(player.pos.x, player.pos.y)
     if actions.move(player, direction):
         player.current_map.fov_needs_recompute = True
         if player.current_map.is_outdoors:
             new_region = player.current_map.region[player.pos.x][player.pos.y]
-            old_elevation = player.current_map.elevation(player.pos.x, player.pos.y)
             new_elevation = player.current_map.region_elevations[new_region]
             _check_exploration_xp(player, new_region, new_elevation)
-            if new_elevation != old_elevation:
+            if new_elevation != elevation_before_moving:
                 player.current_map.fov_elevation_changed = True
                 player.fighter.exhaustion += actions.CLIMB_EXHAUSTION
         if try_running:
