@@ -171,8 +171,8 @@ def display_help():
                     '  shift-move to run\n' +
                     '\n' +
                     'g/get, d/drop, c/character information\n' +
-                    'f/fire your bow (use mouse or movement keys to aim)\n' +
-                    'i/view inventory (equip, use, or examine carried items)\n' +
+                    'f/fire your bow\n  (use mouse or movement keys to aim)\n' +
+                    'i/view inventory\n  (equip, use, or examine carried items)\n' +
                     's/increase skills\n' +
                     '</traverse stairs\n' +
                     '\n' +
