@@ -21,6 +21,7 @@ ROOM_MIN_SIZE = 6
 MAX_ROOMS = 30
 
 QUARRY_ELEVATION = 3
+GHUL_COUNT_GOAL = 2
 
 
 def _random_position_in_region(new_map, region):
@@ -77,7 +78,7 @@ def _place_random_creatures(new_map, player):
     }
     for r in range(len(new_map.region_seeds)):
         if (r == start_region or
-            (new_map.quarry_region and r == new_map.quarry_region)):
+            (new_map.quarry_regions and r in new_map.quarry_regions)):
             continue
         fn = _random_choice(terrain_chances[new_map.region_terrain[r]])
         if fn is not None:
@@ -98,11 +99,9 @@ def _inhabit_rotunda(new_map, peak):
 
 
 def _inhabit_quarry(new_map, player):
-    # print('Quarry near ', new_map.region_seeds[new_map.quarry_region])
-    for i in range(3):
-        ghul = bestiary.ghul(new_map,
-            _random_position_in_region(new_map, new_map.quarry_region),
-            player)
+    for i in range(GHUL_COUNT_GOAL):
+        rgn = new_map.quarry_regions[_random_choice_index([1 for ii in range(len(new_map.quarry_regions))])]
+        ghul = bestiary.ghul(new_map, _random_position_in_region(new_map, rgn), player)
 
 
 def _interpolate_heights(new_map, peak):
@@ -329,7 +328,7 @@ def _test_quarry_placement(new_map, region_span):
 
 
 def _mark_quarry_slopes(new_map, region):
-    # BUG still not quite right
+    # BUG still not quite right?
     center = new_map.region_seeds[region]
     print('Centering quarry at ' + str(center[0]) + ' ' + str(center[1]))
     
@@ -352,28 +351,43 @@ def _place_quarry(new_map, peak):
     """
     Looks for a site just below the top of the hills,
     south and ideally a little east of the peak.
-    Sets new_map.quarry_region
+    Sets new_map.quarry_regions
     """
     peak_region = new_map.region[peak[0]][peak[1]]
     column_start = peak_region + 20 * libtcod.random_get_int(0, 0, 2)
     column_end = (column_start / 20) * 20 + 19
     print('Searching for quarry between ' + str(column_start) + ' and ' + str(column_end))
-    new_map.quarry_region = _test_quarry_placement(new_map, (column_start, column_end))
-    if not new_map.quarry_region:
-        new_map.quarry_region = _test_quarry_placement(new_map, (column_start+20, column_end+20))
-    if not new_map.quarry_region:
-        new_map.quarry_region = _test_quarry_placement(new_map, (column_start+40, column_end+40))
-    if not new_map.quarry_region:
-        new_map.quarry_region = _test_quarry_placement(new_map, (column_start-20, column_end-20))
-    if not new_map.quarry_region:
-        new_map.quarry_region = _test_quarry_placement(new_map, (column_start-40, column_end-40))
-       
+
+    new_map.quarry_regions = None
+    q_rgn = _test_quarry_placement(new_map, (column_start, column_end))
+    if not q_rgn:
+        q_rgn = _test_quarry_placement(new_map, (column_start+20, column_end+20))
+    if not q_rgn:
+        q_rgn = _test_quarry_placement(new_map, (column_start+40, column_end+40))
+    if not q_rgn:
+        q_rgn = _test_quarry_placement(new_map, (column_start-20, column_end-20))
+    if not q_rgn:
+        q_rgn = _test_quarry_placement(new_map, (column_start-40, column_end-40))
+
+    if not q_rgn:
+        return
+
+    new_map.quarry_regions = [q_rgn]
+
+    # Extend east, or west if that doesn't work
+    if new_map.region_elevations[q_rgn+20] > 2:
+        new_map.quarry_regions += [q_rgn+20]
+    elif new_map.region_elevations[q_rgn-20] > 2:
+        new_map.quarry_regions += [q_rgn-20]
+
+    print('Quarry regions: ', new_map.quarry_regions)
+
 
 def _dig_quarry(new_map, peak):
     """
     """
     _place_quarry(new_map, peak)
-    if not new_map.quarry_region:
+    if not new_map.quarry_regions:
         print("Couldn't find anywhere to dig a quarry; sorry!")
         return
 
@@ -382,19 +396,12 @@ def _dig_quarry(new_map, peak):
 
     # Stopgap: drop the entire region, reevaluate for slopes,
     # and rewrite terrain.
-    new_map.region_elevations[new_map.quarry_region] = 2
-    new_map.region_terrain[new_map.quarry_region] = 'rock'
-    _mark_quarry_slopes(new_map, new_map.quarry_region)
+    for rgn in new_map.quarry_regions:
+        new_map.region_elevations[rgn] = 2
+        new_map.region_terrain[rgn] = 'rock'
 
-    # Extend east, or west if that doesn't work
-    if new_map.region_elevations[new_map.quarry_region+20] > 2:
-        new_map.region_elevations[new_map.quarry_region+20] = 2
-        new_map.region_terrain[new_map.quarry_region+20] = 'rock'
-        _mark_quarry_slopes(new_map, new_map.quarry_region+20)
-    elif new_map.region_elevations[new_map.quarry_region-20] > 2:
-        new_map.region_elevations[new_map.quarry_region-20] = 2
-        new_map.region_terrain[new_map.quarry_region-20] = 'rock'
-        _mark_quarry_slopes(new_map, new_map.quarry_region-20)
+    for rgn in new_map.quarry_regions:
+        _mark_quarry_slopes(new_map, rgn)
 
     # TODO: dig multiple mines underneath
 
@@ -522,7 +529,7 @@ def make_map(player, dungeon_level):
     _inhabit_rotunda(new_map, new_map.peak)
     if new_map.caravanserai:
         compound_cartographer.inhabit_caravanserai(new_map, player)
-    if new_map.quarry_region:
+    if new_map.quarry_regions:
         _inhabit_quarry(new_map, player)
 
     # make sure we're not starting on top of an object or terrain feature

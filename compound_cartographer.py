@@ -10,7 +10,7 @@ import bestiary
 
 MIN_CARAVANSERAI_SIZE = 14
 MAX_CARAVANSERAI_SIZE = 26
-
+BANDIT_COUNT_GOAL = 3
 
 def _new_item(actor, obj):
     actor.inventory.append(obj)
@@ -33,7 +33,7 @@ def _random_position_in_rect(room):
 def inhabit_caravanserai(new_map, player):
     # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
     #       ' and ' + str(map.caravanserai.x2) + ' ' + str(map.caravanserai.y2))
-    for i in range(3):
+    for i in range(BANDIT_COUNT_GOAL):
         bandit = bestiary.bandit(new_map,
             _random_position_in_rect(new_map.caravanserai), player)
 
