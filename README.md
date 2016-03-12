@@ -8,11 +8,34 @@ Beyaz Dag towers solitary above the deserts. No rival peak dares rear itself nea
 
 You never mastered sword and lance, like your brothers, but can shoot, ride, and wrestle as well as any of them.
 
+Beyaz Dag teems with life: hyenas and gazelles in the desert scrub, deer, wolves, bear in the forests. Travelers you met on the Northern Road tell of other, darker things here: ruins, abandoned quarries, sunken grottoes...
+
+
+Now you're almost through the marshes; the mountain rises to the southwest.
+
+
 * Source at https://github.com/Naburimannu/beyaz-dag
 * Engine at https://github.com/Naburimannu/libtcodpy-tutorial
 
 Originally based on Jotaf's Python roguelike tutorial for libtcod.
 
+
+## Strategy Notes
+
+* Fighting is dangerous and rarely beneficial.
+** Archery is deadly, but arrows are in short supply.
+** If you get out of sight of your enemies, they're not likely to pursue.
+* Melee weapon skills also influence defense.
+** To be effective, have a skill of at least 40 in any weapon you use.
+* Wounds, exhaustion, and intoxication all interfere with skill use.
+** The longer you wait to bandage your wounds, the less likely you are to do so effectively.
+** You'll probably want to get your first aid skill up to 50.
+** The more exhausted you are when you drink kumiss, the more you'll recover.
+** Intoxication is cumulative if you drink frequently.
+
+## Spoilers
+
+* Grinding can yield about 400 skill points, but a typical playthrough may only see half that.
 
 
 
