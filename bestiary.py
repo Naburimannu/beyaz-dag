@@ -43,15 +43,35 @@ def ghul(new_map, pos, player):
                             'z', 'ghul', libtcod.dark_orange, hp=30, unarmed_damage=4,
                             skills={'grappling':30})
 
+def slime(new_map, pos, player):
+    return _hostile_monster(new_map, pos, player,
+                            ',', 'slime', libtcod.white, unarmed_damage=3,
+                            skills={'grappling':30})
+
+def jelly(new_map, pos, player):
+    return _hostile_monster(new_map, pos, player,
+                            'j', 'jelly', libtcod.white, hp=24, unarmed_damage=4,
+                            skills={'grappling':30})
+
+def worm(new_map, pos, player):
+    return _hostile_monster(new_map, pos, player,
+                            'w', 'seething worm', libtcod.white, unarmed_damage=6)
+
 def swamp_goblin(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
-                            'g', 'swamp goblin', libtcod.light_blue, hp=16, unarmed_damage=3,
+                            'g', 'swamp blight', libtcod.light_blue, hp=16, unarmed_damage=3,
                             skills={'grappling':20})
 
 def vodanyoi(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player,
-                         'k', 'vodanyoi', libtcod.dark_han, hp=16, unarmed_damage=3,
+                         'k', 'vodanyoi', libtcod.dark_han, hp=10, unarmed_damage=3,
+                         skills={'grappling':20, 'spear':30}))
+
+def vodanyoi_warrior(new_map, pos, player):
+    return _add_inventory(
+        _hostile_monster(new_map, pos, player,
+                         'k', 'vodanyoi warrior', libtcod.violet, hp=16, unarmed_damage=3,
                          skills={'grappling':20, 'spear':30}))
 
 def rusalka(new_map, pos, player):

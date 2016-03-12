@@ -19,6 +19,12 @@ import ca_cartographer
 MINE_SIZE = 70
 MINE_SCALE = 5
 
+
+def _random_position_in_room(room):
+    return algebra.Location(libtcod.random_get_int(0, room.x1+1, room.x2-1),
+                            libtcod.random_get_int(0, room.y1+1, room.y2-1))
+
+
 def _create_room(new_map, room):
     """
     Make the tiles in a rectangle passable.
@@ -60,9 +66,9 @@ def _link_up_stairs(new_map, old_map, old_quarry_stairs):
     old_quarry_stairs[0].dest_position.bound(map_inset)
     old_quarry_stairs[2].dest_position.bound(map_inset)
 
-    print('Map is ' + str(new_map.width) + ' x ' + str(new_map.height))
-    print('Stairs come from ', [i.pos for i in old_quarry_stairs])
-    print('Stairs to mines connect to ', [i.dest_position for i in old_quarry_stairs])
+    # print('Map is ' + str(new_map.width) + ' x ' + str(new_map.height))
+    # print('Stairs come from ', [i.pos for i in old_quarry_stairs])
+    # print('Stairs to mines connect to ', [i.dest_position for i in old_quarry_stairs])
 
     for i in range(3):
         old_quarry_stairs[i].destination = new_map
@@ -82,18 +88,18 @@ def _create_entries(new_map, old_quarry_stairs):
 
         new_room = algebra.Rect(x, y, w, h)
         _create_room(new_map, new_room)
-        print('Room #' + str(i) + ' at ' + str(new_room))
+        # print('Room #' + str(i) + ' at ' + str(new_room))
         new_map.rooms.append(new_room)
 
         new_ctr = new_room.center()
         assert(new_ctr == old_quarry_stairs[i].dest_position)
 
 def _descend_stairs(new_map, player, old_quarry_stairs):
-    print('Player was at ', player.pos)
+    # print('Player was at ', player.pos)
     for i in range(3):
         if player.pos == old_quarry_stairs[i].pos:
             player.pos = old_quarry_stairs[i].dest_position
-            print('Came down stair #' + str(i) + ' to ' + str(player.pos))
+            # print('Came down stair #' + str(i) + ' to ' + str(player.pos))
             return
 
 def _dig_some_caves(new_map, old_quarry_stairs):
@@ -114,7 +120,7 @@ def _dig_some_caves(new_map, old_quarry_stairs):
     target_zone = algebra.Rect(x, y, w, h)
     target_zone.x2 = min(target_zone.x2, new_map.width - 2)
     target_zone.y2 = min(target_zone.y2, new_map.height - 2)
-    print("Target zone 0 ", target_zone)
+    # print("Target zone 0 ", target_zone)
     ca_cartographer.dig_ca_region(new_map, target_zone, 4, 3)
     new_map.cave_zones.append(target_zone)
 
@@ -130,7 +136,7 @@ def _dig_some_caves(new_map, old_quarry_stairs):
     target_zone = algebra.Rect(x, y, w, h)
     target_zone.x2 = min(target_zone.x2, new_map.width - 2)
     target_zone.y2 = min(target_zone.y2, new_map.height - 2)
-    print("Target zone 1 ", target_zone)
+    # print("Target zone 1 ", target_zone)
     ca_cartographer.dig_ca_region(new_map, target_zone, 4, 3)
     new_map.cave_zones.append(target_zone)
 
@@ -227,12 +233,28 @@ def make_map(player, dungeon_level):
             if new_map.terrain[x][y] == map.TERRAIN_GROUND:
                 new_map.terrain[x][y] = map.TERRAIN_WALL
 
-    # TODO: add inhabitants
+    zone_divisor = MINE_SIZE / 3
+    slime_zone = new_map.rnd(0, 2)
+    while True:
+        undead_zone = new_map.rnd(0, 2)
+        if undead_zone != slime_zone:
+            break
 
-    # TEST
-    for x in range(new_map.width):
-        for y in range(new_map.height):
-            new_map._explored[x][y] = True
+    for r in range(3, len(new_map.rooms)):
+        if new_map.rnd(1, 2) == 1:
+            room = new_map.rooms[r]
+            zone = room.center().x / zone_divisor
+            print('room ' + str(room) + ', zone ' + str(zone))
+            if zone == slime_zone:
+                if new_map.rnd(1, 2) == 1:
+                    bestiary.slime(new_map, _random_position_in_room(room), player)
+                    bestiary.slime(new_map, _random_position_in_room(room), player)
+                else:
+                    bestiary.jelly(new_map, _random_position_in_room(room), player)
+            elif zone == undead_zone:
+                bestiary.ghul(new_map, _random_position_in_room(room), player)
+            else:
+                bestiary.worm(new_map, _random_position_in_room(room), player)
 
     new_map.initialize_fov()
     return False  # Don't need to generate stairs in caller thanks to _link_up_stairs()

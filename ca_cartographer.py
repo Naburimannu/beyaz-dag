@@ -39,7 +39,10 @@ def _place_vodanyoi_cluster(new_map, player, vc_pos):
             if new_map.terrain[v_pos.x][v_pos.y] != map.TERRAIN_WALL:
                 break
         # print('  v at ' + str(v_pos.x) + ' ' + str(v_pos.y))
-        v = bestiary.vodanyoi(new_map, v_pos, player)
+        if v_count == 0:
+            v = bestiary.vodanyoi_warrior(new_map, v_pos, player)
+        else:
+            v = bestiary.vodanyoi(new_map, v_pos, player)
         choice = libtcod.random_get_int(0, 1, 3)
         if choice == 1:
             _new_equipment(v, miscellany.spear())
