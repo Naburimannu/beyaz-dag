@@ -4,6 +4,7 @@ import algebra
 from components import *
 import ai
 import actions
+import miscellany
 
 
 def _insert(creature, new_map):
@@ -89,6 +90,7 @@ def rusalka(new_map, pos, player):
                              'h', 'rusalka', libtcod.darker_sea, hp=24)
 
 def bear(new_map, pos, player):
+    _insert(miscellany.honey_tree(pos), new_map)
     return _territorial_monster(new_map, pos, player, 'U', 'bear',
                                 libtcod.darker_orange, hp=40, unarmed_damage=8,
                                 skills={'grappling':25})

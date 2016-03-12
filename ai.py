@@ -104,6 +104,8 @@ def territorial_monster(monster, player, metadata):
             monster.ai.set_owner(monster)
             return monster.ai.take_turn(player)
         if monster.distance_to(player) < metadata.radius:
+            log.message(monster.name.capitalize() + ' decides ' + player.name +
+                ' is too close!', libtcod.red)
             monster.ai = AI(hostile_monster,
                             hostile_monster_metadata(player))
             monster.ai.set_owner(monster)
@@ -112,9 +114,9 @@ def territorial_monster(monster, player, metadata):
             trial_dir = actions.random_direction()
             candidate = monster.pos + trial_dir
             cand_dist = candidate.distance(metadata.home)
-            if ((cand_dist < metadata.range or
+            if ((cand_dist < metadata.radius or
                  cand_dist < monster.pos.distance(metadata.home)) and
-                    not monster.current_map.blocked_at(candidate)):
+                    not monster.current_map.is_blocked_at(candidate)):
                 actions.move(monster, trial_dir)
                 return
 

@@ -3,6 +3,7 @@ import libtcodpy as libtcod
 import log
 import algebra
 from components import *
+import map
 import spells  # nasty levelization violation?!
 
 
@@ -25,6 +26,20 @@ def _do_open_door(actor, target):
     actor.current_map.fov_elevation_changed = True
     log.message(actor.name.capitalize() + ' opens a door.')
 
+
+def honey_tree(pos):
+    return Object(pos, 'T', 'honey tree', libtcod.gold, blocks=True,
+            blocks_sight = True,
+            interactable=Interactable(use_function=_do_harvest_honey))
+
+def _do_harvest_honey(actor, target):
+    if not actor.fighter:
+        return
+    log.message(actor.name.capitalize() + ' eats some refreshing honey.')
+    actor.fighter.exhaustion = max(actor.fighter.exhaustion - 6, 0)
+    actor.current_map.terrain[target.pos.x][target.pos.y] = 9
+    actor.current_map.fov_needs_recompute = True
+    actor.current_map.objects.remove(target)
 
 ######################
 
