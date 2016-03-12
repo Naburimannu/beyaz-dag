@@ -106,6 +106,12 @@ def gazelle(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'gazelle',
                              libtcod.amber, hp=12)
 
+def tepegoz(new_map, pos, player):
+    return _hostile_monster(new_map, pos, player, 'P', 'Tepegoz',
+                            libtcod.peach, hp=80, unarmed_damage=8,
+                            skills={'grappling':50, 'spear':50})
+
+# UNUSED
 def steppe_pony(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'steppe pony',
                              libtcod.darker_flame, hp=34, unarmed_damage=6,
