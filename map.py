@@ -122,6 +122,9 @@ class BaseMap(object):
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
 
 
+    def terrain_index_at(self, pos):
+        return self.terrain[pos.x][pos.y]
+
     def terrain_at(self, pos):
         """
         Returns the Terrain at (pos).

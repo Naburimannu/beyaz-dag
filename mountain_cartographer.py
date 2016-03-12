@@ -480,7 +480,7 @@ def _site_final_dungeon(new_map, strata):
     for type in ['rock', 'forest', 'forest']:
         regions = strata[type]
         while True:
-            r = regions[new_map.rnd(0, len(regions))]
+            r = regions[new_map.rnd(0, len(regions) - 1)]
             pos = _random_position_in_region(new_map, r)
             if _check_stair_position(stairheads + other_stairs, pos):
                 break
@@ -494,7 +494,7 @@ def _site_final_dungeon(new_map, strata):
         stairs = Object(ii, '<', 'cave mouth', libtcod.white, always_visible=True)
         stairs.destination = None
         stairs.dest_position = None
-        stairs.generator = dungeon_cartographer.make_map
+        stairs.generator = dungeon_cartographer.make_final_map
         new_map.objects.insert(0, stairs)
         new_map.portals.insert(0, stairs)
         new_map.dungeon_stairs.append(stairs)
