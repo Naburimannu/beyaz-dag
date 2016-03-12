@@ -15,7 +15,8 @@ import spells
 import ca_cartographer
 
 
-MINE_SIZE = 60
+# Doesn't look good at sizes as small as 40
+MINE_SIZE = 70
 MINE_SCALE = 5
 
 def _create_room(new_map, room):
@@ -134,10 +135,18 @@ def _dig_some_caves(new_map, old_quarry_stairs):
     new_map.cave_zones.append(target_zone)
 
 
+def _consider_terminal_room(new_map, x, y):
+    if new_map.rnd(1, 3) == 1:
+        new_room = algebra.Rect(x - 2, y - 2, 4, 4)
+        _create_room(new_map, new_room)
+        new_map.rooms.append(new_room)
+
+
 def _dig_about(new_map, room_rect, left_min, left_max, right_min, right_max):
     x = room_rect.center().x
     top = new_map.rnd(3, room_rect.y1 / 2)
     _create_v_tunnel(new_map, room_rect.y1, top, x)
+    _consider_terminal_room(new_map, x, top)
     cross_tunnel_count = new_map.rnd(2, 4)
     tunnel_interval = (room_rect.y1 - 2 - top) / cross_tunnel_count
     for i in range(cross_tunnel_count):
@@ -147,9 +156,12 @@ def _dig_about(new_map, room_rect, left_min, left_max, right_min, right_max):
         left = new_map.rnd(left_min, left_max)
         right = new_map.rnd(right_min, right_max)
         _create_h_tunnel(new_map, left, right, y)
+        _consider_terminal_room(new_map, left, y)
+        _consider_terminal_room(new_map, right, y)
 
     bottom = new_map.rnd(room_rect.y2 + (new_map.height - room_rect.y2) / 2, new_map.height - 3)
     _create_v_tunnel(new_map, room_rect.y2, bottom, x)
+    _consider_terminal_room(new_map, x, bottom)
     cross_tunnel_count = new_map.rnd(2, 4)
     tunnel_interval = (bottom - room_rect.y2 - 2) / cross_tunnel_count
     for i in range(cross_tunnel_count):
@@ -159,6 +171,8 @@ def _dig_about(new_map, room_rect, left_min, left_max, right_min, right_max):
         left = new_map.rnd(left_min, left_max)
         right = new_map.rnd(right_min, right_max)
         _create_h_tunnel(new_map, left, right, y)
+        _consider_terminal_room(new_map, left, y)
+        _consider_terminal_room(new_map, right, y)
 
 
 def _dig_mine_tunnels(new_map):
@@ -189,6 +203,29 @@ def make_map(player, dungeon_level):
     _descend_stairs(new_map, player, old_quarry_stairs)
     _dig_some_caves(new_map, old_quarry_stairs)
     _dig_mine_tunnels(new_map)
+
+    map_bounds = algebra.Rect(1, 1, new_map.width-1, new_map.height-1)
+    for x in range(0, new_map.width):
+        for y in range(0, new_map.height):
+            if libtcod.random_get_float(new_map.rng, 0., 1.) < 0.2:
+                new_map.terrain[x][y] = map.TERRAIN_GROUND
+
+    ca_cartographer._generation(new_map, map_bounds, 7, 1)
+    ca_cartographer._generation(new_map, map_bounds, 5, 1)
+
+    # Redig the initial rooms because the CA can fill in the stairs
+    for i in range(3):
+        _create_room(new_map, new_map.rooms[i])
+
+    for i in range(3):
+        stair_pos = old_quarry_stairs[i].dest_position
+        ca_cartographer._floodfill(new_map, stair_pos.x, stair_pos.y,
+            map.TERRAIN_GROUND, map.TERRAIN_FLOOR)
+
+    for x in range(1, new_map.width-1):
+        for y in range(1, new_map.height-1):
+            if new_map.terrain[x][y] == map.TERRAIN_GROUND:
+                new_map.terrain[x][y] = map.TERRAIN_WALL
 
     # TODO: add inhabitants
 
