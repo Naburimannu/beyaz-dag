@@ -44,6 +44,11 @@ def spear():
             item=Item(description='An iron-headed spear; inflicts 8 damage.'),
             melee=MeleeWeapon(skill='spear', damage=8))
 
+def roundshield():
+    return Object(None, ')', 'roundshield', libtcod.dark_sky,
+            item=Item(description='A large round wooden shield, edged with iron.'),
+            equipment=Equipment('left hand', defense_bonus=1))
+
 def horn_bow():
     return Object(None, '}', 'horn bow', libtcod.dark_sky,
             item=Item(description='A short, sharply-curved, horn-backed bow; inflicts 10 damage.'),

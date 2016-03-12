@@ -41,6 +41,7 @@ skill_list = [
 #    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
     Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages.'),
     Skill('grappling', 3, 'Fight with bare hands or a knife.'),
+    Skill('shield', 4, 'Defend with a shield.'),
     Skill('spear', 4, 'Attack and defend with a spear.'),
     Skill('sword', 4, 'Attack and defend with a sword.')
 ]
@@ -121,7 +122,7 @@ def increase_player_skills(player):
                         ' skill points, you only have ' + str(player.skill_points))
             continue
 
-        value = player.fighter.skills.get(skill_list[target].name, 0)
+        value = player.fighter.skills.get(skill_list[target].name, 10)
         if value >= 250:
             log.message(skill_list[target].name.capitalize() + ' is already at its maximum.')
             continue
@@ -323,7 +324,7 @@ def handle_keys(player, key):
         interface.log_display()
 
     if player.game_state == 'shooting':
-        weapon_eq = actions.get_equipped_in_slot(player, 'missile weapon')
+        weapon_eq = actions.get_equipped_in_slot(player, 'left hand')
         ammo_eq = actions.get_equipped_in_slot(player, 'quiver')
         target = spells._target_monster(player, weapon_eq.owner.missile_weapon.max_range)
         player.game_state = 'playing'
@@ -507,6 +508,7 @@ def new_game():
 
     # TEST
     actions.add_to_map(player.current_map, player.pos, miscellany.sword())
+    actions.add_to_map(player.current_map, player.pos, miscellany.roundshield())
 
     return player
 

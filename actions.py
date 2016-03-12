@@ -142,10 +142,10 @@ def attack(attacker_ftr, target_obj, report=True):
     a_weapon_skill, a_weapon_eq = _base_combat_skill(attacker_ftr)
     d_weapon_skill, d_weapon_eq = _base_combat_skill(target_obj.fighter)
 
-    # TODO - no allowance for left-hand items other than shield
+    # if a left-hand item has a defense bonus, use it as a shield
     d_shield_eq = get_equipped_in_slot(target_obj, 'left hand')
     shield_skill = 0
-    if d_shield_eq:
+    if d_shield_eq and d_shield_eq.defense_bonus > 0:
         shield_skill = target_obj.fighter.skills.get('shield', 10)
     total_defense_skill = shield_skill + d_weapon_skill / 2
 
@@ -189,9 +189,16 @@ def fire(actor_obj, weapon_eq, ammo_eq, target_obj, report=True):
 
     a_weapon_skill = actor_obj.fighter.skills.get(weapon_eq.owner.missile_weapon.skill, 10)
     effective_attack_skill = max(a_weapon_skill - actor_obj.fighter.action_penalty, 10)
+
+    d_shield_eq = get_equipped_in_slot(target_obj, 'left hand')
+    effective_shield_skill = 0
+    if d_shield_eq and d_shield_eq.defense_bonus > 0:
+        shield_skill = target_obj.fighter.skills.get('shield', 10)
+        effective_shield_skill = max(shield_skill - target_obj.fighter.action_penalty, 0) / 2
+
     vector = target_obj.pos - actor_obj.pos
     distance = math.sqrt(vector.x ** 2 + vector.y **  2)
-    effective_defense_skill = 10 + 5 * int(distance)
+    effective_defense_skill = 5 + 5 * int(distance) + effective_shield_skill
     attack_roll = libtcod.random_get_int(0, 1, effective_attack_skill)
     defense_roll = libtcod.random_get_int(0, 1, effective_defense_skill)
 

@@ -36,7 +36,7 @@ def bandit(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player,
                          'p', 'bandit', libtcod.blue, hp=24,
-                         skills={'grappling':30, 'sword':30, 'spear':30, 'bow':30}))
+                         skills={'grappling':30, 'sword':30, 'spear':30, 'bow':30, 'shield':30}))
 
 def ghul(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
@@ -66,7 +66,7 @@ def vodanyoi(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player,
                          'k', 'vodanyoi', libtcod.dark_han, hp=10, unarmed_damage=3,
-                         skills={'grappling':20, 'spear':30}))
+                         skills={'grappling':20}))
 
 def vodanyoi_warrior(new_map, pos, player):
     return _add_inventory(
@@ -80,8 +80,8 @@ def rusalka(new_map, pos, player):
 
 def bear(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'U', 'bear',
-                            libtcod.darker_orange, hp=40, unarmed_damage=6,
-                            skills={'grappling':30})
+                            libtcod.darker_orange, hp=40, unarmed_damage=8,
+                            skills={'grappling':25})
 
 def wolf(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'wolf',
@@ -96,7 +96,7 @@ def hyena(new_map, pos, player):
 def snow_leopard(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'f', 'snow leopard',
                             libtcod.white, hp=30, unarmed_damage=6,
-                            skills={'grappling':30})
+                            skills={'grappling':45})
 
 def deer(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player, 'q', 'deer',
