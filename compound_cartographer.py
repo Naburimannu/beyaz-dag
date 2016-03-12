@@ -45,8 +45,12 @@ def _add_one_bandit(new_map, rect, player, force_spear=False):
     choice = libtcod.random_get_int(0, 1, 3)
     if force_spear or choice == 1:
         _new_equipment(bandit, miscellany.spear())
+        if new_map.rnd(1, 3) < 2:
+            _new_equipment(bandit, miscellany.roundshield())
     elif choice == 2:
         _new_equipment(bandit, miscellany.sword())
+        if new_map.rnd(1, 3) < 2:
+            _new_equipment(bandit, miscellany.roundshield())
     else:
         _new_equipment(bandit, miscellany.arrow(4))
         _new_equipment(bandit, miscellany.horn_bow())

@@ -36,7 +36,7 @@ def bandit(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player,
                          'p', 'bandit', libtcod.blue, hp=24,
-                         skills={'grappling':30, 'sword':30, 'spear':30, 'bow':30, 'shield':30}))
+                         skills={'grappling':30, 'sword':30, 'spear':30, 'bow':30, 'shield':20}))
 
 def ghul(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
