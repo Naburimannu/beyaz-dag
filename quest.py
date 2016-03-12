@@ -40,7 +40,9 @@ def goddess_charge(player, goddess):
     page.title('The goddess speaks from behind her veil, in a voice as cold as the icy hells:')
     page.color(libtcod.light_blue)
     page.paragraph(
-        'If you wish me to heal your people, you will have to right a offense against me. Bring me the Amulet of Golden Desires, which is worn by the cyclops Tepegoz. If you would slay him to gain it, I cannot tell you how; there is a nymph who lives in a grotto on the lakeshore who holds that knowledge to herself.')
+        'If you wish me to heal your people, you will have to right a offense against me. Bring me the Amulet of Golden Desires, which is worn by the cyclops Tepegoz. He dwells in a cunning maze, carved into the heart of the mountain; many are the entraces, but few are the exits.')
+
+    page.paragraph('If you would slay him to gain it, I cannot tell you how; there is a nymph who lives in a grotto on the lakeshore who holds that knowledge to herself.')
 
     renderer.finish_welcome()
     goddess.wait_count = 0
@@ -68,8 +70,9 @@ def nymph_info(player, nymph):
     page.color(libtcod.azure)
     page.paragraph("You want to kill my son?")
     page.paragraph("It's about time.")
-    page.paragraph(
-        "You'll need a spear to put his eye out - any spear will do. But then to kill him you'll need something special. A black sword lies in the depths below this mountain. The fastest way there might be to pass the horrors in the old quarry, in the southern hills.")
+    page.paragraph("You'll need a spear to put his eye out - any spear will do.")
+    page.paragraph("But then to kill him you'll need something special.")
+    page.paragraph("A black sword was lost by a hero of another age in long-abandoned mines.")
 
     renderer.finish_welcome()
     nymph.interactable.use_function = nymph_unhappy
