@@ -2,6 +2,7 @@
 #
 # libtcod python tutorial
 #
+import sys
 
 import libtcodpy as libtcod
 import shelve
@@ -622,4 +623,4 @@ if __name__ == '__main__':
     renderer.renderer_init()
     # cProfile.run('renderer.main_menu(new_game, play_game, load_game)')
     renderer.main_menu(new_game, play_game, load_game)
-    exit()
+    sys.exit()

@@ -50,7 +50,10 @@ my_files = get_data_files(sys.path[0] + '\\', assets_dir)
 opts = { 'py2exe': {
                     'ascii':'True',
                     'excludes':['_ssl','_hashlib'],
-                    'includes' : ['anydbm', 'dbhash'],
+                    'includes' : ['anydbm', 'dbhash',
+                        'scipy.sparse.csgraph._validation',
+                        'scipy.linalg.cython_blas',
+                        'scipy.linalg.cython_lapack'],
                     'bundle_files':'1',
                     'compressed':'True'}}
  

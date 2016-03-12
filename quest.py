@@ -1,3 +1,5 @@
+import sys
+
 import libtcodpy as libtcod
 
 import config
@@ -64,7 +66,7 @@ def goddess_waiting(player, goddess):
                 0, config.SCREEN_WIDTH/2, page.line + 4, libtcod.BKGND_NONE,
                 libtcod.CENTER, 'YOU HAVE WON!')
             renderer.finish_welcome()
-            exit()
+            sys.exit()
 
     goddess.wait_count += 1
     log.message('I await the amulet; until then I have nothing further for you.', color=libtcod.light_blue)
