@@ -43,10 +43,11 @@ def ignoring_monster(monster, player, metadata):
 
 
 
-class hostile_monster_metadata:
+class hostile_monster_metadata(object):
     def __init__(self, target):
         self.target = target
-
+        self.last_seen = None
+        self.active_turns = 0
 
 def hostile_monster(monster, player, metadata):
     """
@@ -54,8 +55,13 @@ def hostile_monster(monster, player, metadata):
     """
     if libtcod.map_is_in_fov(monster.current_map.fov_map,
                              monster.x, monster.y):
-        if monster.distance_to(metadata.target) >= 2:
-            actions.move_towards(monster, metadata.target.pos)
+        metadata.active_turns = 3
+        metadata.last_seen = metadata.target.pos
+
+    if metadata.active_turns > 0:
+        metadata.active_turns -= 1
+        if monster.pos.distance(metadata.last_seen) >= 2:
+            actions.move_towards(monster, metadata.last_seen)
         elif metadata.target.fighter.hp > 0:
             if not monster.current_map.is_blocked_from(monster.pos, metadata.target.pos,
                                                        ignore=metadata.target):
@@ -63,20 +69,28 @@ def hostile_monster(monster, player, metadata):
 
 
 def hostile_archer(monster, player, metadata):
+    seen_now = False
     if libtcod.map_is_in_fov(monster.current_map.fov_map,
                              monster.x, monster.y):
+        metadata.active_turns = 3
+        metadata.last_seen = metadata.target.pos
+        seen_now = True
+
+    if metadata.active_turns > 0:
+        metadata.active_turns -= 1
         weapon_eq = actions.get_equipped_in_slot(monster, 'missile weapon')
         ammo_eq = actions.get_equipped_in_slot(monster, 'quiver')
+        distance = monster.distance(metadata.last_seen)
         if monster.game_state == 'shooting':
-            # TODO: possibly cheats on range
-            actions.fire(monster, weapon_eq, ammo_eq, metadata.target)
             monster.game_state = None
-            return
+            if seen_now and distance < weapon_eq.owner.missile_weapon.max_range:
+                actions.fire(monster, weapon_eq, ammo_eq, metadata.target)
+                return
 
-        distance = monster.distance(metadata.target.pos)
-        if (weapon_eq is not None and
+        if (seen_now and
+                weapon_eq is not None and
                 ammo_eq is not None and
-                libtcod.random_get_int(0, 1, 2) == 1 and
+                libtcod.random_get_int(0, 1, 3) < 3 and
                 distance > 1 and
                 distance < weapon_eq.owner.missile_weapon.max_range):
             actions.draw(monster, weapon_eq.owner)
@@ -84,10 +98,11 @@ def hostile_archer(monster, player, metadata):
             hostile_monster(monster, player, metadata)
 
 
-class territorial_monster_metadata:
+class territorial_monster_metadata(object):
     def __init__(self, home, radius):
         self.home = home
         self.radius = radius
+        self.active_turns = 0
 
 def territorial_monster(monster, player, metadata):
     """
@@ -95,6 +110,11 @@ def territorial_monster(monster, player, metadata):
     """
     if libtcod.map_is_in_fov(monster.current_map.fov_map,
                              monster.x, monster.y):
+        metadata.active_turns = 3
+
+    if metadata.active_turns > 0:
+        metadata.active_turns -= 1
+
         # In the grander scheme of things this should reset to territorial
         # after killing its prey, but that doesn't matter so long as we only
         # go hostile on the player.
@@ -121,11 +141,10 @@ def territorial_monster(monster, player, metadata):
                 return
 
 
-class confused_monster_metadata:
+class confused_monster_metadata(object):
     def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
         self.old_ai = old_ai
         self.num_turns = num_turns
-
 
 def confused_monster(monster, player, metadata):
     if metadata.num_turns > 0:
