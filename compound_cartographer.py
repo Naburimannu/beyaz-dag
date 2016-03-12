@@ -305,7 +305,7 @@ def make_caravanserai(new_map):
 
     # TODO: create an upstairs and a cellar
 
-    r = new_map.rnd(0, len(new_map.caravanserai.rooms))
+    r = new_map.rnd(0, len(new_map.caravanserai.rooms) - 1)
     pos = _random_position_in_rect(new_map.caravanserai.rooms[r])
     loot = miscellany.bandage(3)
     loot.pos = pos

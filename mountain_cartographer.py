@@ -16,6 +16,7 @@ import quest
 import compound_cartographer
 import mine_cartographer
 import ca_cartographer
+import dungeon_cartographer
 
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
@@ -229,6 +230,15 @@ def _should_slope(new_map, x, y):
             new_map.elevation(x-1, y+1) == el+1 or
             new_map.elevation(x, y+1) == el+1 or
             new_map.elevation(x+1, y+1) == el+1)
+
+
+def _find_terrain_types(new_map):
+    strata = { x : [] for x in map.region_colors_seen.keys() }
+    for r in range(len(new_map.region_terrain)):
+        type = strata.get(new_map.region_terrain[r])
+        type.append(r)
+
+    return strata
 
 
 def _mark_slopes(new_map):
@@ -456,6 +466,38 @@ def _make_grotto(new_map):
                 new_map.terrain[x][y] = map.TERRAIN_GROUND
 
 
+def _check_stair_position(stairheads, candidate):
+    for prev_pos in stairheads:
+        if candidate.distance(prev_pos) < 20:
+            return False
+    return True
+
+
+def _site_final_dungeon(new_map, strata):
+    stairheads = []
+    for type in ['rock', 'forest', 'forest']:
+        regions = strata[type]
+        r = regions[new_map.rnd(0, len(regions))]
+        while True:
+            pos = _random_position_in_region(new_map, r)
+            if _check_stair_position(stairheads, pos):
+                break
+        stairheads.append(pos)
+        print('Final dungeon entrance at ', pos)
+
+    stairheads.sort(key = lambda pos : pos.x)
+
+    new_map.dungeon_stairs = []
+    for ii in stairheads:
+        stairs = Object(ii, '<', 'cave mouth', libtcod.white, always_visible=True)
+        stairs.destination = None
+        stairs.dest_position = None
+        stairs.generator = dungeon_cartographer.make_map
+        new_map.objects.insert(0, stairs)
+        new_map.portals.insert(0, stairs)
+        new_map.dungeon_stairs.append(stairs)
+    
+
 def _debug_region_heights(new_map):
     for u in range(20):
         print(new_map.region_elevations[u:400:20])
@@ -521,6 +563,7 @@ def _build_map(new_map):
     # TODO: level_desert() here to guarantee caravanserai is in the northeast
     # TODO: sink_quarry() here before we _mark_slopes
     # to get rid of messy after-the-fact slope fixup in dig_quarry()
+    strata = _find_terrain_types(new_map)
     _debug_region_terrain(new_map)
 
     _mark_slopes(new_map)
@@ -530,6 +573,7 @@ def _build_map(new_map):
     compound_cartographer.make_caravanserai(new_map)
     _dig_quarry(new_map, peak)
     _make_grotto(new_map)
+    _site_final_dungeon(new_map, strata)
 
     new_map.peak = peak
 

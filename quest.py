@@ -73,6 +73,7 @@ def nymph_info(player, nymph):
     page.paragraph("You'll need a spear to put his eye out - any spear will do.")
     page.paragraph("But then to kill him you'll need something special.")
     page.paragraph("A black sword was lost by a hero of another age in long-abandoned mines.")
+    page.paragraph("They can be entered from the south slope of the mountain.")
 
     renderer.finish_welcome()
     nymph.interactable.use_function = nymph_unhappy
