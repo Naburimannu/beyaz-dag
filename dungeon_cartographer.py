@@ -4,7 +4,9 @@ import config
 import algebra
 import map
 from components import *
+import actions
 import bestiary
+import miscellany
 import ai
 import spells
 
@@ -21,6 +23,17 @@ FINAL_DUNGEON_SIZE = 80
 def _random_position_in_room(room):
     return algebra.Location(libtcod.random_get_int(0, room.x1+1, room.x2-1),
                             libtcod.random_get_int(0, room.y1+1, room.y2-1))
+
+
+def _new_item(actor, obj):
+    actor.inventory.append(obj)
+    obj.always_visible = True
+
+
+def _new_equipment(actor, obj):
+    _new_item(actor, obj)
+    actions.equip(actor, obj.equipment, False)
+
 
 
 def _create_room(new_map, room):
@@ -319,7 +332,9 @@ def make_final_map(player, dungeon_level):
 
     _add_doors(new_map)
 
-    bestiary.tepegoz(new_map, new_ctr, player)
+    foe = bestiary.tepegoz(new_map, new_ctr, player)
+    _new_equipment(foe, miscellany.maguffin())
+    _new_equipment(foe, miscellany.spear())
 
     new_map.initialize_fov()
     return False  # Don't need to generate stairs in caller thanks to _link_up_stairs()

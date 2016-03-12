@@ -135,9 +135,10 @@ def gazelle(new_map, pos, player):
                              libtcod.amber, hp=12)
 
 def tepegoz(new_map, pos, player):
-    return _hostile_monster(new_map, pos, player, 'P', 'Tepegoz',
+    return _add_inventory(
+        _hostile_monster(new_map, pos, player, 'P', 'Tepegoz',
                             libtcod.peach, hp=80, unarmed_damage=8,
-                            skills={'grappling':50, 'spear':50})
+                            skills={'grappling':50, 'spear':50}))
 
 # UNUSED
 def steppe_pony(new_map, pos, player):

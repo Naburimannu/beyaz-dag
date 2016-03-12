@@ -52,8 +52,19 @@ def goddess_charge(player, goddess):
 
 def goddess_waiting(player, goddess):
     for obj in player.inventory:
-        # if it's the maguffin, win the game
-        pass
+        if obj.name == "Yen d'Or":
+            page = PageLayout()
+            page.title('The goddess speaks from behind her veil, her voice still as chill as death:')
+            page.color(libtcod.light_blue)
+            page.paragraph(
+                "Ooh, isn't it precious?")
+            page.paragraph(
+                "Yes, yes, I'll do something about your homeland. Now if you'll just see yourself out...")
+            libtcod.console_print_ex(
+                0, config.SCREEN_WIDTH/2, page.line + 4, libtcod.BKGND_NONE,
+                libtcod.CENTER, 'YOU HAVE WON!')
+            renderer.finish_welcome()
+            exit()
 
     goddess.wait_count += 1
     log.message('I await the amulet; until then I have nothing further for you.', color=libtcod.light_blue)
