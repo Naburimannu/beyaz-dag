@@ -71,10 +71,10 @@ def _place_random_creatures(new_map, player):
     terrain_chances = {
         'lake' : { None : 10 },
         'marsh' : { None : 10, bestiary.swamp_goblin : 10 },
-        'desert' : { None : 20, bestiary.hyena : 5, bestiary.gazelle : 10 },
+        'desert' : { None : 20, bestiary.hyena_pair : 5, bestiary.gazelle : 10 },
         'scrub' : { None : 20, bestiary.hyena : 2, bestiary.gazelle : 4,
                     bestiary.deer : 4, bestiary.wolf : 2 },
-        'forest' : { None : 20, bestiary.deer : 10, bestiary.wolf : 5,
+        'forest' : { None : 20, bestiary.deer : 10, bestiary.wolf_pair : 5,
                      bestiary.bear : 3 },
         'rock' : { None : 10, bestiary.snow_leopard : 1 },
         'ice' : { None : 10, bestiary.snow_leopard : 1 }

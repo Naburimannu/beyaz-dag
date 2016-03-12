@@ -83,6 +83,42 @@ def hostile_archer(monster, player, metadata):
         else:
             hostile_monster(monster, player, metadata)
 
+
+class territorial_monster_metadata:
+    def __init__(self, home, radius):
+        self.home = home
+        self.radius = radius
+
+def territorial_monster(monster, player, metadata):
+    """
+    Move randomly but near home until approached or hurt
+    """
+    if libtcod.map_is_in_fov(monster.current_map.fov_map,
+                             monster.x, monster.y):
+        # In the grander scheme of things this should reset to territorial
+        # after killing its prey, but that doesn't matter so long as we only
+        # go hostile on the player.
+        if monster.fighter.last_attacker:
+            monster.ai = AI(hostile_monster,
+                            hostile_monster_metadata(monster.fighter.last_attacker))
+            monster.ai.set_owner(monster)
+            return monster.ai.take_turn(player)
+        if monster.distance_to(player) < metadata.radius:
+            monster.ai = AI(hostile_monster,
+                            hostile_monster_metadata(player))
+            monster.ai.set_owner(monster)
+            return monster.ai.take_turn(player)
+        while True:
+            trial_dir = actions.random_direction()
+            candidate = monster.pos + trial_dir
+            cand_dist = candidate.distance(metadata.home)
+            if ((cand_dist < metadata.range or
+                 cand_dist < monster.pos.distance(metadata.home)) and
+                    not monster.current_map.blocked_at(candidate)):
+                actions.move(monster, trial_dir)
+                return
+
+
 class confused_monster_metadata:
     def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
         self.old_ai = old_ai

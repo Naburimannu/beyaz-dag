@@ -3,6 +3,7 @@ import libtcodpy as libtcod
 import algebra
 from components import *
 import ai
+import actions
 
 
 def _insert(creature, new_map):
@@ -23,6 +24,15 @@ def _hostile_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_da
         fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death,
                         skills=skills),
         ai=AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
+    _insert(creature, new_map)
+    return creature
+
+
+def _territorial_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, skills={}, radius=3):
+    creature = Object(pos, glyph, name, color, blocks=True,
+        fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death,
+                        skills=skills),
+        ai=AI(ai.territorial_monster, ai.territorial_monster_metadata(pos, radius)))
     _insert(creature, new_map)
     return creature
 
@@ -79,19 +89,35 @@ def rusalka(new_map, pos, player):
                              'h', 'rusalka', libtcod.darker_sea, hp=24)
 
 def bear(new_map, pos, player):
-    return _hostile_monster(new_map, pos, player, 'U', 'bear',
-                            libtcod.darker_orange, hp=40, unarmed_damage=8,
-                            skills={'grappling':25})
+    return _territorial_monster(new_map, pos, player, 'U', 'bear',
+                                libtcod.darker_orange, hp=40, unarmed_damage=8,
+                                skills={'grappling':25})
 
 def wolf(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'wolf',
                             libtcod.darker_orange, hp=16, unarmed_damage=4,
                             skills={'grappling':30})
 
+def wolf_pair(new_map, pos, player):
+    return (_hostile_monster(new_map, pos, player, 'C', 'wolf',
+                            libtcod.darker_orange, hp=16, unarmed_damage=4,
+                            skills={'grappling':30}),
+        _hostile_monster(new_map, pos + actions.random_direction(), player, 'C', 'wolf',
+                                    libtcod.darker_orange, hp=16, unarmed_damage=4,
+                                    skills={'grappling':30}))
+
 def hyena(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'C', 'hyena',
                             libtcod.amber, hp=12, unarmed_damage=3,
                             skills={'grappling':20})
+
+def hyena_pair(new_map, pos, player):
+    return (_hostile_monster(new_map, pos, player, 'C', 'hyena',
+                            libtcod.amber, hp=12, unarmed_damage=3,
+                            skills={'grappling':20}),
+        _hostile_monster(new_map, pos + actions.random_direction(), player, 'C', 'hyena',
+                            libtcod.amber, hp=12, unarmed_damage=3,
+                            skills={'grappling':20}))
 
 def snow_leopard(new_map, pos, player):
     return _hostile_monster(new_map, pos, player, 'f', 'snow leopard',
