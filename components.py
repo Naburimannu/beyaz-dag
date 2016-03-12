@@ -187,7 +187,7 @@ class MissileWeapon(Component):
     def set_owner(self, entity):
         Component.set_owner(self, entity)
         if entity.equipment is None:
-            entity.equipment = Equipment('missile weapon')
+            entity.equipment = Equipment('left hand')
             entity.equipment.set_owner(entity)
 
 

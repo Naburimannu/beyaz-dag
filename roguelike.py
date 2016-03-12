@@ -69,8 +69,8 @@ def try_drop(player):
 
 
 def try_fire(player):
-    weapon = actions.get_equipped_in_slot(player, 'missile weapon')
-    if not weapon:
+    weapon = actions.get_equipped_in_slot(player, 'left hand')
+    if not weapon.owner.missile_weapon:
         log.message('No missile weapon ready to fire.')
         return False
     ammo = actions.get_equipped_in_slot(player, 'quiver')
@@ -368,7 +368,8 @@ def handle_keys(player, key):
             if key_char == 'g':
                 try_pick_up(player)
             if key_char == 'i':
-                try_use(player)
+                if try_use(player):
+                    return  # takes turn!
             if key_char == 's':
                 increase_player_skills(player)
             if key_char == '<':
