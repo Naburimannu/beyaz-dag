@@ -457,6 +457,7 @@ def _make_grotto(new_map):
     stairs.generator = ca_cartographer.make_map
     new_map.objects.insert(0, stairs)
     new_map.portals.insert(0, stairs)
+    new_map.grotto_stairs = region_center
 
     # Would be nice to have a structure around it, but for now just keep the top clear.
     for x in range(region_center.x - 2, region_center.x + 3):
@@ -474,13 +475,14 @@ def _check_stair_position(stairheads, candidate):
 
 
 def _site_final_dungeon(new_map, strata):
+    other_stairs = new_map.quarry_stairs + [new_map.grotto_stairs]
     stairheads = []
     for type in ['rock', 'forest', 'forest']:
         regions = strata[type]
-        r = regions[new_map.rnd(0, len(regions))]
         while True:
+            r = regions[new_map.rnd(0, len(regions))]
             pos = _random_position_in_region(new_map, r)
-            if _check_stair_position(stairheads, pos):
+            if _check_stair_position(stairheads + other_stairs, pos):
                 break
         stairheads.append(pos)
         print('Final dungeon entrance at ', pos)
