@@ -88,7 +88,7 @@ def _place_random_creatures(new_map, player):
             while new_map.is_blocked_at(pos):
                 pos += actions.random_direction()
                 pos.bound(algebra.Rect(0, 0, new_map.width-1, new_map.height-1))
-            if new_map.caravanserai and new_map.caravanserai.contains(pos):
+            if new_map.caravanserai and new_map.caravanserai.bounds.contains(pos):
                 continue
             # print('Creature in region ' + str(r) + ' at ' + str(pos.x) + ' ' + str(pos.y))
             fn(new_map, pos, player)

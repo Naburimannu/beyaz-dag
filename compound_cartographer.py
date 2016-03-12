@@ -10,7 +10,15 @@ import bestiary
 
 MIN_CARAVANSERAI_SIZE = 14
 MAX_CARAVANSERAI_SIZE = 26
-BANDIT_COUNT_GOAL = 3
+BANDIT_COUNT_GOAL = 4
+
+
+class Caravanserai(object):
+    def __init__(self, bounds):
+        self.bounds = bounds
+        self.courtyard = None
+        self.rooms = []
+
 
 def _new_item(actor, obj):
     actor.inventory.append(obj)
@@ -30,28 +38,36 @@ def _random_position_in_rect(room):
                             libtcod.random_get_int(0, room.y1+1, room.y2-1))
 
 
+def _add_one_bandit(new_map, rect, player, force_spear=False):
+    bandit = bestiary.bandit(new_map,
+        _random_position_in_rect(rect), player)
+
+    choice = libtcod.random_get_int(0, 1, 3)
+    if force_spear or choice == 1:
+        _new_equipment(bandit, miscellany.spear())
+    elif choice == 2:
+        _new_equipment(bandit, miscellany.sword())
+    else:
+        _new_equipment(bandit, miscellany.arrow(4))
+        _new_equipment(bandit, miscellany.horn_bow())
+        bandit.name = 'bandit archer'
+        bandit.ai._turn_function = ai.hostile_archer
+        bandit.game_state = 'playing'
+
+    if new_map.rnd(1, 3) < 3:
+        _new_item(bandit, miscellany.bandage(1))
+
+
 def inhabit_caravanserai(new_map, player):
     # print('Caravanserai between ' + str(map.caravanserai.x1) + ' ' + str(map.caravanserai.y1) +
     #       ' and ' + str(map.caravanserai.x2) + ' ' + str(map.caravanserai.y2))
-    for i in range(BANDIT_COUNT_GOAL):
-        bandit = bestiary.bandit(new_map,
-            _random_position_in_rect(new_map.caravanserai), player)
-
-        choice = libtcod.random_get_int(0, 1, 3)
-        # HACK: guarantee at least one spear
-        if i == 0:
-            choice = 2
-
-        if choice == 1:
-            _new_equipment(bandit, miscellany.sword())
-        elif choice == 2:
-            _new_equipment(bandit, miscellany.spear())
-        else:
-            _new_equipment(bandit, miscellany.arrow(4))
-            _new_equipment(bandit, miscellany.horn_bow())
-            bandit.name = 'bandit archer'
-            bandit.ai._turn_function = ai.hostile_archer
-            bandit.game_state = 'playing'
+    courtyard_count = new_map.rnd(1, 2)
+    for i in range(courtyard_count):
+        _add_one_bandit(new_map, new_map.caravanserai.courtyard, player)
+    # HACK: guarantee at least one spear
+    for i in range(courtyard_count, BANDIT_COUNT_GOAL):
+        r = new_map.rnd(0, len(new_map.caravanserai.rooms) - 1)
+        _add_one_bandit(new_map, new_map.caravanserai.rooms[r], player, (i == courtyard_count))
 
 
 def _place_caravanserai(new_map, size):
@@ -171,7 +187,7 @@ def make_caravanserai(new_map):
     # Cut gates in it facing east and south
     center = bounds.center()
 
-    new_map.caravanserai = bounds
+    new_map.caravanserai = Caravanserai(bounds)
 
     if (bounds.width > bounds.height):
         new_map.terrain[center.x][bounds.y2] = map.TERRAIN_GROUND
@@ -192,6 +208,11 @@ def make_caravanserai(new_map):
         for x in range(bounds.x1, center.x - wall_offset):
             new_map.terrain[x][wall_y] = map.TERRAIN_WALL
 
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(bounds.x1, bounds.y1, center.x - wall_offset - bounds.x1, wall_y - bounds.y1))
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(bounds.x1, wall_y, center.x - wall_offset - bounds.x1, bounds.y2 - wall_y))
+
         # outer rooms
         courtyard_mid_x = (center.x - wall_offset + bounds.x2) / 2
         outer_wall_y = (bounds.y1 + center.y+2)/2
@@ -208,6 +229,11 @@ def make_caravanserai(new_map):
         wall_x = (east_door + west_door) / 2
         for y in range(bounds.y1, outer_wall_y):
             new_map.terrain[wall_x][y] = map.TERRAIN_WALL
+
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(center.x - wall_offset, bounds.y1, wall_x - center.x + wall_offset, wall_y - bounds.y1))
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(wall_x, bounds.y1, center.x - wall_offset - bounds.x1, bounds.x2 - wall_x))
 
         courtyard_bounds = algebra.Rect(
             center.x - wall_offset + 1, outer_wall_y + 1,
@@ -233,6 +259,11 @@ def make_caravanserai(new_map):
         for y in range(bounds.y1, center.y - wall_offset):
             new_map.terrain[wall_x][y] = map.TERRAIN_WALL
 
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(bounds.x1, bounds.y1, wall_x - bounds.x1, center.y - wall_offset - bounds.y1))
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(wall_x, bounds.y1, bounds.x2 - center.x + wall_offset, center.y - wall_offset - bounds.y1))
+
         # outer rooms
         courtyard_mid_y = (center.y - wall_offset + bounds.y2) / 2
         outer_wall_x = (bounds.x1 + center.x+2)/2
@@ -250,14 +281,28 @@ def make_caravanserai(new_map):
         for x in range(bounds.x1, outer_wall_x):
             new_map.terrain[x][wall_y] = map.TERRAIN_WALL
 
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(bounds.x1, center.y - wall_offset, center.x - wall_offset - bounds.x1, wall_y - center.y + wall_offset))
+        new_map.caravanserai.rooms.append(
+            algebra.Rect(bounds.x1, wall_y, center.x - wall_offset - bounds.x1, bounds.x2 - wall_y))
+
         courtyard_bounds = algebra.Rect(
             outer_wall_x + 1, center.y - wall_offset + 1,
             bounds.x2 - outer_wall_x - 1,
             bounds.y2 - center.y + wall_offset - 1)
 
+    print('Caravanserai court ', courtyard_bounds)
+    print('Caravanserai rooms ',
+          new_map.caravanserai.rooms[0], new_map.caravanserai.rooms[1],
+          new_map.caravanserai.rooms[2], new_map.caravanserai.rooms[3])
+
+    new_map.caravanserai.courtyard = courtyard_bounds
     _clear_courtyard(new_map, courtyard_bounds)
 
     # TODO: create an upstairs and a cellar
-    # TODO: track these rooms correctly and populate them intentionally
-    # TODO: generate total bandit population and then divide between areas
 
+    r = new_map.rnd(0, len(new_map.caravanserai.rooms))
+    pos = _random_position_in_rect(new_map.caravanserai.rooms[r])
+    loot = miscellany.bandage(3)
+    loot.pos = pos
+    new_map.objects.insert(0, loot)
