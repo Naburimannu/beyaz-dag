@@ -94,6 +94,11 @@ class BaseMap(object):
         self._explored = [[False for y in range(height)] for x in range(width)]
 
     def rnd(self, mi, ma):
+        """
+        All random numbers used in map generation should use the map's
+        random number generator, which is initialized with a known seed
+        and is therefore repeatable.
+        """
         return libtcod.random_get_int(self.rng, mi, ma)
 
     def initialize_fov(self):

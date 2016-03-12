@@ -31,7 +31,7 @@ def _do_open_door(actor, target):
 
 def dagger():
     return Object(None, '|', 'dagger', libtcod.dark_sky,
-            item=Item(description='A leaf-shaped iron knife; inflicts 4 damage'),
+            item=Item(description='A leaf-shaped iron knife; inflicts 4 damage (using grappling skill).'),
             melee=MeleeWeapon(skill='grappling', damage=4))
 
 def sword():
@@ -46,7 +46,7 @@ def spear():
 
 def horn_bow():
     return Object(None, '}', 'horn bow', libtcod.dark_sky,
-            item=Item(description='A short, sharply-curved, horn-backed bow.'),
+            item=Item(description='A short, sharply-curved, horn-backed bow; inflicts 10 damage.'),
             missile=MissileWeapon(skill='bow', damage=10, ammo='arrow'))
 
 def arrow(count):
@@ -63,3 +63,8 @@ def maguffin():
     return Object(None, '"', "Yen d'Or", libtcod.gold,
             item=Item(description="You've never seen anything like it. You can't imagine how you ever managed to live without it. It's so ineffably precious."),
             equipment=Equipment(slot='amulet'))
+
+def the_black_sword():
+    return Object(None, '|', 'black sword', libtcod.darkest_pink,
+            item=Item(description='The utter darkness of the blade draws the eye, as if you could fall through it; inflicts 10 damage.'),
+            melee=MeleeWeapon(skill='sword', damage=10))

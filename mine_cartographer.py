@@ -241,10 +241,12 @@ def make_map(player, dungeon_level):
             break
 
     for r in range(3, len(new_map.rooms)):
-        if new_map.rnd(1, 2) == 1:
+        if new_map.rnd(1, 2) < 2:
             room = new_map.rooms[r]
             zone = room.center().x / zone_divisor
-            print('room ' + str(room) + ', zone ' + str(zone))
+            # print('room ' + str(room) + ', zone ' + str(zone))
+            # Thanks to the cellular automata, some of these will be stuck in
+            # the wall.
             if zone == slime_zone:
                 if new_map.rnd(1, 2) == 1:
                     bestiary.slime(new_map, _random_position_in_room(room), player)
@@ -255,6 +257,16 @@ def make_map(player, dungeon_level):
                 bestiary.ghul(new_map, _random_position_in_room(room), player)
             else:
                 bestiary.worm(new_map, _random_position_in_room(room), player)
+
+    r = new_map.rnd(3, len(new_map.rooms) - 1)
+    pos = new_map.rooms[r].center()
+    while new_map.is_blocked_at(pos):
+        pos += actions.random_direction()
+
+    new_map.objects.insert(0, Object(pos, '%', "hero's corpse", libtcod.dark_red))
+    sword = miscellany.the_black_sword()
+    sword.pos = pos
+    new_map.objects.insert(0, sword)
 
     new_map.initialize_fov()
     return False  # Don't need to generate stairs in caller thanks to _link_up_stairs()

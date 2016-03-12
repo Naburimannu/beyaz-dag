@@ -165,9 +165,10 @@ class Equipment(Component):
 
 
 class MeleeWeapon(Component):
-    def __init__(self, skill, damage):
+    def __init__(self, skill, damage, skill_bonus=0):
         self.skill = skill
         self.damage = damage
+        self.skill_bonus = skill_bonus
 
     def set_owner(self, entity):
         Component.set_owner(self, entity)

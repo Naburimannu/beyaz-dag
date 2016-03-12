@@ -117,6 +117,18 @@ def _drop_ammo_on_miss(target, ammo):
     add_to_map(target.current_map, site, new_ammo)
 
 
+def _base_combat_skill(who_ftr):
+    skill = who_ftr.skills.get('grappling', 10)
+    # print(who_ftr.owner.name.capitalize() + ' grappling is ' + str(a_weapon_skill))
+    eqp = get_equipped_in_slot(who_ftr.owner, 'right hand')
+    if eqp:
+        # print(who_ftr.owner.name.capitalize() + ' is wielding ' + a_weapon.owner.name)
+        skill = (who_ftr.skills.get(eqp.owner.melee_weapon.skill, 10) +
+                          eqp.owner.melee_weapon.skill_bonus)
+        # print(who_ftr.owner.name.capitalize() + ' ' + a_weapon.owner.melee_weapon.skill + ' is ' + str(a_weapon_skill))
+    return skill, eqp
+
+
 def attack(attacker_ftr, target_obj, report=True):
     """
     Melee offence: attacker's weapon skill.
@@ -127,18 +139,8 @@ def attack(attacker_ftr, target_obj, report=True):
     target_obj.fighter.last_attacker = attacker_ftr.owner
     attacker_ftr.exhaustion += ATTACK_EXHAUSTION
 
-    a_weapon_skill = attacker_ftr.skills.get('grappling', 10)
-    # print('Attacker grappling is ' + str(a_weapon_skill))
-    a_weapon_eq = get_equipped_in_slot(attacker_ftr.owner, 'right hand')
-    if a_weapon_eq:
-        # print('Attacker is wielding ' + a_weapon.owner.name)
-        a_weapon_skill = attacker_ftr.skills.get(a_weapon_eq.owner.melee_weapon.skill, 10)
-        # print('Attacker ' + a_weapon.owner.melee_weapon.skill + ' is ' + str(a_weapon_skill))
-
-    d_weapon_skill = target_obj.fighter.skills.get('grappling', 10)
-    d_weapon_eq = get_equipped_in_slot(target_obj, 'right hand')
-    if d_weapon_eq:
-        d_weapon_skill = target_obj.fighter.skills.get(d_weapon_eq.owner.melee_weapon.skill, 10)
+    a_weapon_skill, a_weapon_eq = _base_combat_skill(attacker_ftr)
+    d_weapon_skill, d_weapon_eq = _base_combat_skill(target_obj.fighter)
 
     # TODO - no allowance for left-hand items other than shield
     d_shield_eq = get_equipped_in_slot(target_obj, 'left hand')
