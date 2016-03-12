@@ -72,7 +72,7 @@ def _link_up_stairs(new_map, old_map, old_quarry_stairs):
 
     for i in range(3):
         old_quarry_stairs[i].destination = new_map
-        stairs = Object(old_quarry_stairs[i].dest_position, '>', 'stairs up', libtcod.white, always_visible=True)
+        stairs = Object(old_quarry_stairs[i].dest_position, '>', 'mine exit', libtcod.white, always_visible=True)
         stairs.destination = old_map
         stairs.dest_position = old_quarry_stairs[i].pos
         new_map.objects.insert(0, stairs)

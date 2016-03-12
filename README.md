@@ -27,6 +27,10 @@ Originally based on Jotaf's Python roguelike tutorial for libtcod.
 ** If you get out of sight of your enemies, they're not likely to pursue.
 * Melee weapon skills also influence defense.
 ** To be effective, have a skill of at least 40 in any weapon you use.
+* Choices are hard.
+** Fighting the wrong enemy without a shield (and shield skill) may be fatal.
+** Fighting the wrong enemy in melee instead of with a bow may be fatal.
+** Switching between bow and shield at a bad time may be fatal.
 * Wounds, exhaustion, and intoxication all interfere with skill use.
 ** The longer you wait to bandage your wounds, the less likely you are to do so effectively.
 ** You'll probably want to get your first aid skill up to 50.

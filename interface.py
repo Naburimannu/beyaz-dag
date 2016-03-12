@@ -171,7 +171,7 @@ def target_tile(actor, max_range=None):
         while ((not (nx is None)) and nx >= 0 and ny >= 0 and
                nx < config.MAP_PANEL_WIDTH and
                ny < config.MAP_PANEL_HEIGHT):
-            libtcod.console_set_char_background(renderer._overlay, nx, ny, libtcod.sepia, libtcod.BKGND_SET)
+            libtcod.console_set_char_background(renderer._overlay, nx, ny, libtcod.lighter_crimson, libtcod.BKGND_SET)
             nx, ny = libtcod.line_step()
 
         if mouse.rbutton_pressed or key.vk == libtcod.KEY_ESCAPE:

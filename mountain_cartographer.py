@@ -412,7 +412,7 @@ def _dig_quarry(new_map, peak):
             pos = _random_position_in_region(new_map, rgn)
             sufficiently_distant = True
             for stair_pos in stairheads:
-                print('distance between ', pos, stair_pos, pos.distance(stair_pos))
+                # print('distance between ', pos, stair_pos, pos.distance(stair_pos))
                 if pos.distance(stair_pos) < 5:
                     sufficiently_distant = False
             # Maybe try to enforce that it's near a cliff / slope...
@@ -441,7 +441,7 @@ def _make_grotto(new_map):
     region_center = algebra.Location(new_map.region_seeds[new_map.grotto_region][0],
                                      new_map.region_seeds[new_map.grotto_region][1])
     print('Grotto at ' + str(region_center.x) + ' ' + str(region_center.y))
-    stairs = Object(region_center, '<', 'grotto entrance', libtcod.white, always_visible=True)
+    stairs = Object(region_center, '<', 'cave mouth', libtcod.white, always_visible=True)
     stairs.destination = None
     stairs.dest_position = None
     stairs.generator = ca_cartographer.make_map
