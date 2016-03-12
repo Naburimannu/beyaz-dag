@@ -9,6 +9,7 @@ import ai
 import spells
 
 import mine_cartographer
+import ca_cartographer
 
 ROOM_MAX_SIZE = 10
 ROOM_MIN_SIZE = 6
@@ -278,6 +279,7 @@ def make_final_map(player, dungeon_level):
     mine_cartographer._create_entries(new_map, entry_stairs)
     mine_cartographer._descend_stairs(new_map, player, entry_stairs)
 
+    num_rooms = 3
     for r in range(3, MAX_ROOMS):
         w = libtcod.random_get_int(new_map.rng, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
         h = libtcod.random_get_int(new_map.rng, ROOM_MIN_SIZE, ROOM_MAX_SIZE)
@@ -296,20 +298,20 @@ def make_final_map(player, dungeon_level):
             # There are no intersections, so this room is valid.
             _create_room(new_map, new_room)
             new_ctr = new_room.center()
+            prev_ctr = new_map.rooms[num_rooms-3].center()
 
-            if num_rooms > 0:
-                prev_ctr = new_map.rooms[num_rooms-3].center()
-
-                if libtcod.random_get_int(new_map.rng, 0, 1) == 1:
-                    _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, prev_ctr.y)
-                    _create_v_tunnel(new_map, prev_ctr.y, new_ctr.y, new_ctr.x)
-                else:
-                    _create_v_tunnel(new_map, prev_ctr.y, new_ctr.y, prev_ctr.x)
-                    _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, new_ctr.y)
+            if libtcod.random_get_int(new_map.rng, 0, 1) == 1:
+                _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, prev_ctr.y)
+                _create_v_tunnel(new_map, prev_ctr.y, new_ctr.y, new_ctr.x)
+            else:
+                _create_v_tunnel(new_map, prev_ctr.y, new_ctr.y, prev_ctr.x)
+                _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, new_ctr.y)
 
             new_map.rooms.append(new_room)
             num_rooms += 1
 
+    # TODO: should be floodfill from one stair, make *sure* the other two are
+    # connected
     for i in range(3):
         stair_pos = entry_stairs[i].dest_position
         ca_cartographer._floodfill(new_map, stair_pos.x, stair_pos.y,

@@ -445,6 +445,9 @@ def _start_near_peak(player):
     player.pos = algebra.Location(player.current_map.peak[0] + 20,
                                   player.current_map.peak[1] - 20)
 
+def _start_near_end(player):
+    stairwell = player.current_map.dungeon_stairs[0]
+    player.pos = algebra.Location(stairwell.x + 20, stairwell.y - 20)
 
 def new_game():
     """
@@ -505,6 +508,7 @@ def new_game():
     # _start_near_quarry(player)
     # _start_near_grotto(player)
     # _start_near_peak(player)
+    _start_near_end(player)
 
     # TEST
     actions.add_to_map(player.current_map, player.pos, miscellany.sword())

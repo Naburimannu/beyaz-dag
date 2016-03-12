@@ -36,6 +36,10 @@ def _random_position_in_region(new_map, region):
         candidate = algebra.Location(
                 libtcod.random_get_int(0, center[0]-5, center[0]+5),
                 libtcod.random_get_int(0, center[1]-5, center[1]+5))
+        if (candidate.x < 0 or candidate.y < 0 or
+                candidate.x >= new_map.width or
+                candidate.y >= new_map.height):
+            continue
         if new_map.region[candidate.x][candidate.y] == region:
             return candidate
 
@@ -491,6 +495,7 @@ def _site_final_dungeon(new_map, strata):
 
     new_map.dungeon_stairs = []
     for ii in stairheads:
+        new_map.terrain[ii.x][ii.y] = map.TERRAIN_GROUND
         stairs = Object(ii, '<', 'cave mouth', libtcod.white, always_visible=True)
         stairs.destination = None
         stairs.dest_position = None
