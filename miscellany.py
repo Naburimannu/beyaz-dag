@@ -104,7 +104,12 @@ def kumiss(count):
             item=Item(description='An invigorating draught of kumiss in a wineskin.',
                       use_function=spells.drink_kumiss, count=count, stackable=True))
 
-    #####
+def tortoiseshell_comb():
+    return Object(None, ']', 'tortoiseshell comb', libtcod.dark_sky,
+            item=Item(description="A pretty little comb with blurred carving you can't quite make out."),
+            equipment=Equipment(slot='hair'))
+
+    ######################
 
 def maguffin():
     return Object(None, '"', "Yen d'Or", libtcod.gold,

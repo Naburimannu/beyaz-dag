@@ -108,9 +108,10 @@ def vodanyoi_warrior(new_map, pos, player):
                          skills={'grappling':20, 'spear':30}))
 
 def rusalka(new_map, pos, player):
-    return _ignoring_monster(new_map, pos, player,
+    return _add_inventory(
+        _ignoring_monster(new_map, pos, player,
                              'h', 'rusalka', libtcod.darker_sea, hp=24,
-                             on_idle=_idle_rusalka)
+                             on_idle=_idle_rusalka))
 
 def _idle_rusalka(player):
     action = libtcod.random_get_int(0, 1, 3)

@@ -64,7 +64,8 @@ def _place_random_creatures(new_map, player):
         #    for y in range(r_pos.y-2, r_pos.y+3):
         #        if new_map.terrain[x][y] == map.TERRAIN_FLOOR:
         #            new_map.terrain[x][y] = map.TERRAIN_WATER
-        bestiary.rusalka(new_map, r_pos, player)
+        mob = bestiary.rusalka(new_map, r_pos, player)
+        _new_equipment(mob, miscellany.tortoiseshell_comb())
 
     for vc_count in range(0, VODANYOI_CLUSTER_GOAL):
         while True:
