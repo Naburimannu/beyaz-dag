@@ -363,11 +363,18 @@ def handle_keys(player, key):
             return 'didnt-take-turn'
 
 
+EPITAPHS = [
+    'The dead cannot come back to life; the departed soul does not return.',
+    'You stayed for a while and then moved along, just as a caravan does.',
+    'The hizir on the gray horse has claimed you for his own.'
+]
+
 def player_death(player):
     """
     End the game!
     """
-    log.message('You died!', libtcod.red)
+    log.message(EPITAPHS[libtcod.random_get_int(0, 0, len(EPITAPHS)-1)], libtcod.crimson)
+    log.message('You died!', libtcod.crimson)
     player.game_state = 'dead'
 
     # For added effect, transform the player into a corpse!
@@ -442,8 +449,7 @@ def new_game():
 
     player = Object(None, '@', 'player', libtcod.white, blocks=True,
         fighter=Fighter(
-            # hp=36, # TEST
-            hp=360,
+            hp=36,
             death_function=player_death,
             skills={'bow':70, 'first aid':24, 'grappling':40}))
     player.inventory = []
@@ -490,7 +496,7 @@ def new_game():
     #_start_near_quarry(player)
     #_start_near_grotto(player)
     #_start_near_peak(player)
-    _start_near_end(player)
+    #_start_near_end(player)
 
     # TEST
     actions.add_to_map(player.current_map, player.pos, miscellany.sword())
