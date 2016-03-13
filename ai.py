@@ -15,10 +15,25 @@ import actions
 # default argument?
 CONFUSE_NUM_TURNS = 10
 
+# How long the monster remains active after
+# the player leaves view.
+ACTIVITY_LENGTH = 3
+
+
+def _spotting(monster_obj, metadata):
+    if libtcod.map_is_in_fov(monster_obj.current_map.fov_map,
+                             monster_obj.x, monster_obj.y):
+        if metadata.active_turns < ACTIVITY_LENGTH - 1:
+            log.message('You spot a ' + monster_obj.name)
+        metadata.active_turns = ACTIVITY_LENGTH
+        metadata.update_knowledge()
+
 
 def fleeing_monster(monster, player, metadata):
-    if libtcod.map_is_in_fov(monster.current_map.fov_map,
-                             monster.x, monster.y):
+    _spotting(monster, metadata)
+
+    if metadata.active_turns > 0:
+        metadata.active_turns -= 1
         # No intelligent behavior at all here
         actions.move_away_from(monster, metadata.target.pos)
 
@@ -51,14 +66,15 @@ class hostile_monster_metadata(object):
         self.last_seen = None
         self.active_turns = 0
 
+    def update_knowledge(self):
+        self.last_seen = self.target.pos
+
+
 def hostile_monster(monster, player, metadata):
     """
     A basic monster takes its turn. if you can see it, it can see you.
     """
-    if libtcod.map_is_in_fov(monster.current_map.fov_map,
-                             monster.x, monster.y):
-        metadata.active_turns = 3
-        metadata.last_seen = metadata.target.pos
+    _spotting(monster, metadata)
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
@@ -71,12 +87,8 @@ def hostile_monster(monster, player, metadata):
 
 
 def hostile_archer(monster, player, metadata):
-    seen_now = False
-    if libtcod.map_is_in_fov(monster.current_map.fov_map,
-                             monster.x, monster.y):
-        metadata.active_turns = 3
-        metadata.last_seen = metadata.target.pos
-        seen_now = True
+    _spotting(monster, metadata)
+    seen_now = (ACTIVITY_LENGTH == metadata.active_turns)
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
@@ -106,13 +118,15 @@ class territorial_monster_metadata(object):
         self.radius = radius
         self.active_turns = 0
 
+    def update_knowledge(self):
+        pass
+
+
 def territorial_monster(monster, player, metadata):
     """
     Move randomly but near home until approached or hurt
     """
-    if libtcod.map_is_in_fov(monster.current_map.fov_map,
-                             monster.x, monster.y):
-        metadata.active_turns = 3
+    _spotting(monster, metadata)
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
