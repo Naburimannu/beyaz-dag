@@ -5,6 +5,7 @@ import libtcodpy as libtcod
 import log
 import algebra
 from components import *
+import actions
 import map
 import spells  # nasty levelization violation?!
 
@@ -64,7 +65,17 @@ def spear():
 def handaxe():
     return Object(None, '\\', 'handaxe', libtcod.dark_sky,
             item=Item(description='A short iron-bladed axe; inflicts 7 damage.'),
-            melee=MeleeWeapon(skill='axe', damage=7))
+            melee=MeleeWeapon(skill='axe', damage=7, on_strike=_axe_strike))
+
+def _axe_strike(attacker_ftr, target_obj, damage):
+    d_shield_eq = actions.get_equipped_in_slot(target_obj, 'left hand')
+    if d_shield_eq and libtcod.random_get_int(0, 1, 20) <= damage:
+        d_shield_eq.defense_bonus -= 1
+        if d_shield_eq.defense_bonus == 0:
+            log.message('The axe blow destroys the shield held by ' + target_obj.name.capitalize())
+            # actions.drop(target_obj, d_shield_eq, report=False)
+            target_obj.inventory.remove(d_shield_eq.owner)
+        
 
 def roundshield():
     return Object(None, ')', 'roundshield', libtcod.dark_sky,
@@ -78,18 +89,18 @@ def horn_bow():
 
 def arrow(count):
     return Object(None, '{', 'arrow', libtcod.dark_sky,
-            item=Item(description='A gold-feathered beech arrow.', count=count),
+            item=Item(description='A gold-feathered beech arrow.', count=count, stackable=True),
             equipment=Equipment(slot='quiver'))
 
 def bandage(count):
     return Object(None, '~', 'bandage', libtcod.dark_sky,
             item=Item(description='A clean-enough length of cloth for binding wounds, and a bit of herbs for a poultice.',
-                    count=count, use_function=spells.use_bandage))
+                    count=count, stackable=True, use_function=spells.use_bandage))
 
 def kumiss(count):
     return Object(None, '!', 'kumiss', libtcod.dark_sky,
             item=Item(description='An invigorating draught of kumiss in a wineskin.',
-                      use_function=spells.drink_kumiss, count=count))
+                      use_function=spells.drink_kumiss, count=count, stackable=True))
 
     #####
 

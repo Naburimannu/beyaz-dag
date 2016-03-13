@@ -99,6 +99,8 @@ class Fighter(Component):
         self.inebriation = 0
         self.last_attacker = None
 
+        self.on_unarmed_strike = None
+
     @property
     def action_penalty(self):
         return (self.wounds / 2 + self.bleeding +
@@ -131,17 +133,18 @@ class Item(Component):
     """
     An item that can be picked up and used.
     """
-    def __init__(self, description=None, count=1, use_function=None):
+    def __init__(self, description=None, count=1, stackable=False, use_function=None):
         self.description = description
-        self.use_function = use_function
         self.count = count
+        self.stackable = stackable
+        self.use_function = use_function
 
     def can_combine(self, other_obj):
         """
         Returns true if other can stack with self.
         Terribly simple for now.
         """
-        return other_obj and other_obj.item and other_obj.name == self.owner.name
+        return self.stackable and other_obj and other_obj.item and other_obj.name == self.owner.name
 
 
 class Equipment(Component):
@@ -167,10 +170,12 @@ class Equipment(Component):
 
 
 class MeleeWeapon(Component):
-    def __init__(self, skill, damage, skill_bonus=0):
+    def __init__(self, skill, damage, skill_bonus=0, on_strike=None):
         self.skill = skill
         self.damage = damage
         self.skill_bonus = skill_bonus
+
+        self.on_strike = on_strike
 
     def set_owner(self, entity):
         Component.set_owner(self, entity)

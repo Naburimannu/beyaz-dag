@@ -174,6 +174,14 @@ def attack(attacker_ftr, target_obj, report=True):
                    target_obj, effective_defense_skill,
                    damage, 'attacks', report)
 
+    if damage > 0:
+        if a_weapon_eq:
+            strike_fn = a_weapon_eq.owner.melee_weapon.on_strike
+        else:
+            strike_fn = attacker_ftr.on_unarmed_strike
+        if strike_fn:
+            strike_fn(attacker_ftr, target_obj, damage)
+
 
 def draw(actor_obj, weapon_obj, report=True):
     if report:
