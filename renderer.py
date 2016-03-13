@@ -9,10 +9,6 @@ import algebra
 import map
 
 
-FOV_ALGO = 0
-FOV_LIGHT_WALLS = True
-TORCH_RADIUS = 10
-
 PANEL_Y = config.SCREEN_HEIGHT - config.PANEL_HEIGHT
 MSG_X = config.BAR_WIDTH + 2
 
@@ -503,11 +499,7 @@ def draw_console(player):
         current_map.fov_elevation_changed = False
 
     if current_map.fov_needs_recompute:
-        # Recompute FOV if needed (the player moved or something in
-        # the dungeon changed).
-        libtcod.map_compute_fov(
-            current_map.fov_map, player.x,
-            player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+        # Redraw if FOV (could have) changed.
         if current_map.is_outdoors:
             _draw_outdoors(player)
         else:

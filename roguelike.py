@@ -24,6 +24,10 @@ import mountain_cartographer
 INVENTORY_WIDTH = 50
 CHARACTER_SCREEN_WIDTH = 30
 
+FOV_ALGO = 0
+FOV_LIGHT_WALLS = True
+TORCH_RADIUS = 10
+
 
 class Skill(object):
     def __init__(self, name, cost, description):
@@ -405,6 +409,9 @@ def load_game():
     file.close()
 
     current_map.initialize_fov()
+    libtcod.map_compute_fov(
+        player.current_map.fov_map, player.x,
+        player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
     return player
 
@@ -501,6 +508,10 @@ def new_game():
     # actions.add_to_map(player.current_map, player.pos, miscellany.sword())
     # actions.add_to_map(player.current_map, player.pos, miscellany.roundshield())
 
+    libtcod.map_compute_fov(
+        player.current_map.fov_map, player.x,
+        player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+
     return player
 
 
@@ -589,6 +600,15 @@ def play_game(player):
         if player_action == 'exit':
             save_game(player)
             break
+
+        # Recompute FOV *here*, not during rendering the way the tutorial did,
+        # so that monsters can react to the player's movement!
+        # This is a d'oh! sort of issue, because FOV is about gameplay, not
+        # just about rendering.
+        if player.current_map.fov_needs_recompute:
+            libtcod.map_compute_fov(
+                player.current_map.fov_map, player.x,
+                player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
 
         if (player_action != 'didnt-take-turn' and
                 (player.game_state == 'playing' or
