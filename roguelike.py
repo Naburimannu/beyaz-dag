@@ -114,7 +114,7 @@ def increase_player_skills(player):
             if i2 is not None:
                 log.message(skill_list[i2].name + ': ' + skill_list[i2].description)
             
-        if not target:
+        if target is None:  # 0 *is* a valid target
             return
 
         if skill_list[target].cost > player.skill_points:
