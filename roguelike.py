@@ -25,10 +25,6 @@ import mountain_cartographer
 INVENTORY_WIDTH = 50
 CHARACTER_SCREEN_WIDTH = 30
 
-# Experience and level-ups
-REGION_EXPLORATION_SP = 1
-ELEVATION_EXPLORATION_SP = 5
-
 
 class Skill(object):
     def __init__(self, name, cost, description):
@@ -177,22 +173,6 @@ def display_help():
                     INVENTORY_WIDTH)
 
 
-def _check_exploration_xp(player, new_region, new_elevation):
-    delta = 0
-    if not player.current_map.region_entered[new_region]:
-        delta += REGION_EXPLORATION_SP
-        player.current_map.region_entered[new_region] = True
-    if not player.current_map.elevation_visited[new_elevation]:
-        delta += ELEVATION_EXPLORATION_SP
-        player.current_map.elevation_visited[new_elevation] = True
-    if delta > 0:
-        player.skill_points += delta
-        point = 'point'
-        if delta > 1:
-            point += 's'
-        log.message('You gained ' + str(delta) + ' skill ' + point + ' for exploration.')
-
-
 def player_move_or_attack(player, direction, try_running):
     """
     Returns true if the player makes an attack or moves successfully;
@@ -231,10 +211,11 @@ def player_move_or_attack(player, direction, try_running):
     elevation_before_moving = player.current_map.elevation(player.pos.x, player.pos.y)
     if actions.move(player, direction):
         player.current_map.fov_needs_recompute = True
+        if player.current_map.xp_visit:
+            player.current_map.xp_visit(player.current_map, player)
         if player.current_map.is_outdoors:
             new_region = player.current_map.region[player.pos.x][player.pos.y]
             new_elevation = player.current_map.region_elevations[new_region]
-            _check_exploration_xp(player, new_region, new_elevation)
             if new_elevation != elevation_before_moving:
                 player.current_map.fov_elevation_changed = True
                 player.fighter.exhaustion += actions.CLIMB_EXHAUSTION

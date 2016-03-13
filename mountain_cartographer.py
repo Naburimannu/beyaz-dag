@@ -6,6 +6,7 @@ import scipy.spatial.kdtree
 import config
 import algebra
 import map
+import log
 from components import *
 import miscellany
 import bestiary
@@ -250,7 +251,7 @@ def _mark_slopes(new_map):
     for x in range(1, config.OUTDOOR_MAP_WIDTH - 1):
         for y in range(1, config.OUTDOOR_MAP_HEIGHT - 1):
             if _should_slope(new_map, x, y):
-                new_map.terrain[x][y] = 2
+                new_map.terrain[x][y] = map.TERRAIN_SLOPE
 
 
 def _clump_terrain(new_map):
@@ -301,7 +302,7 @@ def _assign_terrain(new_map):
     for x in range(config.OUTDOOR_MAP_WIDTH):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
            t = new_map.region_terrain[new_map.region[x][y]]
-           if new_map.terrain[x][y] != 1 and t != 'lake':
+           if new_map.terrain[x][y] != map.TERRAIN_GROUND and t != 'lake':
                 # For now don't overwrite slopes, except underwater
                 continue
            new_map.terrain[x][y] = terrain_lookup[_random_choice(terrain_chances[t])]
@@ -354,13 +355,13 @@ def _mark_quarry_slopes(new_map, region):
                 # add new slopes within the quarry, if necessary
                 if new_map.region[x][y] != region:
                     continue
-                new_map.terrain[x][y] = 2
+                new_map.terrain[x][y] = map.TERRAIN_SLOPE
             else:
                 if new_map.region[x][y] == region:
-                    new_map.terrain[x][y] = 1
-                elif new_map.terrain[x][y] == 2:
+                    new_map.terrain[x][y] = map.TERRAIN_GROUND
+                elif new_map.terrain[x][y] == map.TERRAIN_SLOPE:
                     # get rid of now-obsolete slopes nearby
-                    new_map.terrain[x][y] = 1
+                    new_map.terrain[x][y] = map.TERRAIN_GROUND
 
 
 def _place_quarry(new_map, peak):
@@ -544,7 +545,7 @@ def _build_map(new_map):
         for y in range(config.OUTDOOR_MAP_HEIGHT):
             (d, i) = region_tree.query([[x, y]])
             new_map.region[x][y] = i[0]
-            new_map.terrain[x][y] = 1
+            new_map.terrain[x][y] = map.TERRAIN_GROUND
 
     peak = [libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65)),
             libtcod.random_get_int(new_map.rng, int(config.OUTDOOR_MAP_WIDTH * .35), int(config.OUTDOOR_MAP_WIDTH * .65))]
@@ -585,6 +586,24 @@ def _build_map(new_map):
     new_map.peak = peak
 
 
+def _mountain_exploration(self, player):
+    new_region = self.region[player.pos.x][player.pos.y]
+    new_elevation = self.region_elevations[new_region]
+    delta = 0
+    if not self.region_entered[new_region]:
+        delta += config.REGION_EXPLORATION_SP
+        self.region_entered[new_region] = True
+    if not self.elevation_visited[new_elevation]:
+        delta += config.ELEVATION_EXPLORATION_SP
+        self.elevation_visited[new_elevation] = True
+    if delta > 0:
+        player.skill_points += delta
+        point = 'point'
+        if delta > 1:
+            point += 's'
+        log.message('You gained ' + str(delta) + ' skill ' + point + ' for exploration.')
+
+
 def make_map(player, dungeon_level):
     """
     Creates a new simple map at the given dungeon level.
@@ -619,6 +638,9 @@ def make_map(player, dungeon_level):
         player.pos.bound(algebra.Rect(0, 0, new_map.width - 1, new_map.height - 1))
 
     new_map.initialize_fov()
+    # setting an instancemethod breaks shelve save games
+    # new_map.xp_visit = type(map.BaseMap.xp_visit)(_mountain_exploration, new_map, map.BaseMap)
+    new_map.xp_visit = _mountain_exploration
     return True
 
 

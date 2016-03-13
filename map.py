@@ -81,6 +81,7 @@ class BaseMap(object):
     def __init__(self, width, height, default_terrain):
         self.width = width
         self.height = height
+        self.loc_bound = algebra.Rect(0, 0, width-1, height-1)
         self.objects = []
         self.portals = []
 
@@ -92,6 +93,8 @@ class BaseMap(object):
 
         self.terrain = [[default_terrain for y in range(height)] for x in range(width)]
         self._explored = [[False for y in range(height)] for x in range(width)]
+
+        self.xp_visit = None
 
     def rnd(self, mi, ma):
         """
@@ -117,10 +120,10 @@ class BaseMap(object):
                     not terrain_types[self.terrain[x][y]].blocks)
         for obj in self.objects:
             if obj.blocks_sight or obj.blocks:
+                # print(obj.name, obj.pos)
                 blocks = obj.blocks or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks
                 blocks_sight = obj.blocks_sight or terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
-
 
     def terrain_index_at(self, pos):
         return self.terrain[pos.x][pos.y]

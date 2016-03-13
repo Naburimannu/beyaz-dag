@@ -20,3 +20,7 @@ MAP_HEIGHT = 33
 # Height of the HUD display (should be screen height - map display height)
 PANEL_HEIGHT = 7
 BAR_WIDTH = 20
+
+# Experience and level-ups
+REGION_EXPLORATION_SP = 1
+ELEVATION_EXPLORATION_SP = 5
