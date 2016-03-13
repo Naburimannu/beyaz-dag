@@ -7,6 +7,8 @@ Magical effects and targeting (spells.py) could also live here.
 
 Conditionals and interfaces for the player sit up top in roguelike.py.
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import copy
 import libtcodpy as libtcod
 

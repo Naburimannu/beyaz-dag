@@ -7,6 +7,8 @@ interface.parse_move(key) translates a libtcod.Key into directional movement.
 interface.log_display(width=60)
 interface.target_tile(actor, max_range=None)
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 
 import config

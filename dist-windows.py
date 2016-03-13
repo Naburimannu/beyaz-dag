@@ -15,9 +15,10 @@ assets_dir = '.\\'
 excluded_file_types = ['py', 'pyc', 'pyproj',
                        'sdf', 'sln', 'spec']
 
-excluded_file_names = ['.gitattributes', '.gitignore', 'savegame']
+excluded_file_names = ['.gitattributes', '.gitignore', 'savegame',
+                       'consolas_unicode_12x12.png']
 
-excluded_directories = ['.git', '.vs']
+excluded_directories = ['.git', '.vs', 'build', 'tcl', 'tk']
  
 def get_data_files(base_dir, target_dir, list=[]):
     """

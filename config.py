@@ -1,6 +1,8 @@
 """
 Shared configuration variables.
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 
 # Total size of the game window.
 SCREEN_WIDTH = 80

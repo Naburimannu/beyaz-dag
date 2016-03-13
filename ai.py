@@ -1,6 +1,8 @@
 """
 AI routines, AI data, and monster death.
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 
 import log

@@ -3,6 +3,8 @@ Spells (magic item effects) and targeting utility functions.
 
 Could be folded into actions.py.
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 
 import log

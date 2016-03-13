@@ -1,3 +1,5 @@
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 import time
 
@@ -262,8 +264,8 @@ def _get_names_under_mouse(player, (sx, sy)):
         elif viewed_elevation > player_elevation:
             names += ' above you'
 
-    # DEBUG
-    names += '  [' + str(pos.x) + ' ' + str(pos.y) + ']'
+    # TEST
+    # names += '  [' + str(pos.x) + ' ' + str(pos.y) + ']'
 
     return names
 

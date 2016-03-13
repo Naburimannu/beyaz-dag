@@ -6,6 +6,7 @@ It is built on top of libtcod, sdl, and zlib.
 
 Cave generation is based on the algorithm and parameters described at http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels.
 
+Floodfill based on code by Eric S Raymond in https://mail.python.org/pipermail/image-sig/2005-September/003559.html.
 
 
 * libtcod 1.5.1

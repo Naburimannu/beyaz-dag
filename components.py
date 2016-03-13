@@ -2,6 +2,8 @@
 Simple entity system: any renderable Object can have
 a number of Components attached.
 """
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import math
 import algebra
 

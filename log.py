@@ -5,7 +5,8 @@ Call log.init() before using.
 Retrieve (message, color) tuples from log.game_msgs[].
 Append them using log.message().
 """
-
+# Copyright 2016 Thomas C. Hudson
+# Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 import textwrap
 
