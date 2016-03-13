@@ -32,19 +32,18 @@ def _new_equipment(actor, obj):
     actions.equip(actor, obj.equipment, False)
 
 
-def _random_position_in_rect(room):
+def _random_position_in_rect(new_map, room):
     """
     Given a rect, return an algebra.Location *inside* the rect (not along the borders)
     """
-    return algebra.Location(libtcod.random_get_int(0, room.x1+1, room.x2-1),
-                            libtcod.random_get_int(0, room.y1+1, room.y2-1))
+    return algebra.Location(new_map.rnd(room.x1+1, room.x2-1),
+                            new_map.rnd(room.y1+1, room.y2-1))
 
 
 def _add_one_bandit(new_map, rect, player, force_spear=False):
-    bandit = bestiary.bandit(new_map,
-        _random_position_in_rect(rect), player)
+    bandit = bestiary.bandit(new_map, _random_position_in_rect(new_map, rect), player)
 
-    choice = libtcod.random_get_int(0, 1, 3)
+    choice = new_map.rnd(1, 3)
     if force_spear or choice == 1:
         _new_equipment(bandit, miscellany.spear())
         if new_map.rnd(1, 3) < 2:
@@ -62,6 +61,13 @@ def _add_one_bandit(new_map, rect, player, force_spear=False):
 
     if new_map.rnd(1, 3) < 3:
         _new_item(bandit, miscellany.bandage(1))
+
+def _add_loot(new_map, function, count):
+    r = new_map.rnd(0, len(new_map.caravanserai.rooms) - 1)
+    pos = _random_position_in_rect(new_map, new_map.caravanserai.rooms[r])
+    loot = function(count)
+    loot.pos = pos
+    new_map.objects.insert(0, loot)
 
 
 def inhabit_caravanserai(new_map, player):
@@ -200,14 +206,13 @@ def make_caravanserai(new_map):
         new_map.terrain[bounds.x2][center.y+2] = map.TERRAIN_GROUND
 
         # Rooms in west half
-        wall_offset = libtcod.random_get_int(new_map.rng,
-            2, (center.x - bounds.x1) / 3)
+        wall_offset = new_map.rnd(2, (center.x - bounds.x1) / 3)
         for y in range(bounds.y1, bounds.y2+1):
             new_map.terrain[center.x - wall_offset][y] = map.TERRAIN_WALL
 
-        north_door = libtcod.random_get_int(new_map.rng, bounds.y1+1, center.y-2)
+        north_door = new_map.rnd(bounds.y1+1, center.y-2)
         _place_door(new_map, algebra.Location(center.x - wall_offset, north_door))
-        south_door = libtcod.random_get_int(new_map.rng, center.y+1, bounds.y2-1)
+        south_door = new_map.rnd(center.y+1, bounds.y2-1)
         _place_door(new_map, algebra.Location(center.x - wall_offset, south_door))
 
         wall_y = (north_door + south_door) / 2
@@ -227,9 +232,9 @@ def make_caravanserai(new_map):
         for x in range(center.x - wall_offset, bounds.x2):
             new_map.terrain[x][outer_wall_y] = map.TERRAIN_WALL
 
-        west_door = libtcod.random_get_int(new_map.rng, center.x - wall_offset + 2, courtyard_mid_x - 2)
+        west_door = new_map.rnd(center.x - wall_offset + 2, courtyard_mid_x - 2)
         _place_door(new_map, algebra.Location(west_door, outer_wall_y))
-        east_door = libtcod.random_get_int(new_map.rng, courtyard_mid_x + 2, bounds.x2 - 2)
+        east_door = new_map.rnd(courtyard_mid_x + 2, bounds.x2 - 2)
         _place_door(new_map, algebra.Location(west_door, outer_wall_y))
 
         wall_x = (east_door + west_door) / 2
@@ -251,14 +256,13 @@ def make_caravanserai(new_map):
         new_map.terrain[bounds.x2][center.y] = map.TERRAIN_GROUND
 
         # Rooms in north half
-        wall_offset = libtcod.random_get_int(new_map.rng,
-            2, (center.y - bounds.y1) / 3)
+        wall_offset = new_map.rnd(2, (center.y - bounds.y1) / 3)
         for x in range(bounds.x1, bounds.x2+1):
             new_map.terrain[x][center.y - wall_offset] = map.TERRAIN_WALL
 
-        west_door = libtcod.random_get_int(new_map.rng, bounds.x1+1, center.x-2)
+        west_door = new_map.rnd(bounds.x1+1, center.x-2)
         _place_door(new_map, algebra.Location(west_door, center.y - wall_offset))
-        east_door = libtcod.random_get_int(new_map.rng, center.x+1, bounds.x2-1)
+        east_door = new_map.rnd(center.x+1, bounds.x2-1)
         _place_door(new_map, algebra.Location(east_door, center.y - wall_offset))
 
         wall_x = (east_door + west_door) / 2
@@ -278,9 +282,9 @@ def make_caravanserai(new_map):
         for y in range(center.y - wall_offset, bounds.y2):
             new_map.terrain[outer_wall_x][y] = map.TERRAIN_WALL
 
-        north_door = libtcod.random_get_int(new_map.rng, center.y - wall_offset + 2, courtyard_mid_y - 2)
+        north_door = new_map.rnd(center.y - wall_offset + 2, courtyard_mid_y - 2)
         _place_door(new_map, algebra.Location(outer_wall_x, north_door))
-        south_door = libtcod.random_get_int(new_map.rng, courtyard_mid_y + 2, bounds.y2 - 2)
+        south_door = new_map.rnd(courtyard_mid_y + 2, bounds.y2 - 2)
         _place_door(new_map, algebra.Location(outer_wall_x, south_door))
 
         wall_y = (south_door + north_door) / 2
@@ -307,8 +311,7 @@ def make_caravanserai(new_map):
 
     # TODO: create an upstairs and a cellar
 
-    r = new_map.rnd(0, len(new_map.caravanserai.rooms) - 1)
-    pos = _random_position_in_rect(new_map.caravanserai.rooms[r])
-    loot = miscellany.bandage(3)
-    loot.pos = pos
-    new_map.objects.insert(0, loot)
+    _add_loot(new_map, miscellany.bandage, 3)
+    _add_loot(new_map, miscellany.bandage, 3)
+    _add_loot(new_map, miscellany.kumiss, 4)
+    _add_loot(new_map, miscellany.arrow, 6)
