@@ -243,6 +243,13 @@ def _build_map(new_map):
             elif x < pool_x and new_map.terrain[x][y] == map.TERRAIN_FLOOR:
                 new_map.terrain[x][y] = map.TERRAIN_WATER
 
+    #for x in range(0, new_map.width):
+    #    new_map.terrain[x][0] = map.TERRAIN_WALL
+    #    new_map.terrain[x][new_map.height-1] = map.TERRAIN_WALL
+    #for y in range(0, new_map.height):
+    #    new_map.terrain[0][y] = map.TERRAIN_WALL
+    #    new_map.terrain[new_map.width-1][y] = map.TERRAIN_WALL
+
     new_map.pool_x = pool_x
     return stair_loc
 

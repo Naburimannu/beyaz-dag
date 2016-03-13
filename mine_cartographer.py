@@ -242,8 +242,8 @@ def make_map(player, dungeon_level):
     _dig_mine_tunnels(new_map)
 
     map_bounds = algebra.Rect(1, 1, new_map.width-1, new_map.height-1)
-    for x in range(0, new_map.width):
-        for y in range(0, new_map.height):
+    for x in range(1, new_map.width-1):
+        for y in range(1, new_map.height-1):
             if libtcod.random_get_float(new_map.rng, 0., 1.) < 0.2:
                 new_map.terrain[x][y] = map.TERRAIN_GROUND
 
@@ -263,6 +263,13 @@ def make_map(player, dungeon_level):
         for y in range(1, new_map.height-1):
             if new_map.terrain[x][y] == map.TERRAIN_GROUND:
                 new_map.terrain[x][y] = map.TERRAIN_WALL
+
+    #for x in range(0, new_map.width):
+    #    new_map.terrain[x][0] = map.TERRAIN_WALL
+    #    new_map.terrain[x][new_map.height-1] = map.TERRAIN_WALL
+    #for y in range(0, new_map.height):
+    #    new_map.terrain[0][y] = map.TERRAIN_WALL
+    #    new_map.terrain[new_map.width-1][y] = map.TERRAIN_WALL
 
     zone_divisor = MINE_SIZE / 3
     slime_zone = new_map.rnd(0, 2)
