@@ -37,6 +37,7 @@ class Skill(object):
 
 
 skill_list = [
+    Skill('axe', 6, 'Attack and defend with an axe.'),
     Skill('bow', 5, 'Shoot with a bow.'),
 #    Skill('climb', 3, 'Climb trees and rock faces. **UNIMPLEMENTED**'),
     Skill('first aid', 3, 'Tend to minor wounds and bleeding; requires bandages.'),

@@ -61,6 +61,11 @@ def spear():
             item=Item(description='An iron-headed spear; inflicts 8 damage.'),
             melee=MeleeWeapon(skill='spear', damage=8))
 
+def handaxe():
+    return Object(None, '\\', 'handaxe', libtcod.dark_sky,
+            item=Item(description='A short iron-bladed axe; inflicts 7 damage.'),
+            melee=MeleeWeapon(skill='axe', damage=7))
+
 def roundshield():
     return Object(None, ')', 'roundshield', libtcod.dark_sky,
             item=Item(description='A large round wooden shield, edged with iron.'),
