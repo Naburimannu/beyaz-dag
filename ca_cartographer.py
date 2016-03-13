@@ -22,6 +22,10 @@ VODANYOI_CLUSTER_GOAL = 3
 VODANYOI_CLUSTER_SIZE = 3
 
 
+def random_direction(new_map):
+    return algebra.directions[new_map.rnd(0, 7)]
+
+
 def _new_item(actor, obj):
     actor.inventory.append(obj)
     obj.always_visible = True
@@ -43,11 +47,9 @@ def _place_vodanyoi_cluster(new_map, player, vc_pos):
         # print('  v at ' + str(v_pos.x) + ' ' + str(v_pos.y))
         if v_count == 0:
             v = bestiary.vodanyoi_warrior(new_map, v_pos, player)
-        else:
-            v = bestiary.vodanyoi(new_map, v_pos, player)
-        choice = libtcod.random_get_int(0, 1, 3)
-        if choice == 1:
             _new_equipment(v, miscellany.spear())
+        else:
+            v = bestiary.vodanyoi(new_map, v_pos, player)            
 
 
 def _place_random_creatures(new_map, player):
@@ -58,10 +60,10 @@ def _place_random_creatures(new_map, player):
             if new_map.terrain[r_pos.x][r_pos.y] != map.TERRAIN_WALL:
                 break
         # TODO: can we ensure this doesn't block the passage?
-        for x in range(r_pos.x-2, r_pos.x+3):
-            for y in range(r_pos.y-2, r_pos.y+3):
-                if new_map.terrain[x][y] == map.TERRAIN_FLOOR:
-                    new_map.terrain[x][y] = map.TERRAIN_WATER
+        #for x in range(r_pos.x-2, r_pos.x+3):
+        #    for y in range(r_pos.y-2, r_pos.y+3):
+        #        if new_map.terrain[x][y] == map.TERRAIN_FLOOR:
+        #            new_map.terrain[x][y] = map.TERRAIN_WATER
         bestiary.rusalka(new_map, r_pos, player)
 
     for vc_count in range(0, VODANYOI_CLUSTER_GOAL):
@@ -78,6 +80,33 @@ def _inhabit_pool(new_map):
     nymph = Object(pos, '@', 'nymph', libtcod.azure, blocks=True,
         interactable=Interactable(use_function=quest.nymph_info))
     new_map.objects.append(nymph)
+
+
+def _check_for_openness(new_map, x, y):
+    for ii in range(x-1, x+2):
+        for jj in range(y-1, y+2):
+            if new_map.terrain[ii][jj] != map.TERRAIN_GROUND:
+                return False
+    return True
+
+
+def _check_for_dryness(new_map, x, y):
+    for ii in range(x-2, x+2):
+        for jj in range(y-2, y+2):
+            if new_map.terrain[ii][jj] == map.TERRAIN_WATER:
+                return False
+    return True
+
+
+def _scatter_ponds(new_map):
+    for x in range(new_map.pool_x+1, new_map.width-2):
+        for y in range(2, new_map.height-2):
+            #if _check_for_openness(new_map, x, y) and new_map.rnd(1, 2) == 1:
+                #pos = algebra.Location(x, y) # + actions.random_direction()
+            if _check_for_dryness(new_map, x, y) and new_map.rnd(1, 2) == 1:
+                pos = algebra.Location(x, y) + random_direction(new_map) 
+                new_map.terrain[pos.x][pos.y] = map.TERRAIN_WATER
+                # print('puddle at ', pos)
 
 
 # After code by Eric S. Raymond
@@ -228,6 +257,9 @@ def _build_map(new_map):
             if new_map.terrain[x][y] == map.TERRAIN_WALL:
                 new_map.terrain[x][y] = map.TERRAIN_GROUND
 
+    new_map.pool_x = pool_x
+    _scatter_ponds(new_map)
+
     # Can we reach from the stairs to the center of the pool?
     _floodfill(new_map, stair_loc.x, stair_loc.y, map.TERRAIN_GROUND, map.TERRAIN_FLOOR)
     if new_map.terrain[pool_x][center.y] != map.TERRAIN_FLOOR:
@@ -252,7 +284,6 @@ def _build_map(new_map):
     #    new_map.terrain[0][y] = map.TERRAIN_WALL
     #    new_map.terrain[new_map.width-1][y] = map.TERRAIN_WALL
 
-    new_map.pool_x = pool_x
     return stair_loc
 
 
@@ -298,8 +329,9 @@ def _dump(new_map):
 def _test_display_ca(count):
     mock_player = Object(None, '@', 'you', libtcod.white)
     for i in range(count):
-        new_map = make_map(mock_player, 1)
-        _dump(new_map)
+        mock_player.current_map = None
+        make_map(mock_player, 1)
+        _dump(mock_player.current_map)
 
 
 def _test_map_repeatability():
