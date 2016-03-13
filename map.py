@@ -174,6 +174,9 @@ class DungeonMap(BaseMap):
         self.is_outdoors = False
         self.dungeon_level = dungeon_level
         self.rooms = []
+        self.room_entered = []
+
+        self.room = [[-1 for y in range(height)] for x in range(width)]
 
         self.fov_elevation_changed = False  # HACK
 

@@ -5,6 +5,7 @@ import libtcodpy as libtcod
 import config
 import algebra
 import map
+import log
 from components import *
 import actions
 import miscellany
@@ -152,10 +153,15 @@ def _dig_some_caves(new_map, old_quarry_stairs):
 
 
 def _consider_terminal_room(new_map, x, y):
-    if new_map.rnd(1, 3) == 1:
-        new_room = algebra.Rect(x - 2, y - 2, 4, 4)
-        _create_room(new_map, new_room)
-        new_map.rooms.append(new_room)
+    new_room = algebra.Rect(x - 2, y - 2, 4, 4)
+    _create_room(new_map, new_room)
+    count = len(new_map.rooms)
+    new_map.rooms.append(new_room)
+    new_map.room_entered.append(False)
+    for ii in range(x - 2, x + 3):
+        for jj in range(y - 2, y + 3):
+            if (ii >= 0 and jj >= 0 and ii < new_map.width and jj < new_map.height):
+                new_map.room[ii][jj] = count
 
 
 def _dig_about(new_map, room_rect, left_min, left_max, right_min, right_max):
@@ -199,6 +205,20 @@ def _dig_mine_tunnels(new_map):
     x = new_map.rooms[2].center().x
     _dig_about(new_map, new_map.rooms[2], new_map.width / 2 - 3,
                x - 3, x + (new_map.width - x) / 2, new_map.width - 3)
+
+
+def _dungeon_exploration(self, player):
+    delta = 0
+    room = self.room[player.pos.x][player.pos.y]
+    if room >= 0 and not self.room_entered[room]:
+        self.room_entered[room] = True
+        delta += config.REGION_EXPLORATION_SP
+    if delta > 0:
+        player.skill_points += delta
+        point = 'point'
+        if delta > 1:
+            point += 's'
+        log.message('You gained ' + str(delta) + ' skill ' + point + ' for exploration.')
 
 
 def make_map(player, dungeon_level):
@@ -251,7 +271,7 @@ def make_map(player, dungeon_level):
             break
 
     for r in range(3, len(new_map.rooms)):
-        if new_map.rnd(1, 3) < 3:
+        if new_map.rnd(1, 4) < 3:
             room = new_map.rooms[r]
             zone = room.center().x / zone_divisor
             if zone == slime_zone:
@@ -276,4 +296,5 @@ def make_map(player, dungeon_level):
     new_map.objects.insert(0, sword)
 
     new_map.initialize_fov()
+    new_map.xp_visit = _dungeon_exploration
     return False  # Don't need to generate stairs in caller thanks to _link_up_stairs()
