@@ -101,6 +101,7 @@ def _create_entries(new_map, old_quarry_stairs):
         _create_room(new_map, new_room)
         # print('Room #' + str(i) + ' at ' + str(new_room))
         new_map.rooms.append(new_room)
+        new_map.room_entered.append(False)
 
         new_ctr = new_room.center()
         assert(new_ctr == old_quarry_stairs[i].dest_position)

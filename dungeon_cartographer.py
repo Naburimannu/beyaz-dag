@@ -2,6 +2,7 @@ import libtcodpy as libtcod
 
 import config
 import algebra
+import log
 import map
 from components import *
 import actions
@@ -36,13 +37,14 @@ def _new_equipment(actor, obj):
 
 
 
-def _create_room(new_map, room):
+def _create_room(new_map, room, room_number):
     """
     Make the tiles in a rectangle passable
     """
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
             new_map.terrain[x][y] = map.TERRAIN_GROUND
+            new_map.room[x][y] = room_number
 
 
 def _create_h_tunnel(new_map, x1, x2, y):
@@ -193,7 +195,7 @@ def _build_map(new_map):
 
         if not failed:
             # There are no intersections, so this room is valid.
-            _create_room(new_map, new_room)
+            _create_room(new_map, new_room, num_rooms)
             new_ctr = new_room.center()
 
             if num_rooms > 0:
@@ -207,6 +209,7 @@ def _build_map(new_map):
                     _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, new_ctr.y)
 
             new_map.rooms.append(new_room)
+            new_map.room_entered.append(False)
             num_rooms += 1
 
     # Create stairs at the center of the last room.
@@ -247,10 +250,10 @@ def _place_door(new_map, pos):
 
 
 def _check_door_configuration(new_map, pos, direction):
-    if (new_map.terrain(pos + direction) == map.TERRAIN_GROUND and
-            new_map.terrain(pos + direction.left) == map.TERRAIN_GROUND and
-            new_map.terrain(pos + direction.right) == map.TERRAIN_GROUND and
-            new_map.terrain(pos - direction) == map.TERRAIN_GROUND):
+    if (new_map.terrain(pos + direction) == map.TERRAIN_FLOOR and
+            new_map.terrain(pos + direction.left) == map.TERRAIN_FLOOR and
+            new_map.terrain(pos + direction.right) == map.TERRAIN_FLOOR and
+            new_map.terrain(pos - direction) == map.TERRAIN_FLOOR):
         return True
     return False
 
@@ -273,6 +276,19 @@ def _add_doors(new_map):
                     _check_door_configuration(new_map, pos, algebra.west)):
                 _place_door(new_map, pos)
 
+
+def _dungeon_exploration(self, player):
+    delta = 0
+    room = self.room[player.pos.x][player.pos.y]
+    if room >= 0 and not self.room_entered[room]:
+        self.room_entered[room] = True
+        delta += config.REGION_EXPLORATION_SP
+    if delta > 0:
+        player.skill_points += delta
+        point = 'point'
+        if delta > 1:
+            point += 's'
+        log.message('You gained ' + str(delta) + ' skill ' + point + ' for exploration.')
 
 
 def make_final_map(player, dungeon_level):
@@ -309,7 +325,7 @@ def make_final_map(player, dungeon_level):
 
         if not failed:
             # There are no intersections, so this room is valid.
-            _create_room(new_map, new_room)
+            _create_room(new_map, new_room, num_rooms)
             new_ctr = new_room.center()
             prev_ctr = new_map.rooms[num_rooms-3].center()
 
@@ -321,6 +337,7 @@ def make_final_map(player, dungeon_level):
                 _create_h_tunnel(new_map, prev_ctr.x, new_ctr.x, new_ctr.y)
 
             new_map.rooms.append(new_room)
+            new_map.room_entered.append(False)
             num_rooms += 1
 
     # TODO: should be floodfill from one stair, make *sure* the other two are
@@ -337,6 +354,7 @@ def make_final_map(player, dungeon_level):
     _new_equipment(foe, miscellany.spear())
 
     new_map.initialize_fov()
+    new_map.xp_visit = _dungeon_exploration
     return False  # Don't need to generate stairs in caller thanks to _link_up_stairs()
 
 
