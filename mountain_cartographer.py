@@ -506,7 +506,11 @@ def _site_final_dungeon(new_map, strata):
         new_map.objects.insert(0, stairs)
         new_map.portals.insert(0, stairs)
         new_map.dungeon_stairs.append(stairs)
-    
+        for x in range(ii.x - 2, ii.x + 3):
+            for y in range(ii.y - 2, ii.y + 3):
+                if (new_map.region[x][y] == new_map.region[ii.x][ii.y]
+                        and new_map.terrain[x][y] != map.TERRAIN_SLOPE):
+                    new_map.terrain[x][y] = map.TERRAIN_GROUND
 
 def _debug_region_heights(new_map):
     for u in range(20):
