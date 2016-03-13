@@ -1,5 +1,9 @@
-The original tutorial.py was public domain code by João F. Henriques
-(a.k.a. Jotaf), hosted at http://www.roguebasin.com/index.php?title=Complete_Roguelike_Tutorial,_using_python%2Blibtcod,
+Beyaz Dag by Thomas C. Hudson for the 2016 7-Day Roguelike Challenge.
+
+Playtesting: Paul Hudson, Garrett Hudson, Tallis Hudson.
+
+Based on the public domain libTCOD+Python tutorial by João F. Henriques (a.k.a. Jotaf),
+hosted at http://www.roguebasin.com/index.php?title=Complete_Roguelike_Tutorial,_using_python%2Blibtcod,
 as of December 2012.
 
 It is built on top of libtcod, sdl, and zlib.

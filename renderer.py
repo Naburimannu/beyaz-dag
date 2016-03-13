@@ -540,6 +540,11 @@ def draw_panel(player, pointer_location):
     if player.fighter.bleeding > 0:
         _render_bar(1, 2, config.BAR_WIDTH, 'Bleeding',
                     player.fighter.hp, player.fighter.max_hp,
+                    libtcod.crimson, libtcod.darker_red)
+        line += 1
+    elif player.fighter.hp < player.fighter.max_hp:
+        _render_bar(1, 2, config.BAR_WIDTH, 'Bloodloss',
+                    player.fighter.hp, player.fighter.max_hp,
                     libtcod.light_red, libtcod.darker_red)
         line += 1
     if player.fighter.exhaustion / 100 > 0:
