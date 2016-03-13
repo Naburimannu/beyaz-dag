@@ -88,10 +88,10 @@ class hostile_monster_metadata(BaseMetadata):
     def __init__(self, target):
         super(hostile_monster_metadata, self).__init__()
         self.target = target
-        self.last_seen = None
+        self.last_seen_pos = None
 
     def update_knowledge(self):
-        self.last_seen = self.target.pos
+        self.last_seen_pos = self.target.pos
 
 
 def hostile_monster(monster, player, metadata):
@@ -102,9 +102,10 @@ def hostile_monster(monster, player, metadata):
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
-        if monster.pos.distance(metadata.last_seen) >= 2:
-            actions.move_towards(monster, metadata.last_seen)
-        elif metadata.target.fighter.hp > 0:
+        if monster.pos.distance(metadata.last_seen_pos) >= 2:
+            actions.move_towards(monster, metadata.last_seen_pos)
+        elif (monster.pos.distance(metadata.target.pos) < 2 and
+              metadata.target.fighter.hp > 0):
             if not monster.current_map.is_blocked_from(monster.pos, metadata.target.pos,
                                                        ignore=metadata.target):
                 actions.attack(monster.fighter, metadata.target)
@@ -118,7 +119,7 @@ def hostile_archer(monster, player, metadata):
         metadata.active_turns -= 1
         weapon_eq = actions.get_equipped_in_slot(monster, 'missile weapon')
         ammo_eq = actions.get_equipped_in_slot(monster, 'quiver')
-        distance = monster.distance(metadata.last_seen)
+        distance = monster.distance(metadata.last_seen_pos)
         if monster.game_state == 'shooting':
             monster.game_state = None
             if seen_now and distance < weapon_eq.owner.missile_weapon.max_range:
@@ -159,7 +160,7 @@ def territorial_monster(monster, player, metadata):
                             hostile_monster_metadata(monster.fighter.last_attacker))
             monster.ai.set_owner(monster)
             return monster.ai.take_turn(player)
-        if monster.distance_to(player) < metadata.radius:
+        if monster.distance_to_obj(player) < metadata.radius:
             log.message(monster.name.capitalize() + ' decides ' + player.name +
                 ' is too close!', libtcod.red)
             monster.ai = AI(hostile_monster,

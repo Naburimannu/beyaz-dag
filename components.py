@@ -55,24 +55,17 @@ class Object:
         if (component):
             component.set_owner(self)
 
-    def distance_to(self, other):
+    def distance_to_obj(self, other):
         """
         Return the distance to another object.
         """
         return self.pos.distance(other.pos)
-
 
     def distance(self, x, y):
         """
         Return the distance to some coordinates.
         """
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
-
-    def distance(self, pos):
-        """
-        Return the distance to some coordinates.
-        """
-        return self.pos.distance(pos)
 
 
 class Component:

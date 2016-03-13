@@ -37,23 +37,6 @@ def _target_monster(actor, max_range=None):
                 return obj
 
 
-def _closest_monster(actor, max_range):
-    """
-    Find closest enemy in the player's FOV, up to a maximum range.
-    """
-    closest_enemy = None
-    closest_dist = max_range + 1
-
-    for object in actor.current_map.objects:
-        if (object.fighter and not object == actor and
-                libtcod.map_is_in_fov(actor.current_map.fov_map,
-                                      object.x, object.y)):
-            dist = actor.distance_to(object)
-            if dist < closest_dist:
-                closest_enemy = object
-                closest_dist = dist
-    return closest_enemy
-
 
 def use_bandage(actor):
     """
