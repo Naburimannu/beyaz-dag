@@ -86,6 +86,13 @@ def bandage(count):
             item=Item(description='A clean-enough length of cloth for binding wounds, and a bit of herbs for a poultice.',
                     count=count, use_function=spells.use_bandage))
 
+def kumiss(count):
+    return Object(None, '!', 'kumiss', libtcod.dark_sky,
+            item=Item(description='An invigorating draught of kumiss in a wineskin.',
+                      use_function=spells.drink_kumiss, count=count))
+
+    #####
+
 def maguffin():
     return Object(None, '"', "Yen d'Or", libtcod.gold,
             item=Item(description="You've never seen anything like it. You can't imagine how you ever managed to live without it. It's so ineffably precious."),

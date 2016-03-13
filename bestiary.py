@@ -142,7 +142,7 @@ def gazelle(new_map, pos, player):
 def dvergr(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player, 'h', 'dvergr',
-                            libtcod.amber, hp=24,
+                            libtcod.dark_magenta, hp=24,
                             skills={'grappling':30, 'axe':30, 'shield':30}))
 
 def tepegoz(new_map, pos, player):

@@ -351,6 +351,16 @@ def make_final_map(player, dungeon_level):
 
     _add_doors(new_map)
 
+    for i in range(3, num_rooms - 1):
+        if (new_map.rnd(1, 2) == 1):
+            foe = bestiary.dvergr(new_map, new_map.rooms[i].center(), player)
+            _new_equipment(foe, miscellany.handaxe())
+            _new_equipment(foe, miscellany.roundshield())
+            if new_map.rnd(1, 2) == 1:
+                _new_item(foe, miscellany.bandage(1))
+            if new_map.rnd(1, 2) == 1:
+                _new_item(foe, miscellany.kumiss(1))
+
     foe = bestiary.tepegoz(new_map, new_ctr, player)
     _new_equipment(foe, miscellany.maguffin())
     _new_equipment(foe, miscellany.spear())
