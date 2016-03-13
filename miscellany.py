@@ -79,6 +79,11 @@ def _axe_strike(attacker_ftr, target_obj, damage):
             log.message('The axe blow damages the ' + d_shield_obj.name + ' held by ' + target_obj.name)
         
 
+def leather_armor():
+    return Object(None, '(', 'leather armor', libtcod.dark_sky,
+            item=Item(description='Mixed pieces of heavy leather armor, somewhat the worse for the wair; prevents 2 wounds.'),
+            equipment=Equipment('armor', defense_bonus=2))
+
 def roundshield():
     return Object(None, ')', 'roundshield', libtcod.dark_sky,
             item=Item(description='A large round wooden shield, edged with iron.'),

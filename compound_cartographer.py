@@ -59,13 +59,23 @@ def _add_one_bandit(new_map, rect, player, force_spear=False):
         bandit.ai._turn_function = ai.hostile_archer
         bandit.game_state = 'playing'
 
+    if new_map.rnd(1, 2) == 1:
+        _new_equipment(bandit, miscellany.leather_armor())
+
     if new_map.rnd(1, 3) < 3:
         _new_item(bandit, miscellany.bandage(1))
+    if new_map.rnd(1, 3) == 1:
+        _new_item(bandit, miscellany.kumiss(1))
+
 
 def _add_loot(new_map, function, count):
     r = new_map.rnd(0, len(new_map.caravanserai.rooms) - 1)
     pos = _random_position_in_rect(new_map, new_map.caravanserai.rooms[r])
-    loot = function(count)
+    # probably horribly nonpythonic
+    if count > 1:
+        loot = function(count)
+    else:
+        loot = function()
     loot.pos = pos
     new_map.objects.insert(0, loot)
 
@@ -311,6 +321,7 @@ def make_caravanserai(new_map):
 
     # TODO: create an upstairs and a cellar
 
+    _add_loot(new_map, miscellany.leather_armor, 1)
     _add_loot(new_map, miscellany.bandage, 3)
     _add_loot(new_map, miscellany.bandage, 3)
     _add_loot(new_map, miscellany.kumiss, 4)
