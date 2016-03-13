@@ -211,7 +211,7 @@ def _render_bar(x, y, total_width, name, value, maximum, bar_color, back_color):
     libtcod.console_set_default_foreground(_panel, libtcod.white)
     libtcod.console_print_ex(
         _panel, x + total_width / 2, y, libtcod.BKGND_NONE, libtcod.CENTER,
-        name + ': ' + str(value) + '/' + str(maximum))
+        name + ': ' + str(int(value)) + '/' + str(maximum))
 
 
 def _describe_obj(obj):
@@ -533,18 +533,14 @@ def draw_panel(player, pointer_location):
     # Only display the (log.MSG_HEIGHT) most recent
     write_log(log.game_msgs[-log.MSG_HEIGHT:], _panel, MSG_X, 1)
 
-    _render_bar(1, 1, config.BAR_WIDTH, 'HP', int(player.fighter.hp),
+    _render_bar(1, 1, config.BAR_WIDTH, 'HP', int(player.fighter.max_hp - player.fighter.wounds),
                 player.fighter.max_hp,
                 libtcod.light_red, libtcod.darker_red)
-    #libtcod.console_print_ex(
-    #    _panel, 1, 3, libtcod.BKGND_NONE,
-    #    libtcod.LEFT, 'Dungeon level ' + str(player.current_map.dungeon_level))
     line = 2
     if player.fighter.bleeding > 0:
-        _pwrite(line, 'Bleeding: ' + str(player.fighter.bleeding), libtcod.red)
-        line += 1
-    if player.fighter.wounds > 0:
-        _pwrite(line, 'Wounds: ' + str(player.fighter.wounds))
+        _render_bar(1, 2, config.BAR_WIDTH, 'Bleeding',
+                    player.fighter.hp, player.fighter.max_hp,
+                    libtcod.light_red, libtcod.darker_red)
         line += 1
     if player.fighter.exhaustion / 100 > 0:
         _pwrite(line, 'Exhaustion: ' + str(player.fighter.exhaustion / 100))
