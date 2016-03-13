@@ -70,6 +70,8 @@ def slime(new_map, pos, player):
 def _slime_strike(attacker_ftr, target_obj, damage):
     d_armor_eq = actions.get_equipped_in_slot(target_obj, 'robes')
     if not d_armor_eq:
+        d_armor_eq = actions.get_equipped_in_slot(target_obj, 'armor')
+    if not d_armor_eq:
         d_armor_eq = actions.get_equipped_in_slot(target_obj, 'underclothes')
     if d_armor_eq and libtcod.random_get_int(0, 1, 20) <= damage + 2 * d_armor_eq.defense_bonus:
         d_armor_eq.defense_bonus -= 1
