@@ -506,10 +506,10 @@ def new_game():
     log.message('At last you have reached the foot of the mountain. She waits above.', libtcod.red)
     log.message('Press ? or F1 for help.')
 
-    # _start_near_quarry(player)
-    # _start_near_grotto(player)
-    # _start_near_peak(player)
-    _start_near_end(player)
+    _start_near_quarry(player)
+    #_start_near_grotto(player)
+    #_start_near_peak(player)
+    #_start_near_end(player)
 
     # TEST
     actions.add_to_map(player.current_map, player.pos, miscellany.sword())

@@ -25,36 +25,46 @@ def _random_position_in_room(room):
                             libtcod.random_get_int(0, room.y1+1, room.y2-1))
 
 
+def _check(new_map, candidates, x, y):
+    if (x < 0 or y < 0 or x >= new_map.width or y >= new_map.height):
+        return
+    if new_map.terrain[x][y] == map.TERRAIN_FLOOR:
+        candidates.append(algebra.Location(x, y))
+
+def _find_floor_near_room(new_map, room):
+    pos = _random_position_in_room(room)
+    if new_map.terrain[pos.x][pos.y] == map.TERRAIN_FLOOR:
+        return pos
+    dist = 0
+    candidates = []
+    while len(candidates) == 0:
+        dist += 1
+        for x in range(pos.x - dist, pos.x + dist + 1):
+            _check(new_map, candidates, x, pos.y - dist)
+            _check(new_map, candidates, x, pos.y + dist)
+        for y in range(pos.y - dist + 1, pos.y + dist):
+            _check(new_map, candidates, pos.x - dist, y)
+            _check(new_map, candidates, pos.x + dist, y)
+    return candidates[new_map.rnd(0, len(candidates) - 1)]
+
+
 def _create_room(new_map, room):
     """
     Make the tiles in a rectangle passable.
-    # Returns True if any were already passable.
     """
-    retval = False
     for x in range(room.x1 + 1, room.x2):
         for y in range(room.y1 + 1, room.y2):
-            # if new_map.terrain[x][y] != map.TERRAIN_WALL:
-            #     retval = True
             new_map.terrain[x][y] = map.TERRAIN_GROUND
-    return retval
 
 
 def _create_h_tunnel(new_map, x1, x2, y):
-    retval = False
     for x in range(min(x1, x2), max(x1, x2) + 1):
-        # if new_map.terrain[x][y] != map.TERRAIN_WALL:
-        #     retval = True
         new_map.terrain[x][y] = map.TERRAIN_GROUND
-    return retval
 
 
 def _create_v_tunnel(new_map, y1, y2, x):
-    retval = False
     for y in range(min(y1, y2), max(y1, y2) + 1):
-        # if new_map.terrain[x][y] != map.TERRAIN_WALL:
-        #     retval = True
         new_map.terrain[x][y] = map.TERRAIN_GROUND
-    return retval
 
 
 def _link_up_stairs(new_map, old_map, old_quarry_stairs):
@@ -241,22 +251,19 @@ def make_map(player, dungeon_level):
             break
 
     for r in range(3, len(new_map.rooms)):
-        if new_map.rnd(1, 2) < 2:
+        if new_map.rnd(1, 3) < 3:
             room = new_map.rooms[r]
             zone = room.center().x / zone_divisor
-            # print('room ' + str(room) + ', zone ' + str(zone))
-            # Thanks to the cellular automata, some of these will be stuck in
-            # the wall.
             if zone == slime_zone:
                 if new_map.rnd(1, 2) == 1:
-                    bestiary.slime(new_map, _random_position_in_room(room), player)
-                    bestiary.slime(new_map, _random_position_in_room(room), player)
+                    bestiary.slime(new_map, _find_floor_near_room(new_map, room), player)
+                    bestiary.slime(new_map, _find_floor_near_room(new_map, room), player)
                 else:
-                    bestiary.jelly(new_map, _random_position_in_room(room), player)
+                    bestiary.jelly(new_map, _find_floor_near_room(new_map, room), player)
             elif zone == undead_zone:
-                bestiary.ghul(new_map, _random_position_in_room(room), player)
+                bestiary.ghul(new_map, _find_floor_near_room(new_map, room), player)
             else:
-                bestiary.worm(new_map, _random_position_in_room(room), player)
+                bestiary.worm(new_map, _find_floor_near_room(new_map, room), player)
 
     r = new_map.rnd(3, len(new_map.rooms) - 1)
     pos = new_map.rooms[r].center()
