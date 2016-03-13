@@ -20,9 +20,9 @@ import map
 
 # Every 100 pts of exhaustion = -1 to all skills
 #   (equivalent to 1 wound point)
-ATTACK_EXHAUSTION = 20
-CLIMB_EXHAUSTION = 13
-MOVE_EXHAUSTION = 2
+ATTACK_EXHAUSTION = 10
+CLIMB_EXHAUSTION = 9
+MOVE_EXHAUSTION = 1
 
 # CLIMB_EXHAUSTION is additive with MOVE_EXHAUSTION
 # BUG: AI doesn't suffer climb_exhaustion because of coding awkwardness
