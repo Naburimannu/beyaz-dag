@@ -31,7 +31,7 @@ terrain_types = [
         Terrain('slope', 'slope', '^', None,
                 None, None, False, False),
         Terrain('water', 'water', '~', libtcod.azure,
-                None, None, True, False),
+                libtcod.dark_azure, libtcod.darkest_azure, True, False),
         Terrain('boulder', 'boulder', '*', libtcod.black,
                 None, None, True, False),
         # 5

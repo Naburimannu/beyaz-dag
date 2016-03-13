@@ -427,8 +427,7 @@ def _draw_indoors(player):
                     libtcod.console_set_char_background(_con, screen_x, screen_y,
                                                         terrain.unseen_color, libtcod.BKGND_SET)
             else:
-                libtcod.console_set_char_background(_con, screen_x, screen_y,
-                                                    terrain.seen_color, libtcod.BKGND_SET)
+                libtcod.console_put_char_ex(_con, screen_x, screen_y, terrain.icon, terrain.icon_color, terrain.seen_color)
                 current_map.explore(pos)
             pos.x += 1
 
