@@ -510,6 +510,9 @@ def draw_console(player):
         current_map.fov_elevation_changed = False
 
     if current_map.fov_needs_recompute:
+        libtcod.map_compute_fov(
+            player.current_map.fov_map, player.x,
+            player.y, config.TORCH_RADIUS, config.FOV_LIGHT_WALLS, config.FOV_ALGO)
         # Redraw if FOV (could have) changed.
         if current_map.is_outdoors:
             _draw_outdoors(player)

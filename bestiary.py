@@ -116,7 +116,7 @@ def rusalka(new_map, pos, player):
 def _idle_rusalka(player):
     action = libtcod.random_get_int(0, 1, 3)
     if action == 1:
-        log.message('The rusalka sings a plaintive song of longing and loss.')
+        log.message('The rusalka sings a plaintive song of longing and loss.', libtcod.dark_fuchsia)
         player.fighter.inebriation += 30
         if player.fighter.inebriation > 300:
             log.message("You want nothing more than to sit down and listen.", libtcod.dark_fuchsia)

@@ -24,10 +24,6 @@ import mountain_cartographer
 INVENTORY_WIDTH = 50
 CHARACTER_SCREEN_WIDTH = 30
 
-FOV_ALGO = 0
-FOV_LIGHT_WALLS = True
-TORCH_RADIUS = 10
-
 
 class Skill(object):
     def __init__(self, name, cost, description):
@@ -412,7 +408,7 @@ def load_game():
     current_map.initialize_fov()
     libtcod.map_compute_fov(
         player.current_map.fov_map, player.x,
-        player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+        player.y, config.TORCH_RADIUS, config.FOV_LIGHT_WALLS, config.FOV_ALGO)
 
     return player
 
@@ -508,7 +504,7 @@ def new_game():
 
     libtcod.map_compute_fov(
         player.current_map.fov_map, player.x,
-        player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+        player.y, config.TORCH_RADIUS, config.FOV_LIGHT_WALLS, config.FOV_ALGO)
 
     return player
 
@@ -606,7 +602,7 @@ def play_game(player):
         if player.current_map.fov_needs_recompute:
             libtcod.map_compute_fov(
                 player.current_map.fov_map, player.x,
-                player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO)
+                player.y, config.TORCH_RADIUS, config.FOV_LIGHT_WALLS, config.FOV_ALGO)
 
         if (player_action != 'didnt-take-turn' and
                 (player.game_state == 'playing' or

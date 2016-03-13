@@ -89,11 +89,11 @@ def drink_kumiss(actor):
     """
     actor.fighter.inebriation += actor.fighter.inebriation + 150
     actor.fighter.exhaustion /= 2
-    log.message("The kumiss is revitalizing.")
+    log.message("The kumiss is revitalizing.", libtcod.dark_fuchsia)
     if actor.fighter.inebriation > 300:
-        log.message("You're feeling rather drunk!", libtcod.red)
+        log.message("You're feeling rather drunk!", libtcod.dark_fuchsia)
     elif actor.fighter.inebriation > 150:
-        log.message("You're getting a bit tipsy.")
+        log.message("You're getting a bit tipsy.", libtcod.dark_fuchsia)
 
 
 def cast_heal(actor):

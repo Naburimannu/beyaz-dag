@@ -2,6 +2,7 @@
 # Governed by the license described in LICENSE.txt
 import libtcodpy as libtcod
 
+import config
 import algebra
 
 
@@ -223,7 +224,9 @@ class OutdoorMap(BaseMap):
                     terrain_types[self.terrain[obj.pos.x][obj.pos.y]].blocks_sight or
                     (self.region_elevations[self.region[x][y]] > elevation + 1))
                 libtcod.map_set_properties(self.fov_map, obj.pos.x, obj.pos.y, not blocks_sight, not blocks)
-
+        libtcod.map_compute_fov(
+            player.current_map.fov_map, player.x,
+            player.y, config.TORCH_RADIUS, config.FOV_LIGHT_WALLS, config.FOV_ALGO)
 
     def is_blocked_from(self, origin, dest, ignore=None):
         """
