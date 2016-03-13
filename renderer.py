@@ -246,19 +246,30 @@ def _get_names_under_mouse(player, (sx, sy)):
     names = ', '.join(names)
     names = names.capitalize()
 
-    if player.current_map.terrain_at(pos).display_name:
+    tile_name = player.current_map.terrain_at(pos).display_name
+    if tile_name:
         if names == '':
-            names = player.current_map.terrain_at(pos).display_name
+            names = tile_name
         else:
-            names = ', '.join([names, player.current_map.terrain_at(pos).display_name])
+            names = ', '.join([names, tile_name])
 
     if player.current_map.is_outdoors:
-        player_elevation = player.current_map.region_elevations[player.current_map.region[player.pos.x][player.pos.y]]
-        viewed_elevation = player.current_map.region_elevations[player.current_map.region[pos.x][pos.y]]
+        player_region = player.current_map.region[player.pos.x][player.pos.y]
+        cursor_region = player.current_map.region[pos.x][pos.y]
+        region_type = player.current_map.region_terrain[cursor_region]
+        if names == '':
+            names = region_type
+        else:
+            names = ', '.join([names, region_type])
+        player_elevation = player.current_map.region_elevations[player_region]
+        viewed_elevation = player.current_map.region_elevations[cursor_region]
         if viewed_elevation < player_elevation:
             names += ' below you'
         elif viewed_elevation > player_elevation:
             names += ' above you'
+
+    if not libtcod.map_is_in_fov(fov_map, pos.x, pos.y):
+        names += ' (out of sight)'
 
     # TEST
     # names += '  [' + str(pos.x) + ' ' + str(pos.y) + ']'
