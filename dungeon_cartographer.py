@@ -354,6 +354,7 @@ def make_final_map(player, dungeon_level):
     foe = bestiary.tepegoz(new_map, new_ctr, player)
     _new_equipment(foe, miscellany.maguffin())
     _new_equipment(foe, miscellany.spear())
+    _new_equipment(foe, miscellany.roundshield())
 
     new_map.initialize_fov()
     new_map.xp_visit = _dungeon_exploration

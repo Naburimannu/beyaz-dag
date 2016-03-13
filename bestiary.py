@@ -143,7 +143,7 @@ def tepegoz(new_map, pos, player):
     return _add_inventory(
         _hostile_monster(new_map, pos, player, 'P', 'Tepegoz',
                             libtcod.peach, hp=80, unarmed_damage=8,
-                            skills={'grappling':50, 'spear':50}))
+                            skills={'grappling':60, 'spear':60, 'shield':30}))
 
 # UNUSED
 def steppe_pony(new_map, pos, player):
