@@ -69,12 +69,14 @@ def handaxe():
 
 def _axe_strike(attacker_ftr, target_obj, damage):
     d_shield_eq = actions.get_equipped_in_slot(target_obj, 'left hand')
-    if d_shield_eq and libtcod.random_get_int(0, 1, 20) <= damage:
+    if d_shield_eq and libtcod.random_get_int(0, 1, 20) <= damage + d_shield_eq.defense_bonus:
+        d_shield_obj = d_shield_eq.owner
         d_shield_eq.defense_bonus -= 1
-        if d_shield_eq.defense_bonus == 0:
-            log.message('The axe blow destroys the shield held by ' + target_obj.name.capitalize())
-            # actions.drop(target_obj, d_shield_eq, report=False)
-            target_obj.inventory.remove(d_shield_eq.owner)
+        if d_shield_eq.defense_bonus <= 0:
+            log.message('The axe blow destroys the ' + d_shield_obj.name + ' held by ' + target_obj.name)
+            target_obj.inventory.remove(d_shield_obj)
+        else:
+            log.message('The axe blow damages the ' + d_shield_obj.name + ' held by ' + target_obj.name)
         
 
 def roundshield():

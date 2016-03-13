@@ -4,6 +4,7 @@ import libtcodpy as libtcod
 
 import algebra
 from components import *
+import log
 import ai
 import actions
 import miscellany
@@ -23,12 +24,13 @@ def _ignoring_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_d
     return creature
 
 
-def _hostile_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, skills={}):
+def _hostile_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, on_strike=None, skills={}):
     pos.bound(new_map.loc_bound)
     creature = Object(pos, glyph, name, color, blocks=True,
-        fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death,
-                        skills=skills),
+        fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage,
+                        death_function=ai.monster_death, skills=skills),
         ai=AI(ai.hostile_monster, ai.hostile_monster_metadata(player)))
+    creature.fighter.on_unarmed_strike = on_strike
     _insert(creature, new_map)
     return creature
 
@@ -62,16 +64,31 @@ def ghul(new_map, pos, player):
 def slime(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
                             ',', 'slime', libtcod.white, unarmed_damage=3,
+                            on_strike=_slime_strike,
                             skills={'grappling':30})
+
+def _slime_strike(attacker_ftr, target_obj, damage):
+    d_armor_eq = actions.get_equipped_in_slot(target_obj, 'robes')
+    if not d_armor_eq:
+        d_armor_eq = actions.get_equipped_in_slot(target_obj, 'underclothes')
+    if d_armor_eq and libtcod.random_get_int(0, 1, 20) <= damage + 2 * d_armor_eq.defense_bonus:
+        d_armor_eq.defense_bonus -= 1
+        if d_armor_eq.defense_bonus <= 0:
+            log.message('Acid destroys the ' + d_armor_eq.owner.name + ' worn by ' + target_obj.name)
+            target_obj.inventory.remove(d_armor_eq.owner)
+        else:
+            log.message('Acid weakens the ' + d_armor_eq.owner.name + ' worn by ' + target_obj.name)
+
 
 def jelly(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
                             'j', 'jelly', libtcod.white, hp=24, unarmed_damage=4,
+                            on_strike=_slime_strike,
                             skills={'grappling':30})
 
 def worm(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
-                            'w', 'seething worm', libtcod.white, unarmed_damage=6)
+                            'w', 'seething mass of worms', libtcod.white, unarmed_damage=6)
 
 def swamp_goblin(new_map, pos, player):
     return _hostile_monster(new_map, pos, player,
