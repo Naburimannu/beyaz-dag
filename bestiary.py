@@ -13,6 +13,7 @@ def _insert(creature, new_map):
 
 
 def _ignoring_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2):
+    pos.bound(new_map.loc_bound)
     creature = Object(pos, glyph, name, color, blocks=True,
         fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death),
         ai=AI(ai.ignoring_monster, None))
@@ -21,6 +22,7 @@ def _ignoring_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_d
 
 
 def _hostile_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, skills={}):
+    pos.bound(new_map.loc_bound)
     creature = Object(pos, glyph, name, color, blocks=True,
         fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death,
                         skills=skills),
@@ -30,6 +32,7 @@ def _hostile_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_da
 
 
 def _territorial_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, skills={}, radius=3):
+    pos.bound(new_map.loc_bound)
     creature = Object(pos, glyph, name, color, blocks=True,
         fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death,
                         skills=skills),
