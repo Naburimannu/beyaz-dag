@@ -87,12 +87,12 @@ def drink_kumiss(actor):
     Drunkenness accumulates quickly if you drink more kumiss before
     you've recovered from the first.
     """
-    actor.fighter.inebriation += actor.fighter.inebriation + 100
+    actor.fighter.inebriation += actor.fighter.inebriation + 150
     actor.fighter.exhaustion /= 2
     log.message("The kumiss is revitalizing.")
     if actor.fighter.inebriation > 300:
         log.message("You're feeling rather drunk!", libtcod.red)
-    elif actor.fighter.inebriation > 100:
+    elif actor.fighter.inebriation > 150:
         log.message("You're getting a bit tipsy.")
 
 

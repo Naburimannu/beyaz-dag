@@ -15,11 +15,11 @@ def _insert(creature, new_map):
     creature.current_map = new_map
 
 
-def _ignoring_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2):
+def _ignoring_monster(new_map, pos, player, glyph, name, color, hp=12, unarmed_damage=2, on_idle=None):
     pos.bound(new_map.loc_bound)
     creature = Object(pos, glyph, name, color, blocks=True,
         fighter=Fighter(hp=hp, unarmed_damage=unarmed_damage, death_function=ai.monster_death),
-        ai=AI(ai.ignoring_monster, None))
+        ai=AI(ai.ignoring_monster, ai.ignoring_monster_metadata(on_idle)))
     _insert(creature, new_map)
     return creature
 
@@ -109,7 +109,23 @@ def vodanyoi_warrior(new_map, pos, player):
 
 def rusalka(new_map, pos, player):
     return _ignoring_monster(new_map, pos, player,
-                             'h', 'rusalka', libtcod.darker_sea, hp=24)
+                             'h', 'rusalka', libtcod.darker_sea, hp=24,
+                             on_idle=_idle_rusalka)
+
+def _idle_rusalka(player):
+    action = libtcod.random_get_int(0, 1, 3)
+    if action == 1:
+        log.message('The rusalka sings a plaintive song of longing and loss.')
+        player.fighter.inebriation += 30
+        if player.fighter.inebriation > 300:
+            log.message("You want nothing more than to sit down and listen.", libtcod.dark_fuchsia)
+        elif player.fighter.inebriation > 150:
+            log.message("Something about the song tugs at your heartstrings.", libtcod.dark_fuchsia)
+        
+        return True
+    elif action == 2:
+        log.message('The rusalka combs her hair.')
+    return False
 
 def bear(new_map, pos, player):
     _insert(miscellany.honey_tree(pos), new_map)

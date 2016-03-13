@@ -17,7 +17,15 @@ CONFUSE_NUM_TURNS = 10
 
 # How long the monster remains active after
 # the player leaves view.
-ACTIVITY_LENGTH = 3
+ACTIVITY_LENGTH = 4
+
+
+class BaseMetadata(object):
+    def __init__(self):
+        self.active_turns = 0
+
+    def update_knowledge(self):
+        pass
 
 
 def _spotting(monster_obj, metadata):
@@ -30,41 +38,57 @@ def _spotting(monster_obj, metadata):
 
 
 def fleeing_monster(monster, player, metadata):
+    # uses hostile_monster_metadata
     _spotting(monster, metadata)
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
         # No intelligent behavior at all here
         actions.move_away_from(monster, metadata.target.pos)
+        return
 
+    # if we escape, stop fleeing and quiesce
+    monster.ai = monster.old_ai
+    monster.ai._metadata.active_turns = 0
+    monster.fighter.last_attacker = None
+
+
+class ignoring_monster_metadata(BaseMetadata):
+    def __init__(self, on_idle=None):
+        super(ignoring_monster_metadata, self).__init__()
+        self.on_idle = on_idle
 
 def ignoring_monster(monster, player, metadata):
     """
     A creature that moves randomly (q.v. confused_monster) and ignores
     the player unless hurt, in which case it becomes hostile or scared.
     """
-    if libtcod.map_is_in_fov(monster.current_map.fov_map,
-                             monster.x, monster.y):
+    _spotting(monster, metadata)
+
+    if metadata.active_turns > 0:
+        metadata.active_turns -= 1
         if monster.fighter.last_attacker:
             if monster.fighter.unarmed_damage > 2:
                 monster.ai = AI(hostile_monster,
                                 hostile_monster_metadata(monster.fighter.last_attacker))
             else:
+                monster.old_ai = monster.ai
                 monster.ai = AI(fleeing_monster,
                                 hostile_monster_metadata(monster.fighter.last_attacker))
             monster.ai.set_owner(monster)
             return monster.ai.take_turn(player)
         # TODO: this movement may fail, so the monster will appear to
         # move less when in constricted quarters.
-        actions.move(monster, actions.random_direction())
+        if metadata.on_idle and not metadata.on_idle(player):
+            actions.move(monster, actions.random_direction())
 
 
 
-class hostile_monster_metadata(object):
+class hostile_monster_metadata(BaseMetadata):
     def __init__(self, target):
+        super(hostile_monster_metadata, self).__init__()
         self.target = target
         self.last_seen = None
-        self.active_turns = 0
 
     def update_knowledge(self):
         self.last_seen = self.target.pos
@@ -112,15 +136,11 @@ def hostile_archer(monster, player, metadata):
             hostile_monster(monster, player, metadata)
 
 
-class territorial_monster_metadata(object):
+class territorial_monster_metadata(BaseMetadata):
     def __init__(self, home, radius):
+        super(territorial_monster_metadata, self).__init__()
         self.home = home
         self.radius = radius
-        self.active_turns = 0
-
-    def update_knowledge(self):
-        pass
-
 
 def territorial_monster(monster, player, metadata):
     """
@@ -157,8 +177,9 @@ def territorial_monster(monster, player, metadata):
                 return
 
 
-class confused_monster_metadata(object):
+class confused_monster_metadata(BaseMetadata):
     def __init__(self, old_ai, num_turns=CONFUSE_NUM_TURNS):
+        super(confused_monster_metadata, self).__init__()
         self.old_ai = old_ai
         self.num_turns = num_turns
 
