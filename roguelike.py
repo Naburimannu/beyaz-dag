@@ -515,14 +515,9 @@ def next_level(player, portal):
     Heals the player 50%.
     Returns the Map of the new level.
     """
-    log.message('You take a moment to rest, and recover your strength.', libtcod.light_violet)
     actions.heal(player.fighter, player.fighter.max_hp / 2)
-
-    log.message('After a rare moment of peace, you descend deeper into the heart of the dungeon...', libtcod.red)
     old_map = player.current_map
     generator = portal.generator
-    if not generator:
-        generator = dungeon_cartographer.make_map
     need_stairs = generator(player, player.current_map.dungeon_level + 1)
     renderer.clear_console()
     renderer.update_camera(player)
