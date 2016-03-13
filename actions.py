@@ -167,8 +167,9 @@ def attack(attacker_ftr, target_obj, report=True):
     impact = attacker_ftr.unarmed_damage
     if a_weapon_eq:
         impact = a_weapon_eq.owner.melee_weapon.damage
-
-    damage = impact - target_obj.fighter.defense
+    active_armor = (libtcod.random_get_int(0, 0, target_obj.fighter.defense) +
+                    libtcod.random_get_int(0, 0, target_obj.fighter.defense))
+    damage = impact - active_armor
 
     _assign_damage(attacker_ftr.owner, effective_attack_skill,
                    target_obj, effective_defense_skill,

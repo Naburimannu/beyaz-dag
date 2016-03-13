@@ -470,8 +470,8 @@ def new_game():
 
     _new_equipment(player,
         Object(None, '(', 'quilt kaftan', libtcod.dark_sky,
-            item=Item(description='A heavy quilted kaftan; keeps you warm and prevents 1 wound.'),
-            equipment=Equipment(slot='robes', defense_bonus=1)))
+            item=Item(description='A heavy quilted kaftan; keeps you warm and prevents 2 wound.'),
+            equipment=Equipment(slot='robes', defense_bonus=2)))
 
     _new_equipment(player,
         Object(None, '(', 'felt cap', libtcod.dark_sky,
