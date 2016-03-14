@@ -117,7 +117,7 @@ def hostile_archer(monster, player, metadata):
 
     if metadata.active_turns > 0:
         metadata.active_turns -= 1
-        weapon_eq = actions.get_equipped_in_slot(monster, 'missile weapon')
+        weapon_eq = actions.get_equipped_in_slot(monster, 'left hand')
         ammo_eq = actions.get_equipped_in_slot(monster, 'quiver')
         distance = monster.distance(metadata.last_seen_pos)
         if monster.game_state == 'shooting':
