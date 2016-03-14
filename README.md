@@ -52,6 +52,6 @@ Based on Wizard's Crown and related games published for personal computers in th
 ## Spoilers
 
 * Grinding can yield more than 400 skill points, but a successful playthrough may only need half that.
-
+* AI pathing is really, really poor; (in the current build) you are expected to exploit this.
 
 

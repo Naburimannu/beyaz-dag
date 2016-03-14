@@ -39,7 +39,7 @@ def _do_harvest_honey(actor, target):
     if not actor.fighter:
         return
     log.message(actor.name.capitalize() + ' eats some refreshing honey.')
-    actor.fighter.exhaustion = max(actor.fighter.exhaustion - 6, 0)
+    actor.fighter.exhaustion = max(actor.fighter.exhaustion - 600, 0)
     actor.current_map.terrain[target.pos.x][target.pos.y] = 9
     actor.current_map.fov_needs_recompute = True
     actor.current_map.objects.remove(target)
@@ -69,7 +69,9 @@ def handaxe():
 
 def _axe_strike(attacker_ftr, target_obj, damage):
     d_shield_eq = actions.get_equipped_in_slot(target_obj, 'left hand')
-    if d_shield_eq and libtcod.random_get_int(0, 1, 20) <= damage + d_shield_eq.defense_bonus:
+    if (d_shield_eq and
+            d_shield_eq.defense_bonus > 0 and
+            libtcod.random_get_int(0, 1, 20) <= damage + d_shield_eq.defense_bonus):
         d_shield_obj = d_shield_eq.owner
         d_shield_eq.defense_bonus -= 1
         if d_shield_eq.defense_bonus <= 0:
